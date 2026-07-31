@@ -344,6 +344,26 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .chk.on.bonus .box{background:var(--cyan);border-color:var(--cyan)}
 .chk .lbl{font-family:'Barlow Condensed';font-size:14px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 .chk .pt{margin-left:auto;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.1em;color:var(--dim)}
+/* contador de lineas de celular: aparece debajo del check cuando lo marcas */
+.lineasbox{
+  grid-column:1/-1;                /* fila completa, si no el boton + se sale */
+  display:flex;align-items:center;gap:9px;padding:10px 12px;margin-top:-9px;
+  border:1px solid var(--amber);border-top:0;background:rgba(255,138,0,.05);
+}
+.lineasbox .lbl2{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+.lineasbox .lbl2:last-child{margin-left:auto;color:var(--amber)}
+.stepbtn{
+  width:34px;height:34px;flex:0 0 34px;background:none;border:1px solid var(--line2);
+  color:var(--txt);font-size:18px;line-height:1;cursor:pointer;
+}
+.stepbtn:disabled{opacity:.3;cursor:default}
+.lineasnum{
+  width:52px;text-align:center;background:#08090b;border:1px solid var(--line2);
+  color:var(--txt);font-family:'Barlow Condensed';font-size:17px;font-weight:700;
+  padding:7px 4px;outline:none;-moz-appearance:textfield;
+}
+.lineasnum::-webkit-outer-spin-button,.lineasnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .mf{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--line)}
 .mf .grow{flex:1}
 .btn-ghost{background:none;border:1px solid var(--line2);color:var(--muted);padding:11px 18px;cursor:pointer;
@@ -673,7 +693,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <div class="ptpreview">
         <div class="big" id="pvPts">0</div>
         <div class="txt">PUNTOS<br><span id="pvBonus" style="color:var(--cyan)">SIN BONO</span></div>
-        <div style="margin-left:auto;text-align:right" class="hint">CELULAR · INTERNET · TV = 1 PT<br>VOICE DE CASA = BONO, NO SUMA</div>
+        <div style="margin-left:auto;text-align:right" class="hint">CADA LÍNEA, INTERNET Y TV = 1 PT<br>VOICE DE CASA = BONO, NO SUMA</div>
       </div>
       <div class="fld" style="margin-top:14px;margin-bottom:0">
         <label>Origen del lead</label>
@@ -803,11 +823,14 @@ const isPend = i => i && i.mode==='fecha' && i.d && i.d > TODAY_ISO;
    cambia el 'av' de cada uno si le toca otra. Archivos en avatars/ */
 /* pts/bonus/ventas se calculan de SALES, no se guardan aquí */
 /* ---------- METRICA DEL MES ----------
-   45 puntos es la cuota. Aparte, el bono depende de cuántos de esos puntos son
-   internet: 13 internet paga el 50% del bono y 18 paga el 100%. */
+   45 puntos es la cuota. Aparte esta el bono, que se mide con internet y
+   celulares juntos: 13 paga el 50% y 18 paga el 100%. Cada linea de celular
+   cuenta una, asi que 14 internet + 4 lineas ya son 18. */
 const META_PTS = 45;
 const INT_50 = 13, INT_100 = 18;
-/* devuelve 0, 50 o 100 según los internet del mes */
+/* cuantas cuentan para el bono: internet + lineas de celular */
+const cuotaBono = t => t.internet + t.celular;
+/* devuelve 0, 50 o 100 según esa cuenta */
 const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
 
 /* el email es el de la cuenta de Firebase; las contrasenas viven alla, no aqui */
@@ -977,7 +1000,10 @@ const $ = s => document.querySelector(s);
 const me = () => SQUAD.find(s=>s.id===ME);
 const opBy = uid => SQUAD.find(s=>s.id===uid) || {nm:uid, av:null};
 const isAdmin = () => me().rol === 'admin';
-const ptsOf = s => (s.p.celular?1:0)+(s.p.internet?1:0)+(s.p.tv?1:0);
+/* celular guarda CUANTAS lineas van en ese cierre: 3 lineas son 3 puntos.
+   Los cierres viejos traen 1 (o true), que sigue valiendo una linea. */
+const lineasCel = s => { const v = s.p && s.p.celular; return v === true ? 1 : (Number(v) || 0); };
+const ptsOf = s => lineasCel(s) + (s.p.internet?1:0) + (s.p.tv?1:0);
 const salesOf = uid => SALES.filter(s => s.owner === uid);
 
 function stats(uid){
@@ -990,7 +1016,8 @@ function stats(uid){
   SALES.forEach(s=>{
     const pt = ptsOf(s);
     t.pts += pt;
-    ['celular','internet','tv','voice'].forEach(k=>{ if(s.p[k]) t[k]++; });
+    t.celular += lineasCel(s);                                   // suma lineas, no cierres
+    ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) t[k]++; });
     if(s.p.voice) t.bonus++;
     t.src[s.src] = (t.src[s.src]||0)+1;
     if(s.plan){
@@ -1017,8 +1044,9 @@ function stats(uid){
 function ranked(){
   return SQUAD.map(s=>{
     const t = stats(s.id);
-    return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, bono:bonoPct(t.internet),
-            ventas:salesOf(s.id).length};
+    const cuota = cuotaBono(t);   // internet + lineas de celular
+    return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
+            cuota, bono:bonoPct(cuota), ventas:salesOf(s.id).length};
   }).sort((a,b)=> b.pts-a.pts || b.bonus-a.bonus);
 }
 /* instalaciones de hoy: las mías, o las de todo el escuadrón si soy admin */
@@ -1339,24 +1367,28 @@ function viewLobby(){
       </div>
 
       ${(()=>{
-        const bp = bonoPct(t.internet);
-        const falta = bp===100 ? 0 : (bp===50 ? INT_100 - t.internet : INT_50 - t.internet);
+        const cuota = cuotaBono(t);                 // internet + lineas de celular
+        const bp = bonoPct(cuota);
+        const falta = bp===100 ? 0 : (bp===50 ? INT_100 - cuota : INT_50 - cuota);
         const col = bp===100 ? 'var(--green)' : bp===50 ? 'var(--amber)' : 'var(--red)';
         return `
         <div class="panel cut" style="margin-top:14px">
-          <div class="ph"><span class="tick" style="background:${col}"></span>Bono de internet
-            <span class="right">${t.internet} INTERNET ESTE MES</span></div>
+          <div class="ph"><span class="tick" style="background:${col}"></span>Bono
+            <span class="right">${cuota} DE ${INT_100}</span></div>
           <div class="pb">
-            <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px">
+            <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
               <div style="font-family:'Barlow Condensed';font-size:40px;font-weight:700;line-height:1;color:${col}">${bp}%</div>
               <div style="color:var(--muted);font-size:12px">
                 ${bp===100 ? 'bono completo asegurado'
-                  : `te faltan <b style="color:${col}">${falta}</b> internet para el ${bp===50?'100':'50'}%`}
+                  : `te ${falta===1?'falta':'faltan'} <b style="color:${col}">${falta}</b> para el ${bp===50?'100':'50'}%`}
               </div>
+            </div>
+            <div style="color:var(--dim);font-size:11.5px;margin-bottom:12px">
+              ${t.internet} internet + ${t.celular} ${t.celular===1?'línea':'líneas'} de celular
             </div>
             <!-- barra con las dos marcas: 13 = 50%, 18 = 100% -->
             <div style="position:relative;height:8px;background:#12161a;overflow:hidden">
-              <div style="height:100%;width:${Math.min(100, t.internet/INT_100*100)}%;background:${col}"></div>
+              <div style="height:100%;width:${Math.min(100, cuota/INT_100*100)}%;background:${col}"></div>
               <div style="position:absolute;top:0;bottom:0;left:${INT_50/INT_100*100}%;width:2px;background:rgba(255,255,255,.5)"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:6px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em;color:var(--dim)">
@@ -1424,7 +1456,11 @@ function viewLobby(){
 }
 
 function prodPills(s){
-  return PRODS.filter(p=>s.p[p.k]).map(p=>`<span class="pill ${p.cls}">${p.label}</span>`).join('');
+  const n = lineasCel(s);
+  return PRODS.filter(p=>s.p[p.k]).map(p=>{
+    const txt = p.k==='celular' && n>1 ? `${p.label} ×${n}` : p.label;   // 3 lineas: "CELULAR ×3"
+    return `<span class="pill ${p.cls}">${txt}</span>`;
+  }).join('');
 }
 
 let opsScope = 'me';
@@ -1504,7 +1540,7 @@ function viewSquad(){
   const COLORS=['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#e8402a','#8b9199'];
   $('#view').innerHTML = `
   <div class="gridwrap">
-    <div class="notice">Ranking por <b>cantidad de puntos</b>. Celular, internet y TV suman 1; el voice de casa va aparte y no suma. Meta del mes: <b>${META_PTS} pts</b>. El bono depende del internet: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
+    <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular, cada internet y cada TV suman 1; el voice de casa va aparte y no suma. Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + líneas de celular</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
         <span class="right">${SQUAD.length} OPERADORES · ACTUALIZADO AHORA</span></div>
@@ -1514,7 +1550,7 @@ function viewSquad(){
           <div class="rk" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">RANGO</div>
           <div class="nm" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">OPERADOR</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">PUNTOS</div>
-          <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">INTERNET</div>
+          <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">BONO</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">VOICE</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">CIERRES</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">% META</div>
@@ -1531,7 +1567,7 @@ function viewSquad(){
               <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}<small>${s.full}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
-            <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.internet}<small>BONO ${s.bono}%</small></div>
+            <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.cuota}<small>${s.bono}% · ${s.internet}i+${s.celular}c</small></div>
             <div class="num" style="color:var(--cyan)">${s.bonus}<small>VOICE</small></div>
             <div class="num">${s.ventas}<small>VENTAS</small></div>
             <div class="num" style="color:${pct>=100?'var(--green)':pct>=75?'var(--amber)':'var(--red)'}">${pct}%<small>DE ${s.meta}</small></div>
@@ -1861,17 +1897,41 @@ function setInstDate(v){ dinst.d = v; }
 function closeModal(){ $('#overlay').classList.remove('on'); }
 
 function renderChecks(){
-  $('#fProds').innerHTML = PRODS.map(p=>`
-    <div class="chk ${draft[p.k]?'on':''} ${p.pts?'':'bonus'}" onclick="toggleProd('${p.k}')">
-      <div class="box">${draft[p.k]?'✓':''}</div>
+  const cel = Number(draft.celular) || 0;
+  $('#fProds').innerHTML = PRODS.map(p=>{
+    const on = p.k==='celular' ? cel>0 : !!draft[p.k];
+    const fila = `
+    <div class="chk ${on?'on':''} ${p.pts?'':'bonus'}" onclick="toggleProd('${p.k}')">
+      <div class="box">${on?'✓':''}</div>
       <div class="lbl">${p.icon} ${p.label}</div>
-      <div class="pt">${p.pts?'+1':'BONO'}</div>
-    </div>`).join('');
-  const pts = (draft.celular?1:0)+(draft.internet?1:0)+(draft.tv?1:0);
+      <div class="pt">${p.pts ? (p.k==='celular' && cel>1 ? '+'+cel : '+1') : 'BONO'}</div>
+    </div>`;
+    /* si marcaste celular, pregunta cuantas lineas: cada una suma un punto */
+    if(p.k!=='celular' || !on) return fila;
+    return fila + `
+    <div class="lineasbox">
+      <span class="lbl2">¿Cuántas líneas?</span>
+      <button type="button" class="stepbtn" onclick="setLineas(${cel-1})" ${cel<=1?'disabled':''}>−</button>
+      <input id="fLineas" class="lineasnum" type="number" min="1" max="20" value="${cel}"
+             onchange="setLineas(this.value)" onclick="event.stopPropagation()">
+      <button type="button" class="stepbtn" onclick="setLineas(${cel+1})">+</button>
+      <span class="lbl2">${cel === 1 ? '1 punto' : cel + ' puntos'}</span>
+    </div>`;
+  }).join('');
+  const pts = cel + (draft.internet?1:0) + (draft.tv?1:0);
   $('#pvPts').textContent = pts;
   $('#pvBonus').textContent = draft.voice ? '+1 BONO VOICE' : 'SIN BONO';
 }
-function toggleProd(k){ draft[k] = draft[k]?0:1; renderChecks(); }
+function toggleProd(k){
+  if(k==='celular'){ draft.celular = Number(draft.celular)>0 ? 0 : 1; }  // al marcar arranca en 1 linea
+  else draft[k] = draft[k]?0:1;
+  renderChecks();
+}
+function setLineas(n){
+  const v = Math.max(1, Math.min(20, parseInt(n)||1));
+  draft.celular = v;
+  renderChecks();
+}
 
 async function saveSale(){
   const nm=$('#fName').value.trim(), tel=$('#fTel').value.trim();
@@ -1898,7 +1958,7 @@ async function saveSale(){
       toast('CIERRE ACTUALIZADO');
     }else{
       await db().collection('ventas').add(payload);
-      const pts=(draft.celular?1:0)+(draft.internet?1:0)+(draft.tv?1:0);
+      const pts=(Number(draft.celular)||0)+(draft.internet?1:0)+(draft.tv?1:0);
       toast('CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
     }
     closeModal();   // el listener refresca la pantalla solo
