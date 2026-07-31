@@ -536,6 +536,39 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
     padding:12px calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
   }
 
+  /* Mis cierres: la tabla pedia 746px sobre una pantalla de 390, asi que la X
+     de borrar quedaba fuera de alcance. En movil cada cierre pasa a ser una
+     tarjeta y los botones caen dentro del ancho. */
+  .tcierres, .tcierres tbody, .tcierres tr, .tcierres td{display:block;width:auto}
+  .tcierres thead{display:none}
+  .tcierres{border-collapse:separate;border-spacing:0}
+  .tcierres tr{
+    border:1px solid var(--line);background:rgba(255,255,255,.02);
+    padding:11px 12px;margin-bottom:9px;position:relative;
+  }
+  .tcierres td{border:0;padding:0;white-space:normal}
+  /* fecha y puntos arriba a la derecha, nombre grande a la izquierda */
+  .tcierres .c-nm{font-size:15px;padding-right:56px}
+  .tcierres .c-fecha{position:absolute;top:11px;right:44px;color:var(--dim)}
+  .tcierres .c-pts{position:absolute;top:8px;right:10px}
+  .tcierres .c-op{margin-top:2px}
+  .tcierres .c-tel,.tcierres .c-plan{margin-top:4px}
+  .tcierres .c-prods{margin-top:7px}
+  .tcierres .c-inst,.tcierres .c-src{display:inline-block;margin-top:7px;margin-right:12px}
+  .tcierres .c-tel[data-lbl]::before,
+  .tcierres .c-inst[data-lbl]::before,
+  .tcierres .c-src[data-lbl]::before{
+    content:attr(data-lbl) ' ';
+    font-family:'Barlow Condensed';font-size:10px;letter-spacing:.12em;color:var(--dim);
+  }
+  /* los botones en su propia fila, grandes para el dedo */
+  .tcierres .c-acc{
+    display:flex;gap:8px;margin-top:10px;padding-top:10px;
+    border-top:1px solid rgba(255,255,255,.06);text-align:left !important;
+  }
+  .tcierres .c-acc .iconbtn{flex:1;padding:10px;font-size:12px;margin-left:0}
+  .tcierres .c-acc .iconbtn.del{flex:0 0 64px;color:var(--red);border-color:rgba(255,90,90,.35)}
+
   /* leaderboard: rango+nombre arriba, los cinco numeros abajo */
   .lbrow .cells{grid-template-columns:repeat(5,1fr);padding:11px 12px;gap:9px 6px}
   .lbrow .cells > .rk{grid-column:1/2;font-size:19px}
@@ -570,6 +603,10 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <input id="lgPass" type="password" placeholder="••••••••" autocomplete="current-password"
              onkeydown="if(event.key==='Enter')doLogin()">
     </div>
+    <label id="lgRemember" style="display:flex;align-items:center;gap:9px;cursor:pointer;margin:2px 0 14px;user-select:none">
+      <input type="checkbox" id="lgKeep" checked style="width:17px;height:17px;accent-color:var(--lime);cursor:pointer">
+      <span style="font-size:13px;color:var(--muted)">Mantener la sesión abierta en este equipo</span>
+    </label>
     <button class="btn-lime" id="lgBtn" onclick="doLogin()">Iniciar sesión</button>
     <div id="lgError" style="display:none;color:var(--red);font-size:12.5px;margin-top:10px;text-align:center"></div>
     <div id="devZone" style="display:none">
@@ -998,6 +1035,25 @@ function toast(msg){
    DEV va aqui arriba porque renderRoster() lo usa y se llama enseguida */
 const DEV = ['localhost','127.0.0.1',''].includes(location.hostname);
 
+/* Si quedo sesion abierta de la vez pasada, entra solo sin pedir contrasena.
+   Firebase la guarda en el navegador; aqui solo hay que reaccionar. */
+function restaurarSesion(){
+  if(typeof firebase === 'undefined' || !firebase.auth) return;
+  try{
+    const ult = localStorage.getItem('ops.email');
+    if(ult && $('#lgEmail')) $('#lgEmail').value = ult;
+  }catch(e){}
+
+  firebase.auth().onAuthStateChanged(user => {
+    if(!user) return;                                   // sin sesion: se queda el login
+    if(getComputedStyle($('#app')).display !== 'none') return;  // ya esta adentro
+    const op = SQUAD.find(s => s.email && s.email.toLowerCase() === (user.email||'').toLowerCase());
+    if(!op){ firebase.auth().signOut().catch(()=>{}); return; }  // cuenta ajena al escuadron
+    ME = op.id;
+    entrar();
+  });
+}
+
 function renderRoster(){
   const zona = $('#devZone');
   if(!DEV){ if(zona) zona.style.display='none'; return; }   // en produccion se entra solo con contrasena
@@ -1006,6 +1062,7 @@ function renderRoster(){
     `<button onclick="entrarComo('${s.id}')">${s.nm}${s.rol==='admin'?' ★':''}</button>`).join('');
 }
 renderRoster();
+restaurarSesion();
 /* ---------- LOGIN ----------
    La contrasena se valida contra Firebase Auth: nunca esta en este archivo.
    El correo decide que operador eres (SQUAD.email). */
@@ -1031,7 +1088,12 @@ async function doLogin(){
   if(btn){ btn.disabled = true; btn.textContent = 'Verificando…'; }
   lgError('');
   try{
+    /* LOCAL: sigue abierta aunque cierres el navegador. SESSION: se cae al cerrar. */
+    const keep = $('#lgKeep') ? $('#lgKeep').checked : true;
+    const P = firebase.auth.Auth.Persistence;
+    await firebase.auth().setPersistence(keep ? P.LOCAL : P.SESSION);
     await firebase.auth().signInWithEmailAndPassword(email, pass);
+    try{ localStorage.setItem('ops.email', keep ? email : ''); }catch(e){}
     ME = op.id;
     $('#lgPass').value = '';
     entrar();
@@ -1070,6 +1132,8 @@ function entrar(){
 function logout(){
   if(unsubVentas){ unsubVentas(); unsubVentas = null; }
   SALES = [];
+  /* salir es a proposito: no vuelve a entrar solo, aunque el remember estuviera puesto */
+  try{ localStorage.removeItem('ops.email'); }catch(e){}
   if(typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut().catch(()=>{});
   /* cierra lo que haya quedado abierto para que no flote sobre el login */
   document.querySelectorAll('.overlay.on').forEach(o => o.classList.remove('on'));
@@ -1369,9 +1433,13 @@ function setScope(v){ opsScope = v; render(); }
 function viewOps(){
   const admin = isAdmin();
   if(!admin) opsScope = 'me';
-  const lista = opsScope==='me'  ? salesOf(ME)
+  /* Firestore devuelve en orden arbitrario, asi que hay que ordenar a mano:
+     lo mas reciente primero, por fecha del cierre y luego por hora de registro */
+  const lista = (opsScope==='me'  ? salesOf(ME)
               : opsScope==='all' ? SALES.slice()
-              : salesOf(opsScope);
+              : salesOf(opsScope))
+    .slice().sort((a,b)=>
+      (b.d||'').localeCompare(a.d||'') || (b.creado||0) - (a.creado||0));
   const pts = lista.reduce((a,s)=>a+ptsOf(s),0);
   const bonos = lista.filter(s=>s.p.voice).length;
   const verOp = opsScope !== 'me';
@@ -1396,7 +1464,7 @@ function viewOps(){
         <button class="btn-amber" style="margin-left:14px;padding:7px 16px;font-size:13px" onclick="openModal()">+ Nuevo</button>
       </div>
       <div style="overflow:auto">
-      <table>
+      <table class="tcierres">
         <thead><tr>
           <th style="width:60px">Fecha</th>${verOp?'<th style="width:110px">Operador</th>':''}
           <th>Cliente</th><th style="width:130px">Teléfono</th>
@@ -1405,20 +1473,20 @@ function viewOps(){
           <th style="width:110px">Origen</th><th style="width:110px"></th>
         </tr></thead>
         <tbody>
-          ${lista.slice().reverse().map(s=>`
+          ${lista.map(s=>`
             <tr>
-              <td class="src-tag">${s.d}</td>
-              ${verOp?`<td><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
-              <td><b>${s.nm}</b></td>
-              <td class="mono" style="color:var(--muted)">${s.tel || "—"}</td>
-              <td><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
-              <td>${prodPills(s)}</td>
-              <td><span class="ptbadge ${ptsOf(s)?'':'zero'}">${ptsOf(s)}</span></td>
-              <td>${s.inst?.mode==='self'
+              <td class="src-tag c-fecha">${s.d}</td>
+              ${verOp?`<td class="c-op"><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
+              <td class="c-nm"><b>${s.nm}</b></td>
+              <td class="mono c-tel" style="color:var(--muted)" data-lbl="TEL">${s.tel || "—"}</td>
+              <td class="c-plan"><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
+              <td class="c-prods">${prodPills(s)}</td>
+              <td class="c-pts"><span class="ptbadge ${ptsOf(s)?'':'zero'}">${ptsOf(s)}</span></td>
+              <td class="c-inst" data-lbl="INSTALACIÓN">${s.inst?.mode==='self'
                     ? `<span class="pill" style="color:var(--muted)">SELF</span>`
                     : `<span class="src-tag" style="color:${isPend(s.inst)?'var(--amber)':'var(--green)'}">${instLabel(s.inst)}${isPend(s.inst)?' ⏳':' ✓'}</span>`}</td>
-              <td><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]}</span></td>
-              <td style="text-align:right">
+              <td class="c-src" data-lbl="ORIGEN"><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]||'—'}</span></td>
+              <td class="c-acc" style="text-align:right">
                 <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
                 <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>
               </td>
@@ -1818,7 +1886,8 @@ async function saveSale(){
     nm, tel, p:{...draft}, plan:{...dplan}, inst:{...dinst}, src:$('#fSrc').value,
     owner: isAdmin() ? $('#fOwner').value : ME,
     d: String(today.getMonth()+1).padStart(2,'0')+'/'+String(dayNow).padStart(2,'0'),
-    anio, mes
+    anio, mes,
+    creado: Date.now()   // para ordenar los del mismo dia
   };
 
   const btn = $('#saveBtn');
