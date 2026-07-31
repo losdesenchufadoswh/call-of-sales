@@ -271,12 +271,12 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 /* leaderboard elite */
 .lbrow{display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,.05)}
 .lbrow .stripe{width:4px;align-self:stretch}
-.lbrow .cells{flex:1;display:grid;grid-template-columns:60px 1fr 90px 90px 90px 110px;align-items:center;padding:12px 14px;gap:8px}
+.lbrow .cells{flex:1;display:grid;grid-template-columns:60px 1fr 84px 84px 84px 84px 104px;align-items:center;padding:12px 14px;gap:8px}
 .lbrow.me{background:linear-gradient(90deg,rgba(255,138,0,.12),transparent 70%)}
 .lbrow .rk{font-family:'Barlow Condensed';font-size:22px;font-weight:700;color:var(--dim)}
 .lbrow.me .rk{color:var(--amber)}
-.lbrow .nm{font-family:'Barlow Condensed';font-size:16px;letter-spacing:.1em;font-weight:600}
-.lbrow .nm small{display:block;font-family:'Barlow';font-size:11px;letter-spacing:0;color:var(--dim);text-transform:none}
+.lbrow .nm{font-family:'Barlow Condensed';font-size:16px;letter-spacing:.1em;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .nm small{display:block;font-family:'Barlow';font-size:11px;letter-spacing:0;color:var(--dim);text-transform:none;overflow:hidden;text-overflow:ellipsis}
 .lbrow .num{font-family:'Barlow Condensed';font-size:19px;font-weight:700;text-align:right}
 .lbrow .num small{display:block;font-size:10px;letter-spacing:.16em;color:var(--dim);font-weight:500}
 .lbbar{height:6px;background:#15181c}
@@ -512,6 +512,13 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   }
   nav.tabs button{padding:0 14px;font-size:13px}
   main{padding:12px}
+
+  /* leaderboard: rango+nombre arriba, los cinco numeros abajo */
+  .lbrow .cells{grid-template-columns:repeat(5,1fr);padding:11px 12px;gap:9px 6px}
+  .lbrow .cells > .rk{grid-column:1/2;font-size:19px}
+  .lbrow .cells > .rk + div{grid-column:2/-1;min-width:0}
+  .lbrow .num{text-align:left;font-size:16px}
+  .lbrow .num small{font-size:9px;letter-spacing:.08em}
 }
 </style>
 </head>
@@ -550,7 +557,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
     <div class="logo">OPS<span>//</span></div>
     <nav class="tabs" id="tabs"></nav>
     <div class="topright">
-      <div class="chip">OPERACIÓN <b id="topMonth">JULIO</b></div>
+      <div class="chip" onclick="openFecha()" style="cursor:pointer" title="Cambiar la fecha del sistema">OPERACIÓN <b id="topMonth">JULIO</b><span id="topDia" style="color:var(--dim);margin-left:5px"></span></div>
       <div class="chip">ESCUADRÓN <b id="topSquad">5</b></div>
       <span id="bellWrap"></span>
       <button class="namebtn chip" style="gap:9px" onclick="setTab('perfil')" title="Ver perfil">
@@ -685,10 +692,25 @@ const SPEEDS = [{k:'100',l:'100 MB'},{k:'300',l:'300 MB'},{k:'500',l:'500 MB'},{
 const PLAYCOLOR = {'1play':'#8b9199','2play':'#39d0ff','3play':'#d8ff2e','celular':'#ffb545'};
 const planLabel = p => !p ? '—' : (PLAY.find(x=>x.k===p.type)?.l||p.type) + (p.speed ? ' · '+(SPEEDS.find(s=>s.k===p.speed)?.l||p.speed) : '');
 
-/* instalación: self install o cita con fecha */
+/* ---------- FECHA DEL SISTEMA ----------
+   'today' se puede mover a mano desde el topbar o desde Mando. Todo lo que
+   depende de la fecha (día del mes, proyección, instalaciones de hoy) sale de
+   aquí, así que cambiarla mueve la app entera de forma consistente. */
+const MESES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const TODAY_ISO = isoLocal(new Date());
-const dOff = n => { const d = new Date(); d.setDate(d.getDate()+n); return isoLocal(d); };
+const HOY_REAL = isoLocal(new Date());
+let today = new Date();
+let dayNow, daysInMonth, monthName, TODAY_ISO;
+function recalcFecha(){
+  dayNow      = today.getDate();
+  daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  monthName   = MESES[today.getMonth()];
+  TODAY_ISO   = isoLocal(today);
+}
+recalcFecha();
+
+/* instalación: self install o cita con fecha */
+const dOff = n => { const d = new Date(today); d.setDate(d.getDate()+n); return isoLocal(d); };
 const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return d+'/'+m; };
 const instLabel = i => !i ? '—' : i.mode==='self' ? 'SELF INSTALL' : fmtDate(i.d);
 const isHoy  = i => i && i.mode==='fecha' && i.d === TODAY_ISO;
@@ -697,45 +719,44 @@ const isPend = i => i && i.mode==='fecha' && i.d && i.d > TODAY_ISO;
 /* OJO: la foto de EL_FE está confirmada. Las otras 4 las asigné al azar —
    cambia el 'av' de cada uno si le toca otra. Archivos en avatars/ */
 /* pts/bonus/ventas se calculan de SALES, no se guardan aquí */
+/* ---------- METRICA DEL MES ----------
+   45 puntos es la cuota. Aparte, el bono depende de cuántos de esos puntos son
+   internet: 13 internet paga el 50% del bono y 18 paga el 100%. */
+const META_PTS = 45;
+const INT_50 = 13, INT_100 = 18;
+/* devuelve 0, 50 o 100 según los internet del mes */
+const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
+
 const SQUAD = [
-  {id:'elfe',   nm:'EL_FE',  full:'Tú',      meta:22, rol:'admin',    av:'avatars/elfe.png'},
-  {id:'carlos', nm:'CARLOS', full:'Carlos',  meta:24, rol:'vendedor', av:'avatars/op-gorra.png'},
-  {id:'felix',  nm:'FELIX',  full:'Félix',   meta:20, rol:'vendedor', av:'avatars/op-lentes-negros.png'},
-  {id:'angel',  nm:'ANGEL',  full:'Ángel',   meta:15, rol:'vendedor', av:'avatars/op-canoso.png'},
-  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   meta:18, rol:'vendedor', av:'avatars/op-joven.png'}
+  {id:'elfe',   nm:'EL_FE',  full:'Tú',      meta:META_PTS, rol:'admin',    av:'avatars/elfe.png'},
+  {id:'carlos', nm:'CARLOS', full:'Carlos',  meta:META_PTS, rol:'vendedor', av:'avatars/op-gorra.png'},
+  {id:'felix',  nm:'FELIX',  full:'Félix',   meta:META_PTS, rol:'vendedor', av:'avatars/op-lentes-negros.png'},
+  {id:'angel',  nm:'ANGEL',  full:'Ángel',   meta:META_PTS, rol:'vendedor', av:'avatars/op-canoso.png'},
+  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   meta:META_PTS, rol:'vendedor', av:'avatars/op-joven.png'}
 ];
 
 let ME = 'elfe';
 
-let SALES = [
-  {id:1,  nm:'María Colón',       tel:'787-555-0142', p:{internet:1,tv:1,voice:1},          plan:{type:'3play',speed:'300'}, inst:{mode:'fecha',d:dOff(-25)}, src:'redes',    d:'07/02'},
-  {id:2,  nm:'José Rivera',       tel:'787-555-0198', p:{celular:1},                        plan:{type:'celular'},           inst:{mode:'self'},                 src:'referido', d:'07/04'},
-  {id:3,  nm:'Ana Ortiz',         tel:'939-555-0110', p:{internet:1},                       plan:{type:'1play',speed:'500'}, inst:{mode:'fecha',d:dOff(-21)}, src:'base',     d:'07/06'},
-  {id:4,  nm:'Luis Meléndez',     tel:'787-555-0177', p:{celular:1,internet:1,tv:1,voice:1},plan:{type:'3play',speed:'1gb'}, inst:{mode:'fecha',d:dOff(-18)}, src:'canva',    d:'07/09'},
-  {id:5,  nm:'Carmen Díaz',       tel:'939-555-0163', p:{tv:1,voice:1},                     plan:{type:'3play',speed:'300'}, inst:{mode:'self'},                 src:'referido', d:'07/11'},
-  {id:6,  nm:'Pedro Santiago',    tel:'787-555-0121', p:{celular:1,internet:1},             plan:{type:'1play',speed:'1gb'}, inst:{mode:'fecha',d:dOff(-13)}, src:'redes',    d:'07/13'},
-  {id:7,  nm:'Rosa Vega',         tel:'787-555-0155', p:{internet:1,voice:1},               plan:{type:'2play',speed:'100'}, inst:{mode:'self'},                 src:'base',     d:'07/16'},
-  {id:8,  nm:'Héctor Ramos',      tel:'939-555-0188', p:{celular:1},                        plan:{type:'celular'},           inst:{mode:'self'},                 src:'redes',    d:'07/18'},
-  {id:9,  nm:'Sonia Pérez',       tel:'787-555-0134', p:{tv:1},                             plan:{type:'1play',speed:'300'}, inst:{mode:'fecha',d:dOff(0)},   src:'referido', d:'07/20'},
-  {id:10, nm:'Ángel Cruz',        tel:'787-555-0166', p:{internet:1,tv:1,voice:1},          plan:{type:'3play',speed:'500'}, inst:{mode:'fecha',d:dOff(-4)},  src:'canva',    d:'07/22'},
-  {id:11, nm:'Nydia Feliciano',   tel:'939-555-0147', p:{celular:1},                        plan:{type:'celular'},           inst:{mode:'self'},                 src:'base',     d:'07/25'},
-  {id:12, nm:'Wilfredo Soto',     tel:'787-555-0119', p:{internet:1,voice:1},               plan:{type:'2play',speed:'1gb'}, inst:{mode:'fecha',d:dOff(0)},   src:'redes',    d:'07/27'},
-  {id:13, nm:'Ivelisse Marrero',  tel:'939-555-0172', p:{celular:1,internet:1,voice:1},     plan:{type:'2play',speed:'500'}, inst:{mode:'fecha',d:dOff(4)},   src:'referido', d:'07/29'}
-];
-let nextId = 14;
+/* ---------- CIERRES DE JULIO 2026 ----------
+   Totales reales por operador, confirmados por el_fe (voice de casa, TV,
+   internet, celular). El voice es bono y no suma puntos, por eso va aparte.
+   Los cierres de abajo se generan para cuadrar exactamente con estos numeros;
+   los nombres de cliente son de relleno hasta que se carguen los reales. */
+const REAL = {
+  carlos: {voice:25, tv:36, internet:14, celular:4},
+  elfe:   {voice:23, tv:32, internet:11, celular:1},
+  felix:  {voice:12, tv:25, internet:11, celular:0},
+  elwin:  {voice:29, tv:59, internet:38, celular:0},
+  angel:  {voice:0,  tv:0,  internet:0,  celular:0}
+};
 
-/* los 13 de arriba son de el_fe */
-SALES.forEach(s => s.owner = 'elfe');
+let SALES = [];
+let nextId = 1;
 
-/* cierres del resto del escuadrón — mock determinista, cuadra con sus totales */
-(function seedSquad(){
-  const metas = [
-    {u:'carlos', pts:27, voice:11},
-    {u:'felix',  pts:24, voice:6},
-    {u:'angel',  pts:18, voice:9},
-    {u:'elwin',  pts:15, voice:4}
-  ];
-  const NOM = ['Jorge Ruiz','Lisa Morales','Edwin Torres','Marta Reyes','Ramón Ayala','Gladys Rosa',
+(function seedReal(){
+  const NOM = ['María Colón','José Rivera','Ana Ortiz','Luis Meléndez','Carmen Díaz','Pedro Santiago',
+    'Rosa Vega','Héctor Ramos','Sonia Pérez','Ángel Cruz','Nydia Feliciano','Wilfredo Soto',
+    'Ivelisse Marrero','Jorge Ruiz','Lisa Morales','Edwin Torres','Marta Reyes','Ramón Ayala','Gladys Rosa',
     'Iván Quiñones','Sara Medina','Tomás Rolón','Delia Castro','Óscar Padilla','Ruth Serrano',
     'Elías Camacho','Vilma Nazario','Julio Benítez','Awilda Ramos','Nelson Irizarry','Mayra Pagán',
     'Freddy Colón','Aida Lugo','Samuel Bonilla','Loida Ferrer','Kevin Maldonado','Zoraida Rivas',
@@ -743,38 +764,51 @@ SALES.forEach(s => s.owner = 'elfe');
     'Genaro Ocasio','Yolanda Prado','Héctor Cintrón','Nilda Berríos','Raúl Fontánez','Ivette Sánchez',
     'Alexis Quiles','Norma Delgado','Emilio Santana','Rosa Alicea','Javier Robles','Teresa Vidal',
     'Moisés Cordero','Ana Belén Ruiz','Efraín Pizarro','Sonia Laboy','Gabriel Muñiz','Carla Otero',
-    'Wilson Trinidad','Miriam Aponte','Adrián Solís','Bexaida Cruz','Ismael Guzmán','Lourdes Pérez'];
+    'Wilson Trinidad','Miriam Aponte','Adrián Solís','Bexaida Cruz','Ismael Guzmán','Lourdes Pérez',
+    'Damaris Cotto','Ubaldo Rentas','Sandra Yulfo','Ernesto Vidro','Milagros Adorno','Cesar Betancourt',
+    'Aurea Santos','Reinaldo Class','Brenda Coriano','Osvaldo Nieves','Maritza Andujar','Felipe Zayas'];
   const SRCS = ['redes','referido','canva','base'];
   let rnd = 987654321, ni = 0;
   const rand = () => (rnd = (rnd*1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
   const pick = a => a[Math.floor(rand()*a.length)];
-  /* fechas propias: today/dayNow se declaran más abajo en el archivo */
-  const hoyD = new Date(), diaHoy = hoyD.getDate(), mesNum = hoyD.getMonth()+1;
+  const diaHoy = today.getDate(), mesNum = today.getMonth()+1;
+  let citasHoy = 0;   /* tope de instalaciones para hoy, para que el aviso sea util */
 
-  metas.forEach(m=>{
-    let left = m.pts, vLeft = m.voice; const lote = [];
-    while(left > 0){
-      const size = Math.min(left, 1 + Math.floor(rand()*3));
-      const pool = ['celular','internet','tv'], chosen = [];
-      while(chosen.length < size){ const c = pick(pool); if(!chosen.includes(c)) chosen.push(c); }
-      const p = {}; chosen.forEach(c => p[c] = 1);
-      if(vLeft > 0 && rand() < .7){ p.voice = 1; vLeft--; }
-      lote.push(p); left -= size;
+  Object.keys(REAL).forEach(u=>{
+    const c = Object.assign({}, REAL[u]);
+    const lote = [];
+    /* arma cierres combinando lo que queda pendiente hasta agotar los totales */
+    while(c.tv + c.internet + c.celular + c.voice > 0){
+      const p = {};
+      if(c.internet > 0 && rand() < .8){ p.internet = 1; c.internet--; }
+      if(c.tv       > 0 && rand() < .8){ p.tv       = 1; c.tv--; }
+      if(c.voice    > 0 && rand() < .75){ p.voice   = 1; c.voice--; }
+      if(c.celular  > 0 && rand() < .5){ p.celular  = 1; c.celular--; }
+      if(!Object.keys(p).length){
+        /* garantiza avance: toma lo que mas queda pendiente */
+        const pend = ['internet','tv','voice','celular'].filter(k=>c[k]>0).sort((x,y)=>c[y]-c[x]);
+        if(!pend.length) break;
+        p[pend[0]] = 1; c[pend[0]]--;
+      }
+      lote.push(p);
     }
-    for(let i=0; i<lote.length && vLeft>0; i++) if(!lote[i].voice){ lote[i].voice = 1; vLeft--; }
 
-    lote.forEach(p=>{
-      const svc = ['internet','tv','voice'].filter(k=>p[k]).length;
+    lote.forEach((p, idx)=>{
+      const svc  = ['internet','tv','voice'].filter(k=>p[k]).length;
       const type = svc===0 ? 'celular' : svc===1 ? '1play' : svc===2 ? '2play' : '3play';
-      const dia = 2 + Math.floor(rand()*Math.max(1,diaHoy-1));
-      const off = Math.min(6, (dia - diaHoy) + Math.floor(rand()*5));
+      const dia  = 1 + Math.floor(rand()*Math.max(1, diaHoy));
+      /* deja algunas citas para hoy y para los proximos dias, el resto ya instalado */
+      let inst;
+      if(citasHoy < 3 && idx % 31 === 7){ inst = {mode:'fecha', d: dOff(0)}; citasHoy++; }
+      else if(idx % 29 === 5) inst = {mode:'fecha', d: dOff(1 + Math.floor(rand()*5))};
+      else if(rand() < .34)   inst = {mode:'self'};
+      else                    inst = {mode:'fecha', d: dOff(-1 - Math.floor(rand()*20))};  /* ya instaladas: siempre en pasado */
       SALES.push({
-        id: nextId++, owner: m.u,
+        id: nextId++, owner: u,
         nm: NOM[ni++ % NOM.length],
         tel: (rand()<.5?'787':'939') + '-555-' + String(1000 + Math.floor(rand()*8999)),
         p, plan: {type, speed: type==='celular' ? null : pick(SPEEDS).k},
-        inst: rand()<.38 ? {mode:'self'} : {mode:'fecha', d: dOff(off)},
-        src: pick(SRCS),
+        inst, src: pick(SRCS),
         d: String(mesNum).padStart(2,'0')+'/'+String(dia).padStart(2,'0')
       });
     });
@@ -795,12 +829,7 @@ let CHAT = [
 ];
 let chatSeen = 0;
 
-/* fecha */
-const today = new Date();
-const MESES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-const dayNow = today.getDate();
-const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-const monthName = MESES[today.getMonth()];
+/* la fecha del sistema se declara arriba, junto a los helpers de instalación */
 
 /* ==================== HELPERS ==================== */
 const $ = s => document.querySelector(s);
@@ -847,7 +876,8 @@ function stats(uid){
 function ranked(){
   return SQUAD.map(s=>{
     const t = stats(s.id);
-    return {...s, pts:t.pts, bonus:t.bonus, ventas:salesOf(s.id).length};
+    return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, bono:bonoPct(t.internet),
+            ventas:salesOf(s.id).length};
   }).sort((a,b)=> b.pts-a.pts || b.bonus-a.bonus);
 }
 /* instalaciones de hoy: las mías, o las de todo el escuadrón si soy admin */
@@ -869,13 +899,64 @@ renderRoster();
 function doLogin(){
   $('#login').style.display='none';
   $('#app').style.display='flex';
-  $('#topMonth').textContent = monthName;
+  pintaFecha();
   $('#topName').textContent = me().nm;
   tab = 'lobby'; opsScope = 'me'; alertShown = false;   // sesión limpia al cambiar de operador
   render();
   if(instalacionesHoy().length) setTimeout(openAlert, 600);
 }
 function logout(){ renderRoster(); $('#app').style.display='none'; $('#login').style.display='flex'; }
+
+/* ==================== FECHA DEL SISTEMA ====================
+   Permite mover el "hoy" de la app a mano. Util si el mes cambia y todavia
+   estas cerrando el anterior, o para revisar como se vera la agenda otro dia. */
+function pintaFecha(){
+  $('#topMonth').textContent = monthName;
+  const chip = $('#topDia');
+  if(chip) chip.textContent = TODAY_ISO === HOY_REAL ? `· DÍA ${dayNow}` : `· DÍA ${dayNow} ✎`;
+}
+function openFecha(){
+  const box = document.createElement('div');
+  box.id = 'fechaOverlay';
+  box.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:120;display:flex;align-items:center;justify-content:center;padding:16px';
+  box.innerHTML = `
+    <div style="background:#0d0f12;border:1px solid var(--line2);padding:22px;width:360px;max-width:100%">
+      <div style="font-family:'Barlow Condensed';font-weight:700;font-size:17px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px">Fecha del sistema</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:16px">Cambia el día que la app toma como hoy: afecta el ritmo, la proyección y las instalaciones del día.</div>
+      <input id="fechaInput" type="date" value="${TODAY_ISO}"
+        style="width:100%;background:#08090b;border:1px solid var(--line2);color:var(--txt);padding:11px;font-family:'Barlow';font-size:15px;outline:none;color-scheme:dark">
+      <div style="color:var(--dim);font-size:11px;font-family:'Barlow Condensed';letter-spacing:.12em;margin-top:8px">
+        HOY DE VERDAD: ${HOY_REAL}${TODAY_ISO!==HOY_REAL?' · ESTÁS EN OTRA FECHA':''}
+      </div>
+      <div style="display:flex;gap:9px;margin-top:18px">
+        <button onclick="cerrarFecha()" style="flex:1;background:none;border:1px solid var(--line2);color:var(--muted);padding:11px;cursor:pointer;font-family:'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase">Cancelar</button>
+        <button onclick="resetFecha()" style="flex:1;background:none;border:1px solid var(--amber);color:var(--amber);padding:11px;cursor:pointer;font-family:'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase">Hoy real</button>
+        <button onclick="aplicarFecha()" style="flex:1;background:var(--lime);color:#0b0d06;border:0;padding:11px;cursor:pointer;font-family:'Barlow Condensed';font-weight:700;letter-spacing:.12em;text-transform:uppercase">Aplicar</button>
+      </div>
+    </div>`;
+  box.addEventListener('click', e => { if(e.target === box) cerrarFecha(); });
+  document.body.appendChild(box);
+}
+function cerrarFecha(){ const o = document.getElementById('fechaOverlay'); if(o) o.remove(); }
+function aplicarFecha(){
+  const v = $('#fechaInput').value;
+  if(!v){ toast('Escoge una fecha'); return; }
+  const [y,m,d] = v.split('-').map(Number);
+  today = new Date(y, m-1, d);
+  recalcFecha();
+  cerrarFecha();
+  pintaFecha();
+  render();
+  toast(v === HOY_REAL ? 'Fecha en <b>hoy real</b>' : `Fecha movida a <b>${v}</b>`);
+}
+function resetFecha(){
+  today = new Date();
+  recalcFecha();
+  cerrarFecha();
+  pintaFecha();
+  render();
+  toast('De vuelta en <b>hoy real</b>');
+}
 
 /* ==================== NAV ==================== */
 const TABS = [
@@ -1007,6 +1088,34 @@ function viewLobby(){
         <div class="tile bonus"><span class="tag">BONO</span><div class="t1">VOICE CASA</div>
           <div class="t2">${t.voice}</div><div class="t3">NO SUMA PUNTOS</div></div>
       </div>
+
+      ${(()=>{
+        const bp = bonoPct(t.internet);
+        const falta = bp===100 ? 0 : (bp===50 ? INT_100 - t.internet : INT_50 - t.internet);
+        const col = bp===100 ? 'var(--green)' : bp===50 ? 'var(--amber)' : 'var(--red)';
+        return `
+        <div class="panel cut" style="margin-top:14px">
+          <div class="ph"><span class="tick" style="background:${col}"></span>Bono de internet
+            <span class="right">${t.internet} INTERNET ESTE MES</span></div>
+          <div class="pb">
+            <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px">
+              <div style="font-family:'Barlow Condensed';font-size:40px;font-weight:700;line-height:1;color:${col}">${bp}%</div>
+              <div style="color:var(--muted);font-size:12px">
+                ${bp===100 ? 'bono completo asegurado'
+                  : `te faltan <b style="color:${col}">${falta}</b> internet para el ${bp===50?'100':'50'}%`}
+              </div>
+            </div>
+            <!-- barra con las dos marcas: 13 = 50%, 18 = 100% -->
+            <div style="position:relative;height:8px;background:#12161a;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100, t.internet/INT_100*100)}%;background:${col}"></div>
+              <div style="position:absolute;top:0;bottom:0;left:${INT_50/INT_100*100}%;width:2px;background:rgba(255,255,255,.5)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em;color:var(--dim)">
+              <span>0</span><span>${INT_50} · 50%</span><span>${INT_100} · 100%</span>
+            </div>
+          </div>
+        </div>`;
+      })()}
 
       <button class="deploy" onclick="openModal()">
         <div>
@@ -1142,7 +1251,7 @@ function viewSquad(){
   const COLORS=['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#e8402a','#8b9199'];
   $('#view').innerHTML = `
   <div class="gridwrap">
-    <div class="notice">Ranking por <b>cantidad de puntos</b>. Celular, internet y TV suman 1. El voice de casa se muestra aparte como bono.</div>
+    <div class="notice">Ranking por <b>cantidad de puntos</b>. Celular, internet y TV suman 1; el voice de casa va aparte y no suma. Meta del mes: <b>${META_PTS} pts</b>. El bono depende del internet: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
         <span class="right">${SQUAD.length} OPERADORES · ACTUALIZADO AHORA</span></div>
@@ -1152,7 +1261,8 @@ function viewSquad(){
           <div class="rk" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">RANGO</div>
           <div class="nm" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">OPERADOR</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">PUNTOS</div>
-          <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">BONOS</div>
+          <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">INTERNET</div>
+          <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">VOICE</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">CIERRES</div>
           <div class="num" style="font-size:11px;letter-spacing:.2em;color:var(--muted)">% META</div>
         </div>
@@ -1168,6 +1278,7 @@ function viewSquad(){
               <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}<small>${s.full}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
+            <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.internet}<small>BONO ${s.bono}%</small></div>
             <div class="num" style="color:var(--cyan)">${s.bonus}<small>VOICE</small></div>
             <div class="num">${s.ventas}<small>VENTAS</small></div>
             <div class="num" style="color:${pct>=100?'var(--green)':pct>=75?'var(--amber)':'var(--red)'}">${pct}%<small>DE ${s.meta}</small></div>
