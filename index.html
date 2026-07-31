@@ -110,7 +110,11 @@ body{
 /* ---------- SHELL ---------- */
 #app{position:relative;z-index:1;height:100%;display:none;flex-direction:column}
 header.topbar{
-  display:flex;align-items:center;gap:22px;padding:0 18px;height:56px;
+  display:flex;align-items:center;gap:22px;height:56px;
+  /* el padding de arriba esquiva la barra de estado del telefono (reloj, wifi,
+     bateria); en escritorio env() vale 0 y no cambia nada */
+  padding:env(safe-area-inset-top) calc(18px + env(safe-area-inset-right)) 0 calc(18px + env(safe-area-inset-left));
+  height:calc(56px + env(safe-area-inset-top));
   border-bottom:1px solid var(--line);background:rgba(8,9,11,.72);backdrop-filter:blur(8px);
   flex-shrink:0;min-width:0;
 }
@@ -507,18 +511,30 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 
 /* ---------- MOVIL ---------- */
 @media(max-width:820px){
-  /* el topbar pasa a dos filas: arriba logo + acciones, abajo las pestañas */
-  header.topbar{flex-wrap:wrap;height:auto;gap:0;padding:0}
-  .logo{font-size:18px;letter-spacing:.08em;padding:9px 0 9px 12px}
-  .topright{gap:10px;padding:9px 12px 9px 0}
+  /* el topbar pasa a dos filas: arriba logo + acciones, abajo las pestañas.
+     El padding de arriba deja libre la barra de estado del telefono. */
+  header.topbar{
+    flex-wrap:wrap;height:auto;gap:0;
+    padding:env(safe-area-inset-top) 0 0 0;
+  }
+  .logo{font-size:17px;letter-spacing:.08em;padding:8px 0 8px calc(12px + env(safe-area-inset-left))}
+  .topright{gap:7px;padding:8px calc(12px + env(safe-area-inset-right)) 8px 0}
   /* el mes y el conteo del escuadron ya salen dentro de los paneles */
   .topright .chip:not(.namebtn){display:none}
+  /* nombre y avatar mas discretos: en el telefono comian media pantalla */
+  .topright .namebtn{gap:6px !important;padding:4px 7px}
+  .topright .namebtn b{font-size:13px;letter-spacing:.05em}
+  .topright .rankbadge{width:24px;height:24px;font-size:11px}
+  .topright .iconbtn{padding:4px 8px;font-size:11px;margin-left:0}
   nav.tabs{
     order:3;flex:1 0 100%;width:100%;height:44px;
     border-top:1px solid var(--line);
+    padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
   }
   nav.tabs button{padding:0 14px;font-size:13px}
-  main{padding:12px}
+  main{
+    padding:12px calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  }
 
   /* leaderboard: rango+nombre arriba, los cinco numeros abajo */
   .lbrow .cells{grid-template-columns:repeat(5,1fr);padding:11px 12px;gap:9px 6px}
@@ -786,26 +802,14 @@ const REAL = {
 let SALES = [];
 const SEED_JULIO = [];
 
+/* Arma los cierres de julio para que los totales por operador cuadren exacto
+   con REAL. NO inventa clientes: el nombre queda marcado como historico y el
+   telefono vacio, porque esa data no la tenemos. Todos van como ya instalados
+   para que no disparen avisos de citas que nunca existieron. */
 (function seedReal(){
-  const NOM = ['María Colón','José Rivera','Ana Ortiz','Luis Meléndez','Carmen Díaz','Pedro Santiago',
-    'Rosa Vega','Héctor Ramos','Sonia Pérez','Ángel Cruz','Nydia Feliciano','Wilfredo Soto',
-    'Ivelisse Marrero','Jorge Ruiz','Lisa Morales','Edwin Torres','Marta Reyes','Ramón Ayala','Gladys Rosa',
-    'Iván Quiñones','Sara Medina','Tomás Rolón','Delia Castro','Óscar Padilla','Ruth Serrano',
-    'Elías Camacho','Vilma Nazario','Julio Benítez','Awilda Ramos','Nelson Irizarry','Mayra Pagán',
-    'Freddy Colón','Aida Lugo','Samuel Bonilla','Loida Ferrer','Kevin Maldonado','Zoraida Rivas',
-    'Pablo Estrada','Marisol Vargas','Rubén Acosta','Carmen Núñez','Danilo Sierra','Elba Montes',
-    'Genaro Ocasio','Yolanda Prado','Héctor Cintrón','Nilda Berríos','Raúl Fontánez','Ivette Sánchez',
-    'Alexis Quiles','Norma Delgado','Emilio Santana','Rosa Alicea','Javier Robles','Teresa Vidal',
-    'Moisés Cordero','Ana Belén Ruiz','Efraín Pizarro','Sonia Laboy','Gabriel Muñiz','Carla Otero',
-    'Wilson Trinidad','Miriam Aponte','Adrián Solís','Bexaida Cruz','Ismael Guzmán','Lourdes Pérez',
-    'Damaris Cotto','Ubaldo Rentas','Sandra Yulfo','Ernesto Vidro','Milagros Adorno','Cesar Betancourt',
-    'Aurea Santos','Reinaldo Class','Brenda Coriano','Osvaldo Nieves','Maritza Andujar','Felipe Zayas'];
-  const SRCS = ['redes','referido','canva','base'];
-  let rnd = 987654321, ni = 0;
+  let rnd = 987654321;
   const rand = () => (rnd = (rnd*1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
-  const pick = a => a[Math.floor(rand()*a.length)];
-  const diaHoy = today.getDate(), mesNum = today.getMonth()+1;
-  let citasHoy = 0;   /* tope de instalaciones para hoy, para que el aviso sea util */
+  const mesNum = today.getMonth()+1, diaHoy = today.getDate();
 
   Object.keys(REAL).forEach(u=>{
     const c = Object.assign({}, REAL[u]);
@@ -826,22 +830,18 @@ const SEED_JULIO = [];
       lote.push(p);
     }
 
-    lote.forEach((p, idx)=>{
+    lote.forEach(p=>{
       const svc  = ['internet','tv','voice'].filter(k=>p[k]).length;
       const type = svc===0 ? 'celular' : svc===1 ? '1play' : svc===2 ? '2play' : '3play';
       const dia  = 1 + Math.floor(rand()*Math.max(1, diaHoy));
-      /* deja algunas citas para hoy y para los proximos dias, el resto ya instalado */
-      let inst;
-      if(citasHoy < 3 && idx % 31 === 7){ inst = {mode:'fecha', d: dOff(0)}; citasHoy++; }
-      else if(idx % 29 === 5) inst = {mode:'fecha', d: dOff(1 + Math.floor(rand()*5))};
-      else if(rand() < .34)   inst = {mode:'self'};
-      else                    inst = {mode:'fecha', d: dOff(-1 - Math.floor(rand()*20))};  /* ya instaladas: siempre en pasado */
       SEED_JULIO.push({
         owner: u,
-        nm: NOM[ni++ % NOM.length],
-        tel: (rand()<.5?'787':'939') + '-555-' + String(1000 + Math.floor(rand()*8999)),
-        p, plan: {type, speed: type==='celular' ? null : pick(SPEEDS).k},
-        inst, src: pick(SRCS),
+        nm: 'Cierre de julio',      // sin data de cliente: solo cuenta para la metrica
+        tel: '',
+        historico: true,
+        p, plan: {type, speed:null},
+        inst: {mode:'self', d:null},
+        src: '',
         d: String(mesNum).padStart(2,'0')+'/'+String(dia).padStart(2,'0'),
         anio: String(today.getFullYear()),
         mes:  String(mesNum).padStart(2,'0')
@@ -1410,7 +1410,7 @@ function viewOps(){
               <td class="src-tag">${s.d}</td>
               ${verOp?`<td><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
               <td><b>${s.nm}</b></td>
-              <td class="mono" style="color:var(--muted)">${s.tel}</td>
+              <td class="mono" style="color:var(--muted)">${s.tel || "—"}</td>
               <td><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
               <td>${prodPills(s)}</td>
               <td><span class="ptbadge ${ptsOf(s)?'':'zero'}">${ptsOf(s)}</span></td>
@@ -1703,7 +1703,7 @@ function viewMando(){
               <td class="src-tag" style="color:${isHoy(s.inst)?'var(--amber)':'var(--muted)'}">${fmtDate(s.inst.d)}</td>
               <td><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>
               <td><b>${s.nm}</b></td>
-              <td class="mono" style="color:var(--muted)">${s.tel}</td>
+              <td class="mono" style="color:var(--muted)">${s.tel || "—"}</td>
               <td><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
               <td>${isHoy(s.inst)
                 ? `<span class="pill" style="color:var(--amber);border-color:rgba(255,138,0,.5)">HOY</span>`
