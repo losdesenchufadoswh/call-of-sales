@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CALL OF SALES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090b;--bg2:#0e1013;--panel:rgba(18,20,24,.92);--line:rgba(255,255,255,.09);--txt:#e9eaec;--muted:#8b9199;--amber:#ff8a00;--cyan:#39d0ff;--lime:#d8ff2e;--red:#e8402a;--green:#4ad07a;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Barlow',system-ui,sans-serif;font-size:14px}
+.mono{font-variant-numeric:tabular-nums}
+.cond{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em}
+
+#login{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center}
+.loginbox{width:420px;background:#0d0f12;border:1px solid var(--line);padding:30px;box-shadow:0 40px 90px rgba(0,0,0,.8)}
+.brandmark{text-align:center;margin-bottom:26px}
+.blackops-logo{display:flex;gap:4px;margin-bottom:12px;justify-content:center}
+.blackops-logo .stripe{width:14px;height:22px;background:var(--amber);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.brandmark .b1{font-family:'Barlow Condensed';font-weight:700;font-size:32px;letter-spacing:.16em;line-height:1;color:var(--amber)}
+.brandmark .b1 span{color:var(--txt)}
+.brandmark .b2{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.42em;color:var(--muted);margin-top:7px;text-transform:uppercase}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:6px;font-family:'Barlow Condensed';text-transform:uppercase}
+.fld input{width:100%;background:#08090b;border:1px solid var(--line);color:var(--txt);padding:11px 12px;font-family:'Barlow';font-size:14px;outline:none}
+.fld input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,138,0,.12)}
+.btn-lime{width:100%;background:var(--lime);color:#0b0d06;border:0;padding:12px;font-family:'Barlow Condensed';font-weight:700;font-size:16px;letter-spacing:.18em;cursor:pointer;text-transform:uppercase}
+.btn-lime:hover{background:#e6ff5c}
+.error{color:var(--red);font-size:12px;margin-top:8px;text-align:center}
+.loading{text-align:center;padding:20px;color:var(--muted)}
+
+#app{position:relative;z-index:1;height:100%;display:none;flex-direction:column}
+header.topbar{display:flex;align-items:center;gap:22px;padding:0 18px;height:56px;border-bottom:1px solid var(--line);background:rgba(8,9,11,.72);backdrop-filter:blur(8px);flex-shrink:0}
+.logo{font-family:'Barlow Condensed';font-weight:700;font-size:22px;letter-spacing:.12em;white-space:nowrap}
+.logo span{color:var(--amber)}
+nav.tabs{display:flex;gap:2px;height:100%}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font-family:'Barlow Condensed';font-weight:600;font-size:14px;letter-spacing:.13em;text-transform:uppercase;padding:0 16px;cursor:pointer;height:100%}
+nav.tabs button:hover{color:var(--txt);background:rgba(255,255,255,.03)}
+nav.tabs button.on{color:#fff;border-bottom-color:var(--lime);background:linear-gradient(180deg,transparent,rgba(216,255,46,.07))}
+.topright{margin-left:auto;display:flex;align-items:center;gap:16px}
+.chip{display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed';font-size:13px;letter-spacing:.1em;color:var(--muted)}
+.chip b{color:var(--txt);font-size:15px}
+.btn-logout{background:none;border:1px solid var(--line);color:var(--muted);cursor:pointer;padding:6px 14px;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.btn-logout:hover{border-color:var(--amber);color:var(--amber)}
+
+main{flex:1;overflow:auto;padding:18px}
+main::-webkit-scrollbar{width:9px}
+main::-webkit-scrollbar-thumb{background:#22262b}
+
+.panel{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(6px)}
+.panel.cut{clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.ph{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);font-family:'Barlow Condensed';font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.ph .tick{width:3px;height:14px;background:var(--amber)}
+.pb{padding:14px}
+
+.notice{padding:10px 14px;border:1px dashed var(--line);color:var(--muted);font-size:12px;margin-bottom:14px}
+.hint{color:var(--dim);font-size:11px;letter-spacing:.1em;font-family:'Barlow Condensed';text-transform:uppercase}
+
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:80;background:#0d0f12;border:1px solid var(--lime);padding:12px 22px;opacity:0;pointer-events:none;transition:.25s;font-family:'Barlow Condensed';letter-spacing:.16em;text-transform:uppercase;font-size:14px}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast b{color:var(--lime)}
+
+.gridwrap{max-width:1560px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="loginbox">
+    <div class="brandmark">
+      <div class="blackops-logo">
+        <div class="stripe"></div><div class="stripe"></div><div class="stripe"></div><div class="stripe"></div>
+      </div>
+      <div class="b1">CALL<span> OF </span>SALES</div>
+      <div class="b2">OPERACIÓN VENTAS</div>
+    </div>
+    <div class="fld">
+      <label>Email <i>*</i></label>
+      <input id="lgEmail" type="email" placeholder="elfe@call-of-sales.com" autocomplete="off">
+    </div>
+    <div class="fld">
+      <label>Contraseña <i>*</i></label>
+      <input id="lgPass" type="password" placeholder="••••••••" autocomplete="off">
+    </div>
+    <button class="btn-lime" onclick="doLogin()">Iniciar sesión</button>
+    <div id="lgError" class="error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="topbar">
+    <div class="logo">CALL<span> OF </span>SALES</div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="topright">
+      <div class="chip">OPERACIÓN <b id="topMonth">JULIO</b></div>
+      <button class="btn-logout" onclick="logout()">SALIR</button>
+    </div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<div id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCHzibGIZ7TO6T__0XoMRT2szQlKprjadQ",
+  authDomain: "call-of-sale.firebaseapp.com",
+  projectId: "call-of-sale",
+  storageBucket: "call-of-sale.firebasestorage.app",
+  messagingSenderId: "978099526476",
+  appId: "1:978099526476:web:0d89815c90630626ed8de9",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = s => document.querySelector(s);
+let user = null, userRole = null, userName = null;
+
+async function doLogin(){
+  const email = $('#lgEmail').value.trim();
+  const pass = $('#lgPass').value.trim();
+  if(!email || !pass){ showError('Email y contraseña requeridos'); return; }
+
+  try{
+    const res = await signInWithEmailAndPassword(auth, email, pass);
+    user = res.user;
+    $('#lgEmail').value = '';
+    $('#lgPass').value = '';
+    $('#lgError').textContent = '';
+    await loadUserData();
+    $('#login').style.display = 'none';
+    $('#app').style.display = 'flex';
+    renderTabs();
+    setTab('lobby');
+  }catch(err){
+    showError(err.message || 'Error de autenticación');
+  }
+}
+
+async function loadUserData(){
+  try{
+    const docRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()){
+      userRole = docSnap.data().rol || 'vendedor';
+      userName = docSnap.data().nm || user.email.split('@')[0].toUpperCase();
+    }else{
+      const nm = user.email.split('@')[0].toUpperCase();
+      const rol = user.email.includes('elfe') ? 'admin' : 'vendedor';
+      await updateDoc(docRef, {
+        email: user.email,
+        nm: nm,
+        rol: rol,
+        meta: 20
+      }).catch(async err => {
+        await setDoc(docRef, {
+          email: user.email,
+          nm: nm,
+          rol: rol,
+          meta: 20
+        });
+      });
+      userRole = rol;
+      userName = nm;
+    }
+  }catch(err){
+    console.error('Error loading user:', err);
+    userRole = 'vendedor';
+    userName = 'USER';
+  }
+}
+
+function logout(){
+  signOut(auth).then(()=>{
+    user = null;
+    userRole = null;
+    $('#app').style.display = 'none';
+    $('#login').style.display = 'flex';
+  });
+}
+
+function showError(msg){
+  $('#lgError').textContent = msg;
+}
+
+function toast(msg){
+  const t=$('#toast');
+  t.innerHTML=msg;
+  t.classList.add('on');
+  clearTimeout(t._h);
+  t._h=setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+const MESES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const today = new Date();
+const monthName = MESES[today.getMonth()];
+const YEAR_STR = String(today.getFullYear());
+const MONTH_STR = String(today.getMonth()+1).padStart(2,'0');
+
+const TABS = [
+  {k:'lobby',l:'Lobby'},
+  {k:'cierres',l:'Mis cierres'},
+  {k:'escuadron',l:'Escuadrón'},
+  {k:'radio',l:'Radio'}
+];
+let tab = 'lobby';
+
+function setTab(k){ tab=k; render(); }
+
+function renderTabs(){
+  const visible = TABS.filter(t => t.k !== 'mando' || userRole === 'admin');
+  $('#tabs').innerHTML = visible.map(t=>
+    `<button class="${t.k===tab?'on':''}" onclick="setTab('${t.k}')">${t.l}</button>`
+  ).join('');
+}
+
+function render(){
+  renderTabs();
+  $('#topMonth').textContent = monthName;
+  if(tab==='lobby') viewLobby();
+  else if(tab==='cierres') viewCierres();
+  else if(tab==='escuadron') viewEscuadron();
+  else if(tab==='radio') viewRadio();
+}
+
+async function viewLobby(){
+  $('#view').innerHTML = '<div class="loading">Cargando...</div>';
+  try{
+    const ventasSnap = await getDocs(query(collection(db, 'ventas'), where('owner', '==', user.uid), where('mes', '==', MONTH_STR), where('año', '==', YEAR_STR)));
+    const pts = ventasSnap.docs.reduce((a,d)=>{
+      const p=d.data().p || {};
+      return a + ((p.celular?1:0)+(p.internet?1:0)+(p.tv?1:0));
+    }, 0);
+
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    const meta = userDoc.exists() ? userDoc.data().meta || 20 : 20;
+    const pct = Math.min(100, Math.round(pts/meta*100));
+
+    $('#view').innerHTML = `
+    <div class="gridwrap">
+      <div class="notice">Dashboard en vivo. Tus ventas: ${pts} pts / ${meta} meta (${pct}%)</div>
+      <div class="panel cut">
+        <div class="ph"><span class="tick"></span>Operación ${monthName}</div>
+        <div class="pb">
+          <div style="font-family:'Barlow Condensed';font-size:48px;font-weight:700;color:var(--lime)">${pts}<small style="font-size:20px;color:var(--muted)">/${meta}</small></div>
+          <div style="margin-top:12px;height:6px;background:#12161a;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--lime)"></div>
+          </div>
+          <div style="margin-top:8px;font-family:'Barlow Condensed';font-size:12px;color:var(--muted)">${pct}% DE TU META</div>
+        </div>
+      </div>
+      <button class="btn-lime" style="margin-top:14px;padding:16px;font-size:16px" onclick="openNewSale()">+ REGISTRAR VENTA</button>
+    </div>
+    `;
+  }catch(err){
+    console.error('Error in viewLobby:', err);
+    $('#view').innerHTML = '<div class="notice" style="color:var(--red)">Error: '+err.message+'</div>';
+  }
+}
+
+async function viewCierres(){
+  $('#view').innerHTML = '<div class="loading">Cargando cierres...</div>';
+  try{
+    const ventasSnap = await getDocs(query(collection(db, 'ventas'), where('owner', '==', user.uid), where('mes', '==', MONTH_STR), where('año', '==', YEAR_STR)));
+    const ventas = ventasSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
+
+    $('#view').innerHTML = `
+    <div class="gridwrap">
+      <div class="notice">Tus cierres privados. Nadie más los ve.</div>
+      <div class="panel cut">
+        <div class="ph"><span class="tick"></span>Mis cierres · ${monthName}
+          <span style="margin-left:auto">${ventas.length} REGISTROS</span>
+          <button class="btn-lime" style="padding:7px 16px;font-size:13px;margin-left:14px" onclick="openNewSale()">+ Nuevo</button>
+        </div>
+        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid var(--line)">
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted);text-transform:uppercase">Cliente</th>
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted);text-transform:uppercase">Teléfono</th>
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted);text-transform:uppercase">Productos</th>
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted);text-transform:uppercase">Pts</th>
+          </tr></thead>
+          <tbody>
+          ${ventas.map(v=>`<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+            <td style="padding:11px 12px"><b>${v.nm}</b></td>
+            <td style="padding:11px 12px;color:var(--muted);font-family:monospace">${v.tel}</td>
+            <td style="padding:11px 12px">${Object.keys(v.p).filter(k=>v.p[k]).join(', ')}</td>
+            <td style="padding:11px 12px"><b style="font-size:17px">${Object.keys(v.p).filter(k=>v.p[k] && k!=='voice').length}</b></td>
+          </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    `;
+  }catch(err){
+    console.error('Error in viewCierres:', err);
+    $('#view').innerHTML = '<div class="notice" style="color:var(--red)">Error: '+err.message+'</div>';
+  }
+}
+
+async function viewEscuadron(){
+  $('#view').innerHTML = '<div class="loading">Cargando escuadrón...</div>';
+  try{
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const users = usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    const ranking = await Promise.all(users.map(async u=>{
+      const ventasSnap = await getDocs(query(collection(db, 'ventas'), where('owner', '==', u.id), where('mes', '==', MONTH_STR), where('año', '==', YEAR_STR)));
+      const pts = ventasSnap.docs.reduce((a,d)=>{
+        const p=d.data().p || {};
+        return a + ((p.celular?1:0)+(p.internet?1:0)+(p.tv?1:0));
+      }, 0);
+      return {...u, pts, ventas:ventasSnap.size};
+    }));
+
+    ranking.sort((a,b)=>b.pts-a.pts);
+
+    $('#view').innerHTML = `
+    <div class="gridwrap" style="max-width:900px">
+      <div class="panel cut">
+        <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid var(--line)">
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted)">#</th>
+            <th style="text-align:left;padding:10px 12px;font-size:11px;color:var(--muted)">Operador</th>
+            <th style="text-align:right;padding:10px 12px;font-size:11px;color:var(--muted)">Puntos</th>
+            <th style="text-align:right;padding:10px 12px;font-size:11px;color:var(--muted)">Cierres</th>
+          </tr></thead>
+          <tbody>
+          ${ranking.map((r,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.05)${r.id===user.uid?';background:rgba(255,138,0,.08)':''}">
+            <td style="padding:11px 12px"><b>${i<3?['🥇','🥈','🥉'][i]:i+1}</b></td>
+            <td style="padding:11px 12px"><b>${r.nm}</b>${r.id===user.uid?' ◂ TÚ':''}</td>
+            <td style="padding:11px 12px;text-align:right"><b style="color:var(--lime)">${r.pts}</b></td>
+            <td style="padding:11px 12px;text-align:right">${r.ventas}</td>
+          </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    `;
+  }catch(err){
+    console.error('Error in viewEscuadron:', err);
+    $('#view').innerHTML = '<div class="notice" style="color:var(--red)">Error: '+err.message+'</div>';
+  }
+}
+
+async function viewRadio(){
+  $('#view').innerHTML = `
+  <div class="gridwrap" style="max-width:900px">
+    <div class="panel cut">
+      <div class="ph"><span class="tick" style="background:var(--lime)"></span>Radio del escuadrón</div>
+      <div style="padding:14px">
+        <div style="color:var(--muted);font-size:12px">Chat en vivo (próximamente en la v2.0)</div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function openNewSale(){
+  const modal = `
+  <div id="saleModal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100">
+    <div style="background:#0d0f12;border:1px solid var(--line);padding:24px;width:420px;max-width:90vw">
+      <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:700;margin-bottom:16px">NUEVA VENTA</div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px">CLIENTE</label>
+        <input id="saleNm" type="text" style="width:100%;background:#08090b;border:1px solid var(--line);color:var(--txt);padding:10px;font-family:'Barlow'">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px">TELÉFONO</label>
+        <input id="saleTel" type="text" style="width:100%;background:#08090b;border:1px solid var(--line);color:var(--txt);padding:10px;font-family:'Barlow'">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:8px">PRODUCTOS</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="saleCel" type="checkbox"> <span>Celular</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="saleInt" type="checkbox"> <span>Internet</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="saleTV" type="checkbox"> <span>TV</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="saleVoi" type="checkbox"> <span>Voice</span>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeSaleModal()" style="flex:1;background:var(--line);color:var(--txt);border:0;padding:12px;cursor:pointer;font-family:'Barlow Condensed'">CANCELAR</button>
+        <button onclick="submitSale()" style="flex:1;background:var(--lime);color:#0b0d06;border:0;padding:12px;cursor:pointer;font-family:'Barlow Condensed';font-weight:700">GUARDAR</button>
+      </div>
+    </div>
+  </div>
+  `;
+  $('#view').insertAdjacentHTML('beforebegin', modal);
+  $('#saleNm').focus();
+}
+
+function closeSaleModal(){
+  const m = document.getElementById('saleModal');
+  if(m) m.remove();
+}
+
+async function submitSale(){
+  const nm = $('#saleNm').value.trim();
+  const tel = $('#saleTel').value.trim();
+  const prods = {
+    celular: $('#saleCel').checked ? 1 : 0,
+    internet: $('#saleInt').checked ? 1 : 0,
+    tv: $('#saleTV').checked ? 1 : 0,
+    voice: $('#saleVoi').checked ? 1 : 0
+  };
+
+  if(!nm){ toast('Falta nombre'); return; }
+  if(!tel){ toast('Falta teléfono'); return; }
+  if(!Object.values(prods).some(v=>v)){ toast('Selecciona un producto'); return; }
+
+  try{
+    await addDoc(collection(db, 'ventas'), {
+      nm, tel, p: prods, owner: user.uid, año: YEAR_STR, mes: MONTH_STR, fecha: new Date()
+    });
+    closeSaleModal();
+    toast('✓ Venta registrada');
+    if(tab==='cierres') viewCierres();
+    else if(tab==='lobby') viewLobby();
+  }catch(err){
+    toast('Error: '+err.message);
+  }
+}
+
+onAuthStateChanged(auth, async u => {
+  if(u){
+    user = u;
+    await loadUserData();
+    if($('#app').style.display !== 'flex'){
+      $('#login').style.display = 'none';
+      $('#app').style.display = 'flex';
+      renderTabs();
+      setTab('lobby');
+    }
+  }else if(!user){
+    $('#app').style.display = 'none';
+    $('#login').style.display = 'flex';
+  }
+});
+
+window.doLogin = doLogin;
+window.logout = logout;
+window.setTab = setTab;
+window.openNewSale = openNewSale;
+window.closeSaleModal = closeSaleModal;
+window.submitSale = submitSale;
+window.render = render;
+window.viewLobby = viewLobby;
+window.viewCierres = viewCierres;
+window.viewEscuadron = viewEscuadron;
+window.viewRadio = viewRadio;
+</script>
+
+</body>
+</html>
