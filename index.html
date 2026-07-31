@@ -539,15 +539,20 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
     </div>
     <div class="fld">
       <label>Correo <i>*</i></label>
-      <input id="lgEmail" type="email" placeholder="operador@windmar.com" value="el_fe@ops.com">
+      <input id="lgEmail" type="email" placeholder="tunombre@call-of-sales.com" autocomplete="username"
+             onkeydown="if(event.key==='Enter')document.getElementById('lgPass').focus()">
     </div>
     <div class="fld">
       <label>Contraseña <i>*</i></label>
-      <input id="lgPass" type="password" placeholder="••••••••" value="demo1234">
+      <input id="lgPass" type="password" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="btn-lime" onclick="doLogin()">Iniciar sesión</button>
-    <div class="orline">O ENTRA COMO</div>
-    <div class="roster" id="roster"></div>
+    <button class="btn-lime" id="lgBtn" onclick="doLogin()">Iniciar sesión</button>
+    <div id="lgError" style="display:none;color:var(--red);font-size:12.5px;margin-top:10px;text-align:center"></div>
+    <div id="devZone" style="display:none">
+      <div class="orline">SOLO EN LOCAL</div>
+      <div class="roster" id="roster"></div>
+    </div>
   </div>
 </div>
 
@@ -670,6 +675,23 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 
 <div id="toast"></div>
 
+<!-- Firebase en modo "compat": expone firebase.* como global, asi el resto del
+     archivo sigue siendo un script normal y los onclick del HTML no se rompen -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script>
+/* Estas claves son publicas por diseno (van en el navegador). Lo que protege
+   los datos son las reglas de Firestore y las contrasenas, que NO viven aqui. */
+firebase.initializeApp({
+  apiKey: "AIzaSyCHzibGIZ7TO6T__0XoMRT2szQlKprjadQ",
+  authDomain: "call-of-sale.firebaseapp.com",
+  projectId: "call-of-sale",
+  storageBucket: "call-of-sale.firebasestorage.app",
+  messagingSenderId: "978099526476",
+  appId: "1:978099526476:web:0d89815c90630626ed8de9"
+});
+</script>
+
 <script>
 /* ==================== DATA (mock) ==================== */
 const PRODS = [
@@ -727,12 +749,13 @@ const INT_50 = 13, INT_100 = 18;
 /* devuelve 0, 50 o 100 según los internet del mes */
 const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
 
+/* el email es el de la cuenta de Firebase; las contrasenas viven alla, no aqui */
 const SQUAD = [
-  {id:'elfe',   nm:'EL_FE',  full:'Tú',      meta:META_PTS, rol:'admin',    av:'avatars/elfe.png'},
-  {id:'carlos', nm:'CARLOS', full:'Carlos',  meta:META_PTS, rol:'vendedor', av:'avatars/op-gorra.png'},
-  {id:'felix',  nm:'FELIX',  full:'Félix',   meta:META_PTS, rol:'vendedor', av:'avatars/op-lentes-negros.png'},
-  {id:'angel',  nm:'ANGEL',  full:'Ángel',   meta:META_PTS, rol:'vendedor', av:'avatars/op-canoso.png'},
-  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   meta:META_PTS, rol:'vendedor', av:'avatars/op-joven.png'}
+  {id:'elfe',   nm:'EL_FE',  full:'Tú',      meta:META_PTS, rol:'admin',    av:'avatars/elfe.png',              email:'elfe@call-of-sales.com'},
+  {id:'carlos', nm:'CARLOS', full:'Carlos',  meta:META_PTS, rol:'vendedor', av:'avatars/op-gorra.png',          email:'carlos@call-of-sales.com'},
+  {id:'felix',  nm:'FELIX',  full:'Félix',   meta:META_PTS, rol:'vendedor', av:'avatars/op-lentes-negros.png',  email:'felix@call-of-sales.com'},
+  {id:'angel',  nm:'ANGEL',  full:'Ángel',   meta:META_PTS, rol:'vendedor', av:'avatars/op-canoso.png',         email:'angel@call-of-sales.com'},
+  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   meta:META_PTS, rol:'vendedor', av:'avatars/op-joven.png',          email:'elwin@call-of-sales.com'}
 ];
 
 let ME = 'elfe';
@@ -890,13 +913,69 @@ function toast(msg){
   clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2200);
 }
 
-/* ==================== LOGIN ==================== */
+/* ==================== LOGIN ====================
+   DEV va aqui arriba porque renderRoster() lo usa y se llama enseguida */
+const DEV = ['localhost','127.0.0.1',''].includes(location.hostname);
+
 function renderRoster(){
+  const zona = $('#devZone');
+  if(!DEV){ if(zona) zona.style.display='none'; return; }   // en produccion se entra solo con contrasena
+  if(zona) zona.style.display='block';
   $('#roster').innerHTML = SQUAD.map(s=>
-    `<button onclick="ME='${s.id}';doLogin()">${s.nm}${s.rol==='admin'?' ★':''}</button>`).join('');
+    `<button onclick="entrarComo('${s.id}')">${s.nm}${s.rol==='admin'?' ★':''}</button>`).join('');
 }
 renderRoster();
-function doLogin(){
+/* ---------- LOGIN ----------
+   La contrasena se valida contra Firebase Auth: nunca esta en este archivo.
+   El correo decide que operador eres (SQUAD.email). */
+function lgError(msg){
+  const box = $('#lgError');
+  if(box){ box.textContent = msg || ''; box.style.display = msg ? 'block' : 'none'; }
+}
+
+async function doLogin(){
+  const email = ($('#lgEmail').value||'').trim().toLowerCase();
+  const pass  = $('#lgPass').value||'';
+  if(!email || !pass){ lgError('Escribe tu correo y tu contraseña'); return; }
+
+  const op = SQUAD.find(s => s.email && s.email.toLowerCase() === email);
+  if(!op){ lgError('Ese correo no es de nadie del escuadrón'); return; }
+
+  if(typeof firebase === 'undefined' || !firebase.auth){
+    lgError('No se pudo cargar Firebase. Revisa tu conexión.');
+    return;
+  }
+
+  const btn = $('#lgBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Verificando…'; }
+  lgError('');
+  try{
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    ME = op.id;
+    $('#lgPass').value = '';
+    entrar();
+  }catch(err){
+    const c = err && err.code || '';
+    lgError(
+      c === 'auth/wrong-password' || c === 'auth/invalid-credential' ? 'Contraseña incorrecta'
+      : c === 'auth/user-not-found'   ? 'Esa cuenta no existe en Firebase'
+      : c === 'auth/too-many-requests'? 'Demasiados intentos. Espera un momento.'
+      : c === 'auth/network-request-failed' ? 'Sin conexión con Firebase'
+      : (err && err.message) || 'No se pudo iniciar sesión'
+    );
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
+  }
+}
+
+/* atajo solo para trabajar en local; en el sitio publicado no aparece */
+function entrarComo(id){
+  if(!DEV) return;
+  ME = id;
+  entrar();
+}
+
+function entrar(){
   $('#login').style.display='none';
   $('#app').style.display='flex';
   pintaFecha();
@@ -905,7 +984,18 @@ function doLogin(){
   render();
   if(instalacionesHoy().length) setTimeout(openAlert, 600);
 }
-function logout(){ renderRoster(); $('#app').style.display='none'; $('#login').style.display='flex'; }
+
+function logout(){
+  if(typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut().catch(()=>{});
+  /* cierra lo que haya quedado abierto para que no flote sobre el login */
+  document.querySelectorAll('.overlay.on').forEach(o => o.classList.remove('on'));
+  cerrarFecha();
+  alertShown = false;
+  renderRoster();
+  lgError('');
+  $('#app').style.display='none';
+  $('#login').style.display='flex';
+}
 
 /* ==================== FECHA DEL SISTEMA ====================
    Permite mover el "hoy" de la app a mano. Util si el mes cambia y todavia
