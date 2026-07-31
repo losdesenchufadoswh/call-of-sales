@@ -636,7 +636,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <button class="btn-ghost dang" id="mDelete" onclick="deleteCurrent()" style="display:none">Borrar</button>
       <div class="grow"></div>
       <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn-amber" onclick="saveSale()">Confirmar</button>
+      <button class="btn-amber" id="saveBtn" onclick="saveSale()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -686,6 +686,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
      archivo sigue siendo un script normal y los onclick del HTML no se rompen -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
 /* Estas claves son publicas por diseno (van en el navegador). Lo que protege
    los datos son las reglas de Firestore y las contrasenas, que NO viven aqui. */
@@ -780,8 +781,10 @@ const REAL = {
   angel:  {voice:0,  tv:0,  internet:0,  celular:0}
 };
 
+/* SALES son los cierres del mes que se esta viendo; salen de Firestore.
+   SEED_JULIO es la carga inicial de julio 2026, que se sube una sola vez. */
 let SALES = [];
-let nextId = 1;
+const SEED_JULIO = [];
 
 (function seedReal(){
   const NOM = ['María Colón','José Rivera','Ana Ortiz','Luis Meléndez','Carmen Díaz','Pedro Santiago',
@@ -833,13 +836,15 @@ let nextId = 1;
       else if(idx % 29 === 5) inst = {mode:'fecha', d: dOff(1 + Math.floor(rand()*5))};
       else if(rand() < .34)   inst = {mode:'self'};
       else                    inst = {mode:'fecha', d: dOff(-1 - Math.floor(rand()*20))};  /* ya instaladas: siempre en pasado */
-      SALES.push({
-        id: nextId++, owner: u,
+      SEED_JULIO.push({
+        owner: u,
         nm: NOM[ni++ % NOM.length],
         tel: (rand()<.5?'787':'939') + '-555-' + String(1000 + Math.floor(rand()*8999)),
         p, plan: {type, speed: type==='celular' ? null : pick(SPEEDS).k},
         inst, src: pick(SRCS),
-        d: String(mesNum).padStart(2,'0')+'/'+String(dia).padStart(2,'0')
+        d: String(mesNum).padStart(2,'0')+'/'+String(dia).padStart(2,'0'),
+        anio: String(today.getFullYear()),
+        mes:  String(mesNum).padStart(2,'0')
       });
     });
   });
@@ -860,6 +865,75 @@ let CHAT = [
 let chatSeen = 0;
 
 /* la fecha del sistema se declara arriba, junto a los helpers de instalación */
+
+/* ==================== DATOS EN FIRESTORE ====================
+   Coleccion plana `ventas`: cada cierre guarda `anio` y `mes` como texto, asi
+   que al cambiar de mes todos arrancan en cero y lo viejo queda archivado.
+   El `id` de cada venta es el id del documento (texto, no numero). */
+const db = () => firebase.firestore();
+let unsubVentas = null;      // corta el listener al salir o cambiar de mes
+let cargando = false;
+
+function mesActual(){ return {anio: String(today.getFullYear()), mes: String(today.getMonth()+1).padStart(2,'0')}; }
+
+/* escucha en vivo los cierres del mes: si alguien registra algo, entra solo */
+function escucharVentas(){
+  if(unsubVentas){ unsubVentas(); unsubVentas = null; }
+  const {anio, mes} = mesActual();
+  cargando = true; render();
+
+  let q = db().collection('ventas').where('anio','==',anio).where('mes','==',mes);
+  if(!isAdmin()) q = q.where('owner','==',ME);   // el vendedor solo baja lo suyo
+
+  unsubVentas = q.onSnapshot(snap => {
+    SALES = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    cargando = false;
+    render();
+    if(!alertShown && instalacionesHoy().length) setTimeout(openAlert, 400);
+  }, err => {
+    cargando = false;
+    console.error('firestore:', err);
+    toast('No se pudieron cargar los cierres: ' + (err.code||err.message));
+    render();
+  });
+}
+
+async function correrMigracion(){
+  const btn = $('#btnMigrar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Subiendo…'; }
+  try{
+    const r = await migrarJulio();
+    toast(r.migrado ? `Subidos <b>${r.cuantas}</b> cierres de julio` : `No hizo falta: ${r.motivo}`);
+  }catch(err){
+    console.error(err);
+    toast('NO SE PUDO SUBIR: ' + (err.code||err.message));
+    if(btn){ btn.disabled = false; btn.textContent = 'Subir julio a la base'; }
+  }
+}
+
+/* sube los datos de julio una sola vez; deja marca para no duplicar */
+async function migrarJulio(){
+  const marca = db().collection('meta').doc('seed-2026-07');
+  const ya = await marca.get();
+  if(ya.exists) return {migrado:false, motivo:'ya estaba'};
+
+  const previo = await db().collection('ventas').where('anio','==','2026').where('mes','==','07').limit(1).get();
+  if(!previo.empty){
+    await marca.set({hecho:true, cuando:new Date().toISOString(), nota:'ya habia ventas de julio'});
+    return {migrado:false, motivo:'ya habia ventas de julio'};
+  }
+
+  /* en lotes de 400 para no pasarse del limite de 500 por batch */
+  let n = 0;
+  for(let i=0; i<SEED_JULIO.length; i+=400){
+    const batch = db().batch();
+    SEED_JULIO.slice(i, i+400).forEach(v => batch.set(db().collection('ventas').doc(), v));
+    await batch.commit();
+    n += Math.min(400, SEED_JULIO.length - i);
+  }
+  await marca.set({hecho:true, cuando:new Date().toISOString(), cuantas:n});
+  return {migrado:true, cuantas:n};
+}
 
 /* ==================== HELPERS ==================== */
 const $ = s => document.querySelector(s);
@@ -988,11 +1062,14 @@ function entrar(){
   pintaFecha();
   $('#topName').textContent = me().nm;
   tab = 'lobby'; opsScope = 'me'; alertShown = false;   // sesión limpia al cambiar de operador
+  SALES = [];
   render();
-  if(instalacionesHoy().length) setTimeout(openAlert, 600);
+  escucharVentas();   // baja los cierres del mes y se queda escuchando
 }
 
 function logout(){
+  if(unsubVentas){ unsubVentas(); unsubVentas = null; }
+  SALES = [];
   if(typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut().catch(()=>{});
   /* cierra lo que haya quedado abierto para que no flote sobre el login */
   document.querySelectorAll('.overlay.on').forEach(o => o.classList.remove('on'));
@@ -1039,19 +1116,26 @@ function aplicarFecha(){
   const v = $('#fechaInput').value;
   if(!v){ toast('Escoge una fecha'); return; }
   const [y,m,d] = v.split('-').map(Number);
+  const antesMes = mesActual();
   today = new Date(y, m-1, d);
   recalcFecha();
   cerrarFecha();
   pintaFecha();
-  render();
+  const ahoraMes = mesActual();
+  /* si cambiaste de mes hay que bajar los cierres de ese otro mes */
+  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; escucharVentas(); }
+  else render();
   toast(v === HOY_REAL ? 'Fecha en <b>hoy real</b>' : `Fecha movida a <b>${v}</b>`);
 }
 function resetFecha(){
+  const antesMes = mesActual();
   today = new Date();
   recalcFecha();
   cerrarFecha();
   pintaFecha();
-  render();
+  const ahoraMes = mesActual();
+  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; escucharVentas(); }
+  else render();
   toast('De vuelta en <b>hoy real</b>');
 }
 
@@ -1085,6 +1169,10 @@ function render(){
   $('#topName').textContent = m.nm;
   $('#topSquad').textContent = SQUAD.length;
   renderBell();
+  if(cargando && !SALES.length){
+    $('#view').innerHTML = `<div class="gridwrap"><div class="notice">Bajando los cierres de ${monthName}…</div></div>`;
+    return;
+  }
   if(tab==='lobby') viewLobby();
   else if(tab==='ops') viewOps();
   else if(tab==='squad') viewSquad();
@@ -1331,8 +1419,8 @@ function viewOps(){
                     : `<span class="src-tag" style="color:${isPend(s.inst)?'var(--amber)':'var(--green)'}">${instLabel(s.inst)}${isPend(s.inst)?' ⏳':' ✓'}</span>`}</td>
               <td><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]}</span></td>
               <td style="text-align:right">
-                <button class="iconbtn" onclick="openModal(${s.id})">EDITAR</button>
-                <button class="iconbtn del" onclick="quickDelete(${s.id})">✕</button>
+                <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
+                <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>
               </td>
             </tr>`).join('')}
         </tbody>
@@ -1545,6 +1633,18 @@ function viewMando(){
   <div class="gridwrap">
     <div class="notice"><b>CONSOLA DE MANDO</b> — acceso total. Ves y editas los cierres de cualquiera, fijas cuotas y roles, y tienes la agenda completa de instalaciones.</div>
 
+    ${SALES.length === 0 && !cargando ? `
+    <div class="panel cut" style="margin-bottom:14px;border-color:var(--amber)">
+      <div class="ph"><span class="tick" style="background:var(--amber)"></span>Cargar julio 2026<span class="right">UNA SOLA VEZ</span></div>
+      <div class="pb">
+        <div style="color:var(--muted);font-size:13px;margin-bottom:12px">
+          No hay cierres guardados de ${monthName}. Sube los ${SEED_JULIO.length} de julio que ya tenías
+          (los totales por operador son los reales; los nombres de cliente son de relleno).
+        </div>
+        <button id="btnMigrar" class="btn-amber" style="width:auto;padding:11px 20px" onclick="correrMigracion()">Subir julio a la base</button>
+      </div>
+    </div>` : ''}
+
     <div class="tiles" style="margin-bottom:14px">
       <div class="tile"><div class="t1">PUNTOS DEL EQUIPO</div><div class="t2">${totPts}</div><div class="t3">META ${totMeta} · ${pctEq}%</div></div>
       <div class="tile"><div class="t1">CIERRES TOTALES</div><div class="t2">${totCierr}</div><div class="t3">${SQUAD.length} OPERADORES</div></div>
@@ -1705,30 +1805,53 @@ function renderChecks(){
 }
 function toggleProd(k){ draft[k] = draft[k]?0:1; renderChecks(); }
 
-function saveSale(){
+async function saveSale(){
   const nm=$('#fName').value.trim(), tel=$('#fTel').value.trim();
   if(!nm||!tel){ toast('FALTA NOMBRE O TELÉFONO'); return; }
   if(!dplan.type){ toast('SELECCIONA EL PLAN VENDIDO'); return; }
   if(!Object.values(draft).some(v=>v)){ toast('SELECCIONA AL MENOS UN PRODUCTO'); return; }
   if(!dinst.mode){ toast('SELF INSTALL O FECHA DE INSTALACIÓN'); return; }
   if(dinst.mode==='fecha' && !dinst.d){ toast('FALTA LA FECHA DE INSTALACIÓN'); return; }
+
+  const {anio, mes} = mesActual();
   const payload = {
     nm, tel, p:{...draft}, plan:{...dplan}, inst:{...dinst}, src:$('#fSrc').value,
     owner: isAdmin() ? $('#fOwner').value : ME,
-    d: String(today.getMonth()+1).padStart(2,'0')+'/'+String(dayNow).padStart(2,'0')
+    d: String(today.getMonth()+1).padStart(2,'0')+'/'+String(dayNow).padStart(2,'0'),
+    anio, mes
   };
-  if(editing){
-    const i=SALES.findIndex(x=>x.id===editing); SALES[i]={...SALES[i],...payload};
-    toast('CIERRE ACTUALIZADO');
-  }else{
-    SALES.push({id:nextId++,...payload});
-    const pts=(draft.celular?1:0)+(draft.internet?1:0)+(draft.tv?1:0);
-    toast('CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
+
+  const btn = $('#saveBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
+  try{
+    if(editing){
+      await db().collection('ventas').doc(editing).update(payload);
+      toast('CIERRE ACTUALIZADO');
+    }else{
+      await db().collection('ventas').add(payload);
+      const pts=(draft.celular?1:0)+(draft.internet?1:0)+(draft.tv?1:0);
+      toast('CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
+    }
+    closeModal();   // el listener refresca la pantalla solo
+  }catch(err){
+    console.error(err);
+    toast('NO SE PUDO GUARDAR: ' + (err.code||err.message));
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Confirmar'; }
   }
-  closeModal(); render();
 }
-function deleteCurrent(){ if(editing){ SALES=SALES.filter(x=>x.id!==editing); closeModal(); toast('CIERRE ELIMINADO'); render(); } }
-function quickDelete(id){ SALES=SALES.filter(x=>x.id!==id); toast('CIERRE ELIMINADO'); render(); }
+
+async function borrarVenta(id){
+  try{
+    await db().collection('ventas').doc(id).delete();
+    toast('CIERRE ELIMINADO');
+  }catch(err){
+    console.error(err);
+    toast('NO SE PUDO ELIMINAR: ' + (err.code||err.message));
+  }
+}
+function deleteCurrent(){ if(editing){ const id = editing; closeModal(); borrarVenta(id); } }
+function quickDelete(id){ borrarVenta(id); }
 
 /* ==================== CAMBIAR CALLSIGN ==================== */
 function openRename(){

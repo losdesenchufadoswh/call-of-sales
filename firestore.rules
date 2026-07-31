@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// Reglas de Call of Sales.
+// Idea: hay que estar autenticado para todo. Cada vendedor solo toca lo suyo;
+// el admin (el_fe) ve y edita lo de cualquiera.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    // El id de operador sale del correo: elfe@call-of-sales.com -> "elfe"
+    function miId() {
+      return request.auth.token.email.split('@')[0];
+    }
+
+    function soyAdmin() {
+      return autenticado() && miId() == 'elfe';
+    }
+
+    function esMio(doc) {
+      return autenticado() && doc.owner == miId();
+    }
+
+    match /ventas/{ventaId} {
+      // leer: el admin todo, el vendedor solo sus cierres
+      allow read: if soyAdmin() || esMio(resource.data);
+
+      // crear: el vendedor solo puede crear a su nombre; el admin a nombre de cualquiera
+      allow create: if soyAdmin() || esMio(request.resource.data);
+
+      // editar/borrar: el admin cualquiera; el vendedor solo los suyos, y no
+      // puede pasarle el cierre a otro
+      allow update: if soyAdmin() || (esMio(resource.data) && esMio(request.resource.data));
+      allow delete: if soyAdmin() || esMio(resource.data);
+    }
+
+    // Marca de la carga inicial de julio. Solo el admin la escribe.
+    match /meta/{docId} {
+      allow read:  if autenticado();
+      allow write: if soyAdmin();
+    }
+
+    // Perfiles: cada quien lee el escuadron, pero solo el admin escribe roles
+    match /users/{userId} {
+      allow read:  if autenticado();
+      allow write: if soyAdmin();
+    }
+
+    // Chat del escuadron: todos leen y escriben, pero solo a su nombre
+    match /chat/{msgId} {
+      allow read:   if autenticado();
+      allow create: if autenticado() && request.resource.data.u == miId();
+      allow update, delete: if soyAdmin();
+    }
+
+    // Todo lo demas queda cerrado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
