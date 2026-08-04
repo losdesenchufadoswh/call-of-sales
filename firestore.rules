@@ -36,6 +36,14 @@ service cloud.firestore {
       allow delete: if soyAdmin() || esMio(resource.data);
     }
 
+    // Marcador del escuadron: SOLO numeros (puntos, internet, celulares, voice).
+    // Todos lo leen para ver el ranking; cada quien publica el suyo y el admin
+    // puede publicar el de cualquiera. Aqui nunca van datos de cliente.
+    match /ranking/{docId} {
+      allow read: if autenticado();
+      allow write: if soyAdmin() || (autenticado() && request.resource.data.owner == miId());
+    }
+
     // Marca de la carga inicial de julio. Solo el admin la escribe.
     match /meta/{docId} {
       allow read:  if autenticado();

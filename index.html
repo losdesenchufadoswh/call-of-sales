@@ -791,7 +791,7 @@ const PLAY = [
   {k:'3play',   l:'3 PLAY',  sub:'3 servicios', auto:['internet','tv','voice'],     speed:true},
   {k:'celular', l:'CELULAR', sub:'línea móvil', auto:['celular'],                   speed:false}
 ];
-const SPEEDS = [{k:'100',l:'100 MB'},{k:'300',l:'300 MB'},{k:'500',l:'500 MB'},{k:'1gb',l:'1 GB'}];
+const SPEEDS = [{k:'40',l:'40 MB'},{k:'100',l:'100 MB'},{k:'300',l:'300 MB'},{k:'500',l:'500 MB'},{k:'1gb',l:'1 GB'}];
 const PLAYCOLOR = {'1play':'#8b9199','2play':'#39d0ff','3play':'#d8ff2e','celular':'#ffb545'};
 const planLabel = p => !p ? '—' : (PLAY.find(x=>x.k===p.type)?.l||p.type) + (p.speed ? ' · '+(SPEEDS.find(s=>s.k===p.speed)?.l||p.speed) : '');
 
@@ -949,6 +949,7 @@ function escucharVentas(){
     SALES = snap.docs.map(d => ({id: d.id, ...d.data()}));
     cargando = false;
     render();
+    publicarRanking();          // deja al dia el marcador que ve el escuadron
     if(!alertShown && instalacionesHoy().length) setTimeout(openAlert, 400);
   }, err => {
     cargando = false;
@@ -956,6 +957,46 @@ function escucharVentas(){
     toast('No se pudieron cargar los cierres: ' + (err.code||err.message));
     render();
   });
+  escucharRanking();
+}
+
+/* ---------- MARCADOR DEL ESCUADRON ----------
+   Los vendedores no se bajan las ventas ajenas, porque ahi van nombres y
+   telefonos de clientes. Para que igual vean como va el resto, cada uno
+   publica un resumen suyo —solo numeros— en `ranking`, y eso si lo lee todo
+   el mundo. */
+let RANKING = {};            // owner -> {pts, internet, celular, voice, ventas}
+let unsubRanking = null;
+
+function escucharRanking(){
+  if(unsubRanking){ unsubRanking(); unsubRanking = null; }
+  const {anio, mes} = mesActual();
+  unsubRanking = db().collection('ranking')
+    .where('anio','==',anio).where('mes','==',mes)
+    .onSnapshot(snap => {
+      RANKING = {};
+      snap.docs.forEach(d => { const v = d.data(); RANKING[v.owner] = v; });
+      render();
+    }, err => console.error('ranking:', err));
+}
+
+/* publica el resumen: el vendedor el suyo, el admin el de todos (asi entran
+   tambien los meses que se cargaron antes de que esto existiera) */
+async function publicarRanking(){
+  if(!SALES.length && !isAdmin()) return;
+  const {anio, mes} = mesActual();
+  const quienes = isAdmin() ? SQUAD.map(s=>s.id) : [ME];
+  try{
+    await Promise.all(quienes.map(uid=>{
+      const t = stats(uid);
+      return db().collection('ranking').doc(`${anio}-${mes}-${uid}`).set({
+        owner:uid, anio, mes,
+        pts:t.pts, internet:t.internet, celular:t.celular, voice:t.voice,
+        cuota:cuotaBono(t), ventas:salesOf(uid).length,
+        actualizado: Date.now()
+      });
+    }));
+  }catch(err){ console.error('no se pudo publicar el ranking:', err); }
 }
 
 async function correrMigracion(){
@@ -1011,7 +1052,7 @@ function stats(uid){
   const t = {pts:0,bonus:0,celular:0,internet:0,tv:0,voice:0,
              src:{redes:0,referido:0,canva:0,base:0},
              plans:{'1play':0,'2play':0,'3play':0,celular:0},
-             speeds:{'100':0,'300':0,'500':0,'1gb':0},
+             speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0},
              self:0, agendadas:0, pendientes:[], hoy:[], byDay:{}};
   SALES.forEach(s=>{
     const pt = ptsOf(s);
@@ -1043,10 +1084,19 @@ function stats(uid){
 }
 function ranked(){
   return SQUAD.map(s=>{
-    const t = stats(s.id);
-    const cuota = cuotaBono(t);   // internet + lineas de celular
-    return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
-            cuota, bono:bonoPct(cuota), ventas:salesOf(s.id).length};
+    /* de mis propias ventas salgo yo (y todos, si soy admin, que las tengo);
+       de los demas solo tengo el resumen publicado en `ranking` */
+    const mias = s.id === ME || isAdmin();
+    if(mias){
+      const t = stats(s.id);
+      const cuota = cuotaBono(t);
+      return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
+              cuota, bono:bonoPct(cuota), ventas:salesOf(s.id).length};
+    }
+    const r = RANKING[s.id] || {};
+    const cuota = r.cuota != null ? r.cuota : (r.internet||0)+(r.celular||0);
+    return {...s, pts:r.pts||0, bonus:r.voice||0, internet:r.internet||0, celular:r.celular||0,
+            cuota, bono:bonoPct(cuota), ventas:r.ventas||0, ajeno:true};
   }).sort((a,b)=> b.pts-a.pts || b.bonus-a.bonus);
 }
 /* instalaciones de hoy: las mías, o las de todo el escuadrón si soy admin */
@@ -1159,7 +1209,8 @@ function entrar(){
 
 function logout(){
   if(unsubVentas){ unsubVentas(); unsubVentas = null; }
-  SALES = [];
+  if(unsubRanking){ unsubRanking(); unsubRanking = null; }
+  SALES = []; RANKING = {};
   /* salir es a proposito: no vuelve a entrar solo, aunque el remember estuviera puesto */
   try{ localStorage.removeItem('ops.email'); }catch(e){}
   if(typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut().catch(()=>{});
@@ -1455,6 +1506,109 @@ function viewLobby(){
   </div>`;
 }
 
+/* ==================== REPORTE PARA IMPRIMIR / PDF ====================
+   Arma una hoja limpia con los cierres del mes y abre el dialogo de impresion,
+   donde el navegador ofrece "Guardar como PDF". Sirve para enseñarle a la
+   compañia lo que tenemos registrado cuando los numeros no cuadran. */
+function exportarPDF(scope){
+  const quien = scope || (isAdmin() ? 'all' : ME);
+  const lista = (quien === 'all' ? SALES.slice() : salesOf(quien))
+    .slice().sort((a,b)=> (a.d||'').localeCompare(b.d||'') || (a.creado||0)-(b.creado||0));
+
+  if(!lista.length){ toast('No hay cierres de '+monthName+' para exportar'); return; }
+
+  const titular = quien === 'all' ? 'ESCUADRÓN COMPLETO' : opBy(quien).nm;
+  const tot = {pts:0, internet:0, celular:0, tv:0, voice:0};
+  lista.forEach(s=>{
+    tot.pts += ptsOf(s); tot.celular += lineasCel(s);
+    ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) tot[k]++; });
+  });
+  const cuota = tot.internet + tot.celular;
+
+  const filas = lista.map((s,i)=>{
+    const serv = [
+      lineasCel(s) ? 'Celular'+(lineasCel(s)>1?' ×'+lineasCel(s):'') : null,
+      s.p.internet ? 'Internet' : null,
+      s.p.tv ? 'TV' : null,
+      s.p.voice ? 'Voice' : null
+    ].filter(Boolean).join(', ');
+    return `<tr>
+      <td class="c">${i+1}</td>
+      <td class="c">${s.d||'—'}</td>
+      ${quien==='all' ? `<td>${opBy(s.owner).nm}</td>` : ''}
+      <td>${(s.nm||'—').replace(/</g,'&lt;')}</td>
+      <td class="mono">${s.tel||'—'}</td>
+      <td>${planLabel(s.plan)}</td>
+      <td>${serv}</td>
+      <td class="c b">${ptsOf(s)}</td>
+      <td>${s.inst?.mode==='self' ? 'Self install' : (instLabel(s.inst)||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  const hoy = new Date();
+  const sello = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()} ` +
+                `${String(hoy.getHours()).padStart(2,'0')}:${String(hoy.getMinutes()).padStart(2,'0')}`;
+
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8">
+<title>Cierres ${monthName} ${today.getFullYear()} — ${titular}</title>
+<style>
+  @page{size:landscape;margin:12mm}
+  /* el reporte va siempre en claro: si el navegador esta en modo oscuro,
+     el texto negro quedaba sobre fondo negro y no se leia nada */
+  :root{color-scheme:light}
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff;margin:0;font-size:11px;padding:2mm}
+  h1{font-size:17px;margin:0 0 2px}
+  .sub{color:#555;font-size:11px;margin-bottom:12px}
+  .tot{display:flex;gap:22px;border:1px solid #bbb;padding:9px 12px;margin-bottom:12px;flex-wrap:wrap}
+  .tot div{font-size:11px;color:#555}
+  .tot b{display:block;font-size:17px;color:#111}
+  table{width:100%;border-collapse:collapse;background:#fff}
+  th,td{border:1px solid #ccc;padding:5px 6px;text-align:left;vertical-align:top;background:#fff;color:#111}
+  th{background:#ebebeb;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+  tbody tr:nth-child(even) td{background:#f7f7f7}
+  .c{text-align:center}.b{font-weight:bold}
+  .mono{font-family:'Courier New',monospace}
+  tfoot td{background:#ebebeb;font-weight:bold}
+  .pie{margin-top:14px;color:#777;font-size:10px}
+  /* que los fondos grises salgan tambien en el papel / PDF */
+  @media print{ body{padding:0} *{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
+</style></head><body>
+  <h1>Cierres de ${monthName} ${today.getFullYear()} — ${titular}</h1>
+  <div class="sub">${lista.length} ${lista.length===1?'cierre':'cierres'} · generado el ${sello}</div>
+
+  <div class="tot">
+    <div>PUNTOS<b>${tot.pts}</b></div>
+    <div>INTERNET<b>${tot.internet}</b></div>
+    <div>LÍNEAS CELULAR<b>${tot.celular}</b></div>
+    <div>TV<b>${tot.tv}</b></div>
+    <div>VOICE (bono)<b>${tot.voice}</b></div>
+    <div>CUOTA DE BONO<b>${cuota} / ${INT_100} → ${bonoPct(cuota)}%</b></div>
+  </div>
+
+  <table>
+    <thead><tr>
+      <th class="c">#</th><th class="c">Fecha</th>${quien==='all'?'<th>Operador</th>':''}
+      <th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Qué contó</th>
+      <th class="c">Pts</th><th>Instalación</th>
+    </tr></thead>
+    <tbody>${filas}</tbody>
+    <tfoot><tr>
+      <td colspan="${quien==='all'?7:6}" style="text-align:right">TOTAL DE PUNTOS</td>
+      <td class="c">${tot.pts}</td><td></td>
+    </tr></tfoot>
+  </table>
+
+  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular, cada internet y cada TV suman 1 punto; el voice de casa es bono y no suma.</div>
+  <script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if(!w){ toast('El navegador bloqueó la ventana. Permite las ventanas emergentes.'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
 function prodPills(s){
   const n = lineasCel(s);
   return PRODS.filter(p=>s.p[p.k]).map(p=>{
@@ -1497,7 +1651,9 @@ function viewOps(){
             <option value="all" ${opsScope==='all'?'selected':''}>TODO EL ESCUADRÓN</option>
             ${SQUAD.filter(o=>o.id!==ME).map(o=>`<option value="${o.id}" ${opsScope===o.id?'selected':''}>${o.nm}</option>`).join('')}
           </select>` : ''}
-        <button class="btn-amber" style="margin-left:14px;padding:7px 16px;font-size:13px" onclick="openModal()">+ Nuevo</button>
+        <button class="iconbtn" style="margin-left:14px;padding:7px 12px;font-size:12px"
+                onclick="exportarPDF('${opsScope==='me'?ME:opsScope}')" title="Bajar los cierres del mes en PDF">⤓ PDF</button>
+        <button class="btn-amber" style="margin-left:8px;padding:7px 16px;font-size:13px" onclick="openModal()">+ Nuevo</button>
       </div>
       <div style="overflow:auto">
       <table class="tcierres">
@@ -1736,6 +1892,13 @@ function viewMando(){
   $('#view').innerHTML = `
   <div class="gridwrap">
     <div class="notice"><b>CONSOLA DE MANDO</b> — acceso total. Ves y editas los cierres de cualquiera, fijas cuotas y roles, y tienes la agenda completa de instalaciones.</div>
+
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="iconbtn" style="padding:9px 14px;font-size:12.5px;margin-left:0"
+              onclick="exportarPDF('all')">⤓ PDF de todo el escuadrón</button>
+      ${SQUAD.map(o=>`<button class="iconbtn" style="padding:9px 12px;font-size:12px;margin-left:0"
+              onclick="exportarPDF('${o.id}')">⤓ ${o.nm}</button>`).join('')}
+    </div>
 
     ${SALES.length === 0 && !cargando ? `
     <div class="panel cut" style="margin-bottom:14px;border-color:var(--amber)">
