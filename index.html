@@ -500,6 +500,36 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .pulse{width:12px;height:12px;border-radius:50%;background:var(--amber);flex-shrink:0;
   box-shadow:0 0 0 0 rgba(255,138,0,.7);animation:pulse 1.8s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 14px rgba(255,138,0,0)}100%{box-shadow:0 0 0 0 rgba(255,138,0,0)}}
+/* ---- medallas ---- */
+.medov{z-index:80}
+.medbox{--med:var(--amber);position:relative;width:min(440px,92vw);padding:38px 26px 30px;text-align:center;
+  background:#0b0d10;border:1px solid var(--med);overflow:hidden;
+  box-shadow:0 0 90px color-mix(in srgb,var(--med) 30%,transparent),0 40px 90px rgba(0,0,0,.9);
+  animation:medIn .42s cubic-bezier(.16,1,.3,1)}
+@keyframes medIn{from{opacity:0;transform:scale(.82) translateY(14px)}to{opacity:1;transform:none}}
+.medglow{position:absolute;inset:-40% -10% auto;height:70%;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--med) 26%,transparent),transparent 70%)}
+.medemo{font-size:76px;line-height:1;animation:medPop .5s cubic-bezier(.2,1.5,.4,1) .06s both}
+@keyframes medPop{from{transform:scale(0) rotate(-18deg)}to{transform:none}}
+.medav{width:62px;height:62px;margin:14px auto 0;border:2px solid var(--med);overflow:hidden;
+  background:#12161b;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.medav img{width:100%;height:100%;object-fit:cover;display:block}
+.medbox h2{font-family:'Barlow Condensed';font-size:38px;font-weight:700;letter-spacing:.14em;margin:14px 0 0;
+  text-shadow:0 0 26px currentColor}
+.medfrase{font-size:14.5px;color:var(--muted);margin-top:8px;letter-spacing:.02em}
+.medbtn{margin-top:24px;width:100%;padding:13px}
+.daropts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 18px}
+.medopt{--med:var(--amber);display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 8px;cursor:pointer;
+  background:#12161b;border:1px solid var(--line2);color:var(--txt);transition:border-color .15s,transform .12s}
+.medopt:hover:not(:disabled){border-color:var(--med);transform:translateY(-2px)}
+.medopt:disabled{opacity:.35;cursor:not-allowed}
+.medopt .emo{font-size:30px;line-height:1}
+.medopt .l{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.1em;font-weight:600;color:var(--med)}
+.medbtn2{background:none;border:1px solid var(--line);color:var(--dim);cursor:pointer;padding:5px 9px;
+  font-size:15px;line-height:1;transition:border-color .15s,color .15s}
+.medbtn2:hover{border-color:var(--amber);color:var(--amber)}
+.medcount{display:inline-flex;align-items:center;gap:4px;font-family:'Barlow Condensed';font-size:13px;
+  letter-spacing:.08em;color:var(--dim)}
 .acli{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.05)}
 .acli .info{flex:1;min-width:0}
 .acli .info b{display:block;font-family:'Barlow Condensed';font-size:17px;letter-spacing:.06em}
@@ -753,6 +783,36 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ MEDALLA RECIBIDA (pantalla completa al entrar) ============ -->
+<div class="overlay medov" id="medOverlay" onclick="cerrarMedalla()">
+  <div class="medbox" id="medBox" onclick="event.stopPropagation()">
+    <div class="medglow"></div>
+    <div class="medemo" id="medEmo">💥</div>
+    <div class="medav" id="medAv"></div>
+    <h2 id="medTitle">BOOM HEADSHOT</h2>
+    <div class="medfrase" id="medFrase"></div>
+    <button class="btn-amber medbtn" id="medBtn" onclick="cerrarMedalla()">A SEGUIR VENDIENDO</button>
+  </div>
+</div>
+
+<!-- ============ DAR UNA MEDALLA ============ -->
+<div class="overlay" id="darOverlay">
+  <div class="modal" style="width:420px">
+    <div class="mh">
+      <span class="tick" style="width:3px;height:14px;background:var(--amber)"></span>
+      <div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;letter-spacing:.14em" id="darPara"></div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:2px" id="darSaldo"></div>
+      </div>
+      <button class="close" onclick="cerrarDarMedalla()">✕</button>
+    </div>
+    <div id="darOpts" class="daropts"></div>
+    <div class="mf"><div class="grow"></div>
+      <button class="btn-ghost" onclick="cerrarDarMedalla()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- Firebase en modo "compat": expone firebase.* como global, asi el resto del
@@ -832,6 +892,19 @@ const INT_50 = 13, INT_100 = 18;
 const cuotaBono = t => t.internet + t.celular;
 /* devuelve 0, 50 o 100 según esa cuenta */
 const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
+
+/* ---------- MEDALLAS DEL ESCUADRON ----------
+   Reconocimientos que se mandan entre ellos. No suman puntos ni cambian el
+   ranking: son solo para picarse. Se ganan vendiendo —cada 3 cierres del mes
+   da derecho a mandar una— asi no se convierten en spam. */
+const MEDALLAS = [
+  {k:'headshot', l:'BOOM HEADSHOT', emo:'💥', color:'#e8402a', frase:'te metió un headshot'},
+  {k:'noscope',  l:'NO SCOPE',      emo:'🎯', color:'#39d0ff', frase:'te tiró un no scope'},
+  {k:'ace',      l:'ACE',           emo:'🏆', color:'#d8ff2e', frase:'te dio el ACE'},
+  {k:'flex',     l:'FLEX',          emo:'💪', color:'#ff7ad9', frase:'te está flexeando'}
+];
+const CIERRES_POR_MEDALLA = 3;
+const medBy = k => MEDALLAS.find(m=>m.k===k) || MEDALLAS[0];
 
 /* el email es el de la cuenta de Firebase; las contrasenas viven alla, no aqui */
 const SQUAD = [
@@ -958,6 +1031,7 @@ function escucharVentas(){
     render();
   });
   escucharRanking();
+  escucharMedallas();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -997,6 +1071,79 @@ async function publicarRanking(){
       });
     }));
   }catch(err){ console.error('no se pudo publicar el ranking:', err); }
+}
+
+/* ---------- MEDALLAS ----------
+   Coleccion `medallas`: {de, para, tipo, anio, mes, creado, vista}. Nunca lleva
+   datos de cliente. Cada quien lee las que recibe y las que manda; el saldo se
+   calcula con las ventas del mes, asi que se resetea solo cada mes. */
+let MEDALLAS_MES = [];       // todas las del mes: son 4 numeros y dos ids, no pesan
+let unsubMedallas = null;
+
+const MED_RX = () => MEDALLAS_MES.filter(m => m.para === ME);   // las que me dieron
+const MED_TX = () => MEDALLAS_MES.filter(m => m.de   === ME);   // las que yo di
+const medallasDeUid = uid => MEDALLAS_MES.filter(m => m.para === uid);
+
+function escucharMedallas(){
+  if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
+  const {anio, mes} = mesActual();
+  unsubMedallas = db().collection('medallas')
+    .where('anio','==',anio).where('mes','==',mes)
+    .onSnapshot(snap => {
+      MEDALLAS_MES = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      render();
+      colaDeMedallas();        // si llego una sin ver, salta a pantalla completa
+    }, err => console.error('medallas:', err));
+}
+
+/* saldo: una medalla por cada 3 cierres del mes, menos las que ya mandé */
+function saldoMedallas(){
+  const ganadas = Math.floor(salesOf(ME).length / CIERRES_POR_MEDALLA);
+  const gastadas = MED_TX().length;
+  return {ganadas, gastadas, quedan: Math.max(0, ganadas - gastadas)};
+}
+
+/* las medallitas que se ven bajo cada nombre en el leaderboard */
+function medallasDe(uid){
+  const ms = medallasDeUid(uid);
+  if(!ms.length) return '';
+  const cuenta = {};
+  ms.forEach(m => { cuenta[m.tipo] = (cuenta[m.tipo]||0)+1; });
+  const pills = MEDALLAS.filter(m => cuenta[m.k])
+    .map(m => `<span title="${m.l}">${m.emo}${cuenta[m.k]>1?'×'+cuenta[m.k]:''}</span>`).join(' ');
+  return ` <span class="medcount">${pills}</span>`;
+}
+/* cuántos cierres faltan para ganar la próxima */
+function faltanParaMedalla(){
+  const n = salesOf(ME).length;
+  return CIERRES_POR_MEDALLA - (n % CIERRES_POR_MEDALLA);
+}
+
+async function mandarMedalla(para, tipo){
+  if(para === ME){ toast('No te puedes dar medallas a ti mismo'); return; }
+  const s = saldoMedallas();
+  if(!s.quedan){
+    toast(`Sin medallas. Te faltan <b>${faltanParaMedalla()}</b> cierres para la próxima`);
+    return;
+  }
+  const m = medBy(tipo);
+  const {anio, mes} = mesActual();
+  cerrarDarMedalla();
+  try{
+    await db().collection('medallas').add({
+      de: ME, para, tipo, anio, mes, creado: Date.now(), vista: false
+    });
+    toast(`${m.emo} <b>${m.l}</b> para ${opBy(para).nm}`);
+  }catch(err){
+    console.error(err);
+    toast('No se pudo mandar: ' + (err.code||err.message));
+  }
+}
+
+/* marca vista para que no vuelva a saltar en el proximo login */
+async function marcarVista(id){
+  try{ await db().collection('medallas').doc(id).update({vista:true}); }
+  catch(err){ console.error('no se pudo marcar la medalla:', err); }
 }
 
 async function correrMigracion(){
@@ -1210,7 +1357,8 @@ function entrar(){
 function logout(){
   if(unsubVentas){ unsubVentas(); unsubVentas = null; }
   if(unsubRanking){ unsubRanking(); unsubRanking = null; }
-  SALES = []; RANKING = {};
+  if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
+  SALES = []; RANKING = {}; MEDALLAS_MES = []; medEnPantalla = null;
   /* salir es a proposito: no vuelve a entrar solo, aunque el remember estuviera puesto */
   try{ localStorage.removeItem('ops.email'); }catch(e){}
   if(typeof firebase !== 'undefined' && firebase.auth) firebase.auth().signOut().catch(()=>{});
@@ -1693,13 +1841,16 @@ function viewOps(){
 function viewSquad(){
   const r = ranked();
   const max = Math.max(...r.map(s=>s.pts),1);
+  const sal = saldoMedallas();
   const COLORS=['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#e8402a','#8b9199'];
   $('#view').innerHTML = `
   <div class="gridwrap">
     <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular, cada internet y cada TV suman 1; el voice de casa va aparte y no suma. Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + líneas de celular</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
-        <span class="right">${SQUAD.length} OPERADORES · ACTUALIZADO AHORA</span></div>
+        <span class="right">${sal.quedan
+          ? `🎖️ TIENES <b style="color:var(--lime)">${sal.quedan}</b> ${sal.quedan===1?'MEDALLA':'MEDALLAS'} PARA DAR`
+          : `🎖️ ${faltanParaMedalla()} ${faltanParaMedalla()===1?'CIERRE':'CIERRES'} PARA TU PRÓXIMA MEDALLA`}</span></div>
       <div class="lbrow" style="border-bottom:1px solid var(--line2)">
         <div class="stripe"></div>
         <div class="cells">
@@ -1720,7 +1871,9 @@ function viewSquad(){
             <div class="rk">${i<3?['🥇','🥈','🥉'][i]:''} ${i+1}</div>
             <div style="display:flex;align-items:center;gap:11px;min-width:0">
               <div class="lbav">${s.av?`<img class="avimg" src="${s.av}" alt="">`:''}</div>
-              <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}<small>${s.full}</small></div>
+              <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}
+                ${s.id!==ME?`<button class="medbtn2" onclick="abrirDarMedalla('${s.id}')" title="Darle una medalla">🎖️</button>`:''}
+                <small>${s.full}${medallasDe(s.id)}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
             <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.cuota}<small>${s.bono}% · ${s.internet}i+${s.celular}c</small></div>
@@ -2186,6 +2339,102 @@ function openAlert(){
 }
 function closeAlert(){ $('#alertOverlay').classList.remove('on'); }
 
+/* ==================== MEDALLAS: PANTALLA Y SONIDO ====================
+   Al entrar, antes de ponerse a trabajar, el operador ve a pantalla completa
+   las medallas que le mandaron. Se muestran de una en una; al cerrarlas se
+   marcan vistas y no vuelven a salir. */
+let medEnPantalla = null;
+
+function colaDeMedallas(){
+  if(medEnPantalla) return;                       // ya hay una puesta
+  if($('#medOverlay').classList.contains('on')) return;
+  const pend = pendientesMed();
+  if(!pend.length) return;
+  setTimeout(()=>{ if(pendientesMed().length) mostrarMedalla(pendientesMed()[0]); }, 500);
+}
+/* las mias sin ver, de la mas vieja a la mas nueva */
+const pendientesMed = () => MED_RX().filter(m => !m.vista && !m.$vista)
+                                    .sort((a,b)=>(a.creado||0)-(b.creado||0));
+
+function mostrarMedalla(m){
+  const d = medBy(m.tipo), quien = opBy(m.de);
+  const restantes = pendientesMed().filter(x => x.id !== m.id).length;
+  medEnPantalla = m;
+
+  $('#medEmo').textContent   = d.emo;
+  $('#medTitle').textContent = d.l;
+  $('#medTitle').style.color = d.color;
+  $('#medFrase').innerHTML   = `<b style="color:${d.color}">${quien.nm}</b> ${d.frase}`;
+  $('#medAv').innerHTML      = quien.av ? `<img src="${quien.av}" alt="">` : '';
+  $('#medBtn').textContent   = restantes ? `SIGUIENTE (${restantes} más)` : 'A SEGUIR VENDIENDO';
+  $('#medBox').style.setProperty('--med', d.color);
+  $('#medOverlay').classList.add('on');
+  sonidoMedalla();
+}
+
+async function cerrarMedalla(){
+  const m = medEnPantalla;
+  medEnPantalla = null;
+  $('#medOverlay').classList.remove('on');
+  if(!m) return;
+  /* marca local inmediata: si el snapshot tarda, la medalla no vuelve a saltar */
+  const local = MEDALLAS_MES.find(x => x.id === m.id);
+  if(local) local.$vista = true;
+  await marcarVista(m.id);
+  const quedan = pendientesMed();
+  if(quedan.length) setTimeout(()=>mostrarMedalla(quedan[0]), 350);
+  else render();
+}
+
+/* golpe corto sintetizado: no hace falta cargar ningun archivo de audio */
+function sonidoMedalla(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    const ctx = sonidoMedalla._ctx || (sonidoMedalla._ctx = new AC());
+    if(ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime;
+
+    const golpe = ctx.createOscillator(), gG = ctx.createGain();
+    golpe.type = 'sine';
+    golpe.frequency.setValueAtTime(180, t);
+    golpe.frequency.exponentialRampToValueAtTime(40, t + .18);
+    gG.gain.setValueAtTime(.35, t);
+    gG.gain.exponentialRampToValueAtTime(.001, t + .22);
+    golpe.connect(gG).connect(ctx.destination);
+    golpe.start(t); golpe.stop(t + .25);
+
+    const brillo = ctx.createOscillator(), gB = ctx.createGain();
+    brillo.type = 'square';
+    brillo.frequency.setValueAtTime(880, t + .04);
+    gB.gain.setValueAtTime(.06, t + .04);
+    gB.gain.exponentialRampToValueAtTime(.001, t + .16);
+    brillo.connect(gB).connect(ctx.destination);
+    brillo.start(t + .04); brillo.stop(t + .18);
+  }catch(err){ /* sin sonido no pasa nada */ }
+}
+
+/* ---- dar una medalla ---- */
+let medDestino = null;
+
+function abrirDarMedalla(uid){
+  if(uid === ME){ toast('No te puedes dar medallas a ti mismo'); return; }
+  const s = saldoMedallas(), op = opBy(uid);
+  medDestino = uid;
+  $('#darPara').innerHTML = `Para <b style="color:var(--amber)">${op.nm}</b>`;
+  $('#darSaldo').innerHTML = s.quedan
+    ? `Te quedan <b style="color:var(--lime)">${s.quedan}</b> ${s.quedan===1?'medalla':'medallas'} este mes`
+    : `Sin medallas. Te faltan <b style="color:var(--amber)">${faltanParaMedalla()}</b> cierres para la próxima`;
+  $('#darOpts').innerHTML = MEDALLAS.map(m=>`
+    <button class="medopt" ${s.quedan?'':'disabled'} style="--med:${m.color}"
+            onclick="mandarMedalla('${uid}','${m.k}')">
+      <span class="emo">${m.emo}</span>
+      <span class="l">${m.l}</span>
+    </button>`).join('');
+  $('#darOverlay').classList.add('on');
+}
+function cerrarDarMedalla(){ $('#darOverlay').classList.remove('on'); medDestino = null; }
+
 function renderBell(){
   const n = instalacionesHoy().length;
   $('#bellWrap').innerHTML = n
@@ -2193,7 +2442,7 @@ function renderBell(){
     : '';
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); } });
 </script>
 </body>
 </html>

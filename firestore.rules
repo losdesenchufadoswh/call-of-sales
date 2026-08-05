@@ -44,6 +44,23 @@ service cloud.firestore {
       allow write: if soyAdmin() || (autenticado() && request.resource.data.owner == miId());
     }
 
+    // Medallas entre companeros (boom headshot, no scope, ace, flex).
+    // Solo ids de operador y el tipo: aqui tampoco van datos de cliente, por eso
+    // las lee todo el escuadron y se ven los contadores de cada quien.
+    match /medallas/{docId} {
+      allow read:   if autenticado();
+      // solo puedes mandarlas a tu nombre, y no a ti mismo
+      allow create: if autenticado()
+                    && request.resource.data.de == miId()
+                    && request.resource.data.para != miId()
+                    && request.resource.data.vista == false;
+      // el que la recibe solo puede marcarla como vista; nada mas se toca
+      allow update: if autenticado()
+                    && resource.data.para == miId()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vista']);
+      allow delete: if soyAdmin();
+    }
+
     // Marca de la carga inicial de julio. Solo el admin la escribe.
     match /meta/{docId} {
       allow read:  if autenticado();
