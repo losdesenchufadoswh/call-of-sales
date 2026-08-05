@@ -61,6 +61,19 @@ service cloud.firestore {
       allow delete: if soyAdmin();
     }
 
+    // Logros ganados vendiendo (hardline, nuclear, overwatch...). Son historicos
+    // y publicos dentro del escuadron: solo owner, tipo y periodo, sin clientes.
+    // El id es `owner-tipo-periodo`, por eso rehacer el calculo nunca duplica.
+    match /logros/{docId} {
+      allow read:   if autenticado();
+      // los tuyos, o cualquiera si eres el admin (que tiene todas las ventas)
+      allow create: if soyAdmin() || esMio(request.resource.data);
+      // marcar visto es lo unico que se toca despues
+      allow update: if (soyAdmin() || esMio(resource.data))
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto']);
+      allow delete: if soyAdmin();
+    }
+
     // Marca de la carga inicial de julio. Solo el admin la escribe.
     match /meta/{docId} {
       allow read:  if autenticado();
