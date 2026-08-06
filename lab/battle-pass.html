@@ -136,6 +136,67 @@ h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif}
 .tabla .num{text-align:right;font-family:'Barlow Condensed';font-size:15px}
 .ok{color:var(--green)}.casi{color:var(--amber)}.no{color:var(--red)}
 
+.promesa{border:1px solid var(--lime);background:linear-gradient(90deg,rgba(216,255,46,.11),transparent 72%);
+  padding:12px 14px;font-size:13.5px;line-height:1.55}
+.promesa b{color:var(--lime)}
+
+/* ---------- editor de perfil ---------- */
+.editor{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:16px;padding:15px}
+@media(max-width:860px){.editor{grid-template-columns:1fr}}
+.perfil{border:1px solid var(--line2);background:var(--panel2);overflow:hidden;position:relative}
+.pbanner{height:170px;position:relative;background:#0a0d11;background-size:cover;background-position:center 62%}
+.pbanner:after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,9,11,.16) 0%,rgba(8,9,11,.62) 62%,#12161b 100%)}
+.pbanner .scan{position:absolute;inset:0;z-index:1;
+  background:repeating-linear-gradient(115deg,transparent 0 36px,rgba(255,255,255,.05) 36px 37px)}
+.pbody{position:relative;padding:0 16px 16px;margin-top:-46px;z-index:3}
+.phex{width:96px;height:96px;position:relative;padding:3px;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--line2)}
+.phex.bronce{background:linear-gradient(145deg,#e0925a,#7a4a1e)}
+.phex.plata{background:linear-gradient(145deg,#fbfdff,#8c959f)}
+.phex.oro{background:linear-gradient(145deg,#ffe9a3,#c8912a)}
+.phex.legend{background:linear-gradient(145deg,#ffd24a,#fff6d0,#ff8a00,#ffd24a);
+  background-size:250% 250%;animation:legend 3.2s ease infinite}
+.phex i{display:block;width:100%;height:100%;background:#0a0d11;overflow:hidden;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.phex img{width:100%;height:100%;object-fit:cover;display:block}
+.pnom{display:flex;align-items:center;gap:9px;margin-top:11px;flex-wrap:wrap}
+.pnom .n{font-family:'Barlow Condensed';font-size:33px;font-weight:700;letter-spacing:.11em;line-height:1}
+.pnom .n.cian{color:var(--cyan)} .pnom .n.lima{color:var(--lime)} .pnom .n.ambar{color:var(--amber2)}
+.pnom .n.dorado{background:linear-gradient(90deg,#ffd24a,#fff6d0,#ffd24a);background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 2.6s linear infinite}
+.pemote{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:26px;line-height:1;border:1px solid var(--line2);background:#0a0d11;overflow:hidden}
+.pemote img{width:100%;height:100%;object-fit:cover;display:block}
+.ptit{display:inline-block;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.2em;
+  padding:2px 9px;margin-top:9px;border:1px solid currentColor}
+.pstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  margin-top:15px;border:1px solid var(--line)}
+.pstats div{background:var(--panel2);padding:10px 8px;text-align:center}
+.pstats b{display:block;font-family:'Barlow Condensed';font-size:23px;font-weight:700;line-height:1}
+.pstats small{font-size:9px;letter-spacing:.14em;color:var(--dim)}
+.plv{position:absolute;top:12px;right:12px;z-index:3;background:rgba(8,9,11,.78);border:1px solid var(--amber);
+  padding:5px 11px;text-align:center;backdrop-filter:blur(4px)}
+.plv b{display:block;font-family:'Barlow Condensed';font-size:24px;font-weight:700;color:var(--amber);line-height:1}
+.plv small{font-size:8.5px;letter-spacing:.18em;color:var(--muted)}
+
+.opts{display:flex;flex-direction:column;gap:13px}
+.grp .gl{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.17em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);padding:6px 10px;cursor:pointer;
+  font-family:'Barlow Condensed';font-size:12px;letter-spacing:.09em;display:flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--line2);color:var(--txt)}
+.chip.on{border-color:var(--amber);color:var(--amber);background:rgba(255,138,0,.1)}
+.chip .lv{font-size:9.5px;color:var(--dim);letter-spacing:.06em}
+.chip.bloq{opacity:.4;cursor:not-allowed}
+.chip.bloq:hover{border-color:var(--line);color:var(--muted)}
+.chip img{width:17px;height:17px;object-fit:cover;display:block}
+.nivelsel{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--panel2);
+  border:1px solid var(--line)}
+.nivelsel input{flex:1;accent-color:var(--amber)}
+.nivelsel b{font-family:'Barlow Condensed';font-size:21px;color:var(--amber);min-width:44px;text-align:right}
+
 .botonera{display:flex;gap:8px;flex-wrap:wrap;padding:0 15px 15px}
 .btn{background:none;border:1px solid var(--line2);color:var(--muted);padding:7px 13px;cursor:pointer;
   font-family:'Barlow Condensed';font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}
@@ -169,6 +230,9 @@ h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif}
     <div class="botonera" style="padding-top:15px">
       <button class="btn on" onclick="setMes('2026-07',this)">Julio (mes completo)</button>
       <button class="btn" onclick="setMes('2026-08',this)">Agosto (va por el día 6)</button>
+    </div>
+    <div class="pb" style="padding-bottom:0">
+      <div class="promesa" id="promesa"></div>
     </div>
     <div class="sims" id="sims"></div>
     <div class="pb" style="padding-top:0"><div class="hint" id="veredicto"></div></div>
@@ -205,9 +269,23 @@ h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif}
     </div>
   </div>
 
-  <!-- ============ VISTA PREVIA ============ -->
+  <!-- ============ EDITOR DE PERFIL ============ -->
   <div class="panel">
-    <div class="ph"><span class="tick" style="background:var(--pink)"></span>Cómo se vería puesto</div>
+    <div class="ph"><span class="tick" style="background:var(--pink)"></span>Probador de perfil
+      <span class="right">TOCA Y MIRA CÓMO QUEDA</span></div>
+    <div class="editor">
+      <div class="perfil" id="perfil"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+    <div class="pb" style="padding-top:0">
+      <div class="hint">Mueve el nivel y se bloquea lo que todavía no darías por ganado.
+        Así se ve exactamente lo que desbloquea cada escalón del pass.</div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA PREVIA EN EL LEADERBOARD ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick" style="background:var(--pink)"></span>Cómo se ve en el leaderboard</div>
     <div class="prev">
       <div class="card">
         <div class="cph">Nivel 5 · título recluta</div>
@@ -249,22 +327,6 @@ h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif}
         </div>
       </div>
 
-      <div class="card">
-        <div class="fondo nuketown"><div class="lbl">NIVEL 18 · FONDO NUKETOWN</div></div>
-        <div class="cph" style="border-top:0">Fondo del perfil</div>
-      </div>
-      <div class="card">
-        <div class="fondo blackout"><div class="lbl">NIVEL 32 · FONDO BLACKOUT</div></div>
-        <div class="cph" style="border-top:0">Fondo del perfil</div>
-      </div>
-      <div class="card">
-        <div class="fondo warzone"><div class="lbl">NIVEL 46 · FONDO WARZONE</div></div>
-        <div class="cph" style="border-top:0">Fondo del perfil</div>
-      </div>
-      <div class="card">
-        <div class="fondo nuclear"><div class="lbl">NIVEL 50 · FONDO NUCLEAR (ANIMADO)</div></div>
-        <div class="cph" style="border-top:0">Fondo del perfil</div>
-      </div>
     </div>
   </div>
 
@@ -303,21 +365,29 @@ const REAL = {
 const EXTRA = {logros:0, medallas:0};
 
 /* ==================== PESOS AJUSTABLES ==================== */
-const P = {
-  porPunto:  {v:20,  min:0, max:40, l:'Por punto de venta',      ej:t=>`45 pts de meta = ${45*t} XP`},
-  porCierre: {v:10,  min:0, max:30, l:'Por cierre registrado',   ej:t=>`30 cierres = ${30*t} XP`},
-  porVoice:  {v:8,   min:0, max:30, l:'Por voice (no da puntos)',ej:t=>`20 voice = ${20*t} XP`},
-  porDia:    {v:25,  min:0, max:60, l:'Por día con cierre',      ej:t=>`22 días = ${22*t} XP`},
-  porLogro:  {v:120, min:0, max:300,l:'Por logro desbloqueado',  ej:t=>`4 logros = ${4*t} XP`},
-  porMedalla:{v:30,  min:0, max:100,l:'Por medalla recibida',    ej:t=>`5 medallas = ${5*t} XP`},
-  xpNivel:   {v:36,  min:10,max:90, l:'XP por nivel',            ej:t=>`nivel 50 = ${50*t} XP en total`}
-};
 const NIVELES = 50;
+const META_PTS = 45;
+/* La promesa: cumplir la meta del mes llega al 50, sin depender de nada mas.
+   Por eso el XP por punto sale de una division, no de un numero elegido a dedo:
+   45 puntos tienen que dar exactamente los 1800 XP del nivel 50. Todo lo demas
+   —cierres, voice, dias, logros, medallas— solo sirve para llegar antes. */
+const P = {
+  porCierre: {v:5,  min:0, max:30, l:'Por cierre registrado',   ej:t=>`30 cierres = ${30*t} XP`},
+  porVoice:  {v:5,  min:0, max:30, l:'Por voice (no da puntos)',ej:t=>`20 voice = ${20*t} XP`},
+  porDia:    {v:10, min:0, max:60, l:'Por día con cierre',      ej:t=>`22 días = ${22*t} XP`},
+  porLogro:  {v:60, min:0, max:300,l:'Por logro desbloqueado',  ej:t=>`4 logros = ${4*t} XP`},
+  porMedalla:{v:20, min:0, max:100,l:'Por medalla recibida',    ej:t=>`5 medallas = ${5*t} XP`},
+  xpNivel:   {v:36, min:10,max:90, l:'XP por nivel',            ej:t=>`nivel 50 = ${50*t} XP · el punto vale ${(50*t/META_PTS).toFixed(1)} XP`}
+};
+/* esto es lo que amarra la promesa */
+const xpPorPunto = () => NIVELES * P.xpNivel.v / META_PTS;
 
 function xpDe(v){
-  return v.pts*P.porPunto.v + v.cierres*P.porCierre.v + v.voice*P.porVoice.v +
+  return Math.round(v.pts*xpPorPunto()) + v.cierres*P.porCierre.v + v.voice*P.porVoice.v +
          v.dias*P.porDia.v + EXTRA.logros*P.porLogro.v + EXTRA.medallas*P.porMedalla.v;
 }
+/* XP que da la meta pelada, sin extras: tiene que dar justo el nivel 50 */
+const xpSoloMeta = () => Math.round(META_PTS * xpPorPunto());
 const nivelDe = xp => Math.min(NIVELES, Math.floor(xp / P.xpNivel.v));
 const xpTotal = () => NIVELES * P.xpNivel.v;
 
@@ -364,7 +434,7 @@ function pintarSims(){
       <div class="simbar"><i style="width:${pct}%"></i></div>
       <div class="xp">${xp.toLocaleString('es')} XP de ${xpTotal().toLocaleString('es')}</div>
       <div class="desglose">
-        <div>Puntos de venta <b>${(v.pts*P.porPunto.v).toLocaleString('es')}</b></div>
+        <div>Puntos de venta <b>${Math.round(v.pts*xpPorPunto()).toLocaleString('es')}</b></div>
         <div>Cierres <b>${(v.cierres*P.porCierre.v).toLocaleString('es')}</b></div>
         <div>Voice <b>${(v.voice*P.porVoice.v).toLocaleString('es')}</b></div>
         <div>Días activos <b>${(v.dias*P.porDia.v).toLocaleString('es')}</b></div>
@@ -402,7 +472,7 @@ function pintarPesos(){
 }
 function cambiaPeso(k, v){
   P[k].v = Number(v);
-  pintarPesos(); pintarSims(); pintarTrack(); pintarTabla();
+  pintarPesos(); pintarPromesa(); pintarSims(); pintarTrack(); pintarTabla();
 }
 
 /* ==================== TRACK ==================== */
@@ -456,6 +526,127 @@ function pintarTabla(){
      todos llegarían un poco más arriba de lo que sale aquí.`;
 }
 
+/* ==================== PROBADOR DE PERFIL ====================
+   Todo lo cosmetico que puede ganar un operador, para verlo puesto antes de
+   decidir nada. El nivel de la barra bloquea lo que aun no tendria. */
+const COSMETICOS = {
+  fondo: [
+    {k:'ninguno',  n:'Sin fondo',  lv:0,  css:'background:#0a0d11'},
+    {k:'nuketown', n:'NUKETOWN',   lv:18, css:"background-image:url('assets/bg-nuketown.webp')"},
+    {k:'blackout', n:'BLACKOUT',   lv:32, css:'background:radial-gradient(ellipse at 70% -20%,#1b4a7a,transparent 62%),linear-gradient(160deg,#050a12,#01030a)'},
+    {k:'warzone',  n:'WARZONE',    lv:46, css:'background:radial-gradient(ellipse at 50% 130%,#4ad07a,transparent 58%),linear-gradient(160deg,#04180d,#010805)'},
+    {k:'nuclear',  n:'NUCLEAR',    lv:50, css:'background:linear-gradient(125deg,#0a1a2e,#123a52,#0a1a2e);background-size:220% 220%;animation:legend 5s ease infinite'}
+  ],
+  titulo: [
+    {k:'',              n:'Sin título',    lv:0},
+    {k:'RECLUTA',       n:'RECLUTA',       lv:5},
+    {k:'OPERADOR',      n:'OPERADOR',      lv:15},
+    {k:'CAZADOR',       n:'CAZADOR',       lv:20},
+    {k:'DEMOLEDOR',     n:'DEMOLEDOR',     lv:25},
+    {k:'FRANCOTIRADOR', n:'FRANCOTIRADOR', lv:30},
+    {k:'VETERANO',      n:'VETERANO',      lv:35},
+    {k:'ESPECTRO',      n:'ESPECTRO',      lv:45},
+    {k:'NUKE DEALER',   n:'NUKE DEALER',   lv:50}
+  ],
+  emote: [
+    {k:'',    n:'Ninguno', lv:0},
+    {k:'💀',  n:'💀',      lv:10},
+    {k:'🎯',  n:'🎯',      lv:25},
+    {k:'☢️',  n:'☢️',      lv:42},
+    {k:'sol', n:'EL SOL',  lv:50, img:'assets/emote-sol.webp'}
+  ],
+  marco: [
+    {k:'',       n:'Sin marco', lv:0},
+    {k:'bronce', n:'BRONCE',    lv:8},
+    {k:'plata',  n:'PLATA',     lv:22},
+    {k:'oro',    n:'ORO',       lv:38},
+    {k:'legend', n:'LEGENDARIO',lv:50}
+  ],
+  color: [
+    {k:'',       n:'Blanco', lv:0},
+    {k:'cian',   n:'CIAN',   lv:12},
+    {k:'lima',   n:'LIMA',   lv:28},
+    {k:'ambar',  n:'ÁMBAR',  lv:40},
+    {k:'dorado', n:'DORADO', lv:50}
+  ]
+};
+const LABEL = {fondo:'Fondo del perfil', titulo:'Título', emote:'Emote al lado del nombre',
+               marco:'Marco del avatar', color:'Color del nombre'};
+
+/* arranca en el 50 para que se vea todo lo que hay */
+let look = {nivel:50, fondo:'nuketown', titulo:'NUKE DEALER', emote:'sol', marco:'legend', color:'dorado',
+            quien:'elwin'};
+
+const colorTitulo = () => ({cian:'var(--cyan)', lima:'var(--lime)', ambar:'var(--amber2)',
+                            dorado:'var(--gold)'}[look.color] || 'var(--muted)');
+
+function pintarPerfil(){
+  const op = REAL['2026-07'].find(v=>v.id===look.quien) || REAL['2026-07'][0];
+  const f = COSMETICOS.fondo.find(x=>x.k===look.fondo) || COSMETICOS.fondo[0];
+  const em = COSMETICOS.emote.find(x=>x.k===look.emote);
+  const ini = op.nm.replace('_','').slice(0,2);
+
+  document.getElementById('perfil').innerHTML = `
+    <div class="pbanner" style="${f.css}"><div class="scan"></div></div>
+    <div class="plv"><b>${look.nivel}</b><small>NIVEL</small></div>
+    <div class="pbody">
+      <div class="phex ${look.marco}"><i><img src="../avatars/${
+        {elwin:'op-joven',carlos:'op-gorra',elfe:'elfe',felix:'op-lentes-negros',angel:'op-canoso'}[op.id]
+      }.png" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${ini}',style:'display:flex;align-items:center;justify-content:center;height:100%;font-family:Barlow Condensed;font-size:26px;font-weight:700;color:#5d646d'}))"></i></div>
+      <div class="pnom">
+        <div class="n ${look.color}">${op.nm}</div>
+        ${em && em.k ? `<div class="pemote">${em.img?`<img src="${em.img}" alt="">`:em.k}</div>` : ''}
+      </div>
+      ${look.titulo ? `<div class="ptit" style="color:${colorTitulo()}">${look.titulo}</div>` : ''}
+      <div class="pstats">
+        <div><b style="color:var(--lime)">${op.pts}</b><small>PUNTOS</small></div>
+        <div><b>${op.cierres}</b><small>CIERRES</small></div>
+        <div><b style="color:var(--cyan)">${op.voice}</b><small>VOICE</small></div>
+        <div><b style="color:var(--amber)">${op.dias}</b><small>DÍAS</small></div>
+      </div>
+    </div>`;
+}
+
+function pintarOpts(){
+  let html = `<div class="grp">
+    <div class="gl">Nivel del operador</div>
+    <div class="nivelsel">
+      <input type="range" min="1" max="50" value="${look.nivel}" oninput="setNivel(this.value)">
+      <b>${look.nivel}</b>
+    </div>
+  </div>
+  <div class="grp"><div class="gl">Operador</div><div class="chips">
+    ${REAL['2026-07'].filter(v=>v.cierres>0).map(v=>`
+      <button class="chip ${look.quien===v.id?'on':''}" onclick="setLook('quien','${v.id}')">${v.nm}</button>`).join('')}
+  </div></div>`;
+
+  Object.keys(COSMETICOS).forEach(cat=>{
+    html += `<div class="grp"><div class="gl">${LABEL[cat]}</div><div class="chips">
+      ${COSMETICOS[cat].map(o=>{
+        const bloq = o.lv > look.nivel;
+        return `<button class="chip ${look[cat]===o.k?'on':''} ${bloq?'bloq':''}"
+          ${bloq?'disabled title="Necesitas el nivel '+o.lv+'"':''}
+          onclick="setLook('${cat}','${o.k}')">
+          ${o.img?`<img src="${o.img}" alt="">`:''}${o.n}
+          ${o.lv?`<span class="lv">LV${o.lv}</span>`:''}
+        </button>`;
+      }).join('')}
+    </div></div>`;
+  });
+  document.getElementById('opts').innerHTML = html;
+}
+
+function setLook(cat, val){ look[cat] = val; pintarPerfil(); pintarOpts(); }
+function setNivel(n){
+  look.nivel = Number(n);
+  /* si el nivel baja, se cae lo que ya no tendria ganado */
+  Object.keys(COSMETICOS).forEach(cat=>{
+    const o = COSMETICOS[cat].find(x=>x.k===look[cat]);
+    if(o && o.lv > look.nivel) look[cat] = COSMETICOS[cat][0].k;
+  });
+  pintarPerfil(); pintarOpts();
+}
+
 /* ==================== CONTROLES ==================== */
 function setMes(m, btn){
   mesActivo = m;
@@ -474,7 +665,19 @@ function setQuien(q, btn){
   pintarTrack();
 }
 
-pintarPesos(); pintarSims(); pintarTrack(); pintarTabla();
+function pintarPromesa(){
+  const solo = xpSoloMeta(), tope = xpTotal();
+  document.getElementById('promesa').innerHTML = solo >= tope
+    ? `<b>Cumplir la meta llega al 50, garantizado.</b> Los ${META_PTS} puntos del mes valen
+       ${solo.toLocaleString('es')} XP por sí solos, justo los ${tope.toLocaleString('es')} que pide el nivel 50.
+       Cada punto vale <b>${xpPorPunto().toFixed(1)} XP</b>, y ese número sale de esa división —no lo elegí a dedo—,
+       así que muevas lo que muevas abajo la promesa se mantiene. El resto solo sirve para llegar antes.`
+    : `⚠ Con estos números la meta <b>no</b> alcanza el 50: ${META_PTS} puntos dan ${solo.toLocaleString('es')} XP
+       y el nivel 50 pide ${tope.toLocaleString('es')}.`;
+}
+
+pintarPesos(); pintarPromesa(); pintarSims(); pintarTrack(); pintarTabla();
+pintarPerfil(); pintarOpts();
 </script>
 </body>
 </html>
