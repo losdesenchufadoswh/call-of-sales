@@ -237,7 +237,10 @@ main::-webkit-scrollbar-thumb{background:#22262b}
 .deploy .arrow{margin-left:auto;font-size:26px;font-weight:700}
 
 /* squad mini */
-.sq{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sq{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+  cursor:pointer;transition:background .13s}
+.sq:hover{background:rgba(255,255,255,.04)}
+.sq:hover .nm{color:var(--amber)}
 .sq:last-child{border-bottom:0}
 .sq.me{background:linear-gradient(90deg,rgba(255,138,0,.14),transparent)}
 .sq .pos{width:22px;font-family:'Barlow Condensed';font-size:15px;font-weight:700;color:var(--dim)}
@@ -280,6 +283,8 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .ptbadge.zero{color:var(--dim)}
 
 /* leaderboard elite */
+.lbwho{display:flex;align-items:center;gap:11px;min-width:0;cursor:pointer;padding:2px 4px;margin:-2px -4px}
+.lbwho:hover .nm{color:var(--amber)}
 .lbrow{display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,.05)}
 .lbrow .stripe{width:4px;align-self:stretch}
 .lbrow .cells{flex:1;display:grid;grid-template-columns:60px 1fr 84px 84px 84px 84px 104px;align-items:center;padding:12px 14px;gap:8px}
@@ -732,7 +737,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <div class="chip" onclick="openFecha()" style="cursor:pointer" title="Cambiar la fecha del sistema">OPERACIÓN <b id="topMonth">JULIO</b><span id="topDia" style="color:var(--dim);margin-left:5px"></span></div>
       <div class="chip">ESCUADRÓN <b id="topSquad">5</b></div>
       <span id="bellWrap"></span>
-      <button class="namebtn chip" style="gap:9px" onclick="setTab('perfil')" title="Ver perfil">
+      <button class="namebtn chip" style="gap:9px" onclick="verPerfil(ME)" title="Ver perfil">
         <div class="rankbadge" id="topRank">3</div>
         <b id="topName">EL_FE</b>
       </button>
@@ -923,7 +928,7 @@ const PLAY = [
   {k:'3play',   l:'3 PLAY',  sub:'3 servicios', auto:['internet','tv','voice'],     speed:true},
   {k:'celular', l:'CELULAR', sub:'línea móvil', auto:['celular'],                   speed:false}
 ];
-const SPEEDS = [{k:'40',l:'40 MB'},{k:'100',l:'100 MB'},{k:'300',l:'300 MB'},{k:'500',l:'500 MB'},{k:'1gb',l:'1 GB'}];
+const SPEEDS = [{k:'40',l:'40 MB'},{k:'100',l:'100 MB'},{k:'300',l:'300 MB'},{k:'500',l:'500 MB'},{k:'1gb',l:'1 GB'},{k:'double',l:'DOUBLE SPEED'}];
 const PLAYCOLOR = {'1play':'#8b9199','2play':'#39d0ff','3play':'#d8ff2e','celular':'#ffb545'};
 const planLabel = p => !p ? '—' : (PLAY.find(x=>x.k===p.type)?.l||p.type) + (p.speed ? ' · '+(SPEEDS.find(s=>s.k===p.speed)?.l||p.speed) : '');
 
@@ -1171,8 +1176,14 @@ async function publicarRanking(){
       const t = stats(uid);
       return db().collection('ranking').doc(`${anio}-${mes}-${uid}`).set({
         owner:uid, anio, mes,
-        pts:t.pts, internet:t.internet, celular:t.celular, voice:t.voice,
+        pts:t.pts, internet:t.internet, celular:t.celular, voice:t.voice, tv:t.tv,
         cuota:cuotaBono(t), ventas:salesOf(uid).length,
+        /* agregados para que el escuadron pueda abrir el perfil del otro.
+           Son todos conteos: aqui no entra ni un nombre ni un telefono. */
+        src:t.src, plans:t.plans, speeds:t.speeds,
+        self:t.self, agendadas:t.agendadas, pendientes:t.pendientes.length,
+        diasActivos:t.diasActivos, mejorDia:t.mejorDia, mejorDiaPts:t.mejorDiaPts,
+        topSrc:t.topSrc, topSpeed:t.topSpeed,
         actualizado: Date.now()
       });
     }));
@@ -1381,7 +1392,7 @@ function stats(uid){
   const t = {pts:0,bonus:0,celular:0,internet:0,tv:0,voice:0,
              src:{redes:0,referido:0,canva:0,base:0},
              plans:{'1play':0,'2play':0,'3play':0,celular:0},
-             speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0},
+             speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0,'double':0},
              self:0, agendadas:0, pendientes:[], hoy:[], byDay:{}};
   SALES.forEach(s=>{
     const pt = ptsOf(s);
@@ -1409,8 +1420,31 @@ function stats(uid){
   t.mejorDiaPts = best ? t.byDay[best] : 0;
   t.topSrc = Object.keys(t.src).sort((a,b)=>t.src[b]-t.src[a])[0];
   t.topSpeed = Object.keys(t.speeds).sort((a,b)=>t.speeds[b]-t.speeds[a])[0];
+  t.nPendientes = t.pendientes.length;   // el perfil ajeno solo recibe el numero
   return t;
 }
+
+/* Los mismos totales, venga de donde venga la informacion: si tengo las ventas
+   los calculo, y si son de otro los saco del marcador publicado. Asi el perfil
+   se dibuja igual sin preguntar de quien es en cada linea. */
+function statsDe(uid){
+  if(uid === ME || isAdmin()) return stats(uid);
+  const r = RANKING[uid] || {};
+  const cero = k => (r[k] || 0);
+  return {
+    pts:cero('pts'), bonus:cero('voice'), celular:cero('celular'), internet:cero('internet'),
+    tv:cero('tv'), voice:cero('voice'),
+    src:   r.src   || {redes:0,referido:0,canva:0,base:0},
+    plans: r.plans || {'1play':0,'2play':0,'3play':0,celular:0},
+    speeds:r.speeds|| SPEEDS.reduce((o,s)=>(o[s.k]=0,o),{}),
+    self:cero('self'), agendadas:cero('agendadas'), nPendientes:cero('pendientes'),
+    diasActivos:cero('diasActivos'), mejorDia:r.mejorDia||'—', mejorDiaPts:cero('mejorDiaPts'),
+    topSrc:r.topSrc||'redes', topSpeed:r.topSpeed||'100',
+    ventas:cero('ventas'), pendientes:[], byDay:{},
+    ajeno:true, sinDatos:!RANKING[uid]
+  };
+}
+const ventasDe = uid => (uid === ME || isAdmin()) ? salesOf(uid).length : (RANKING[uid]||{}).ventas || 0;
 function ranked(){
   return SQUAD.map(s=>{
     /* de mis propias ventas salgo yo (y todos, si soy admin, que las tengo);
@@ -1531,6 +1565,7 @@ function entrar(){
   pintaFecha();
   $('#topName').textContent = me().nm;
   tab = 'lobby'; opsScope = 'me'; alertShown = false;   // sesión limpia al cambiar de operador
+  perfilUid = null; perfilVolverA = 'lobby';
   SALES = [];
   render();
   escucharVentas();   // baja los cierres del mes y se queda escuchando
@@ -1798,7 +1833,7 @@ function viewLobby(){
         <div class="ph"><span class="tick" style="background:var(--lime)"></span>Escuadrón<span class="right">EN VIVO</span></div>
         <div>
           ${r.map((s,i)=>`
-            <div class="sq ${s.id===ME?'me':''}">
+            <div class="sq ${s.id===ME?'me':''}" onclick="verPerfil('${s.id}')" title="Ver el expediente de ${s.nm}">
               <div class="pos">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</div>
               <div class="av">${s.av?`<img class="avimg" src="${s.av}" alt="" onerror="this.parentNode.textContent='${s.nm.slice(0,2)}'">`:s.nm.slice(0,2)}</div>
               <div class="nm">${s.id===ME?'TÚ':s.nm}</div>
@@ -2055,10 +2090,10 @@ function viewSquad(){
           <div class="stripe" style="background:${COLORS[i]}"></div>
           <div class="cells">
             <div class="rk">${i<3?['🥇','🥈','🥉'][i]:''} ${i+1}</div>
-            <div style="display:flex;align-items:center;gap:11px;min-width:0">
+            <div class="lbwho" onclick="verPerfil('${s.id}')" title="Ver el expediente de ${s.nm}">
               <div class="lbav">${s.av?`<img class="avimg" src="${s.av}" alt="">`:''}</div>
               <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}
-                ${s.id!==ME?`<button class="medbtn2" onclick="abrirDarMedalla('${s.id}')" title="Darle una medalla">🎖️</button>`:''}
+                ${s.id!==ME?`<button class="medbtn2" onclick="event.stopPropagation();abrirDarMedalla('${s.id}')" title="Darle una medalla">🎖️</button>`:''}
                 <small>${s.full}${medallasDe(s.id)}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
@@ -2075,13 +2110,14 @@ function viewSquad(){
 }
 
 /* vitrina: los 7 badges, a color los que llevas (con su xN) y en gris los que no */
-function vitrinaHTML(uid){
+function vitrinaHTML(uid, yo){
   const c = contarLogros(uid);
   const total = Object.values(c).reduce((a,b)=>a+b,0);
   const distintos = Object.keys(c).length;
+  const mia = yo !== undefined ? yo : uid === ME;
   return `
   <div class="panel cut" style="margin-top:14px">
-    <div class="ph"><span class="tick" style="background:var(--lime)"></span>Vitrina de logros
+    <div class="ph"><span class="tick" style="background:var(--lime)"></span>Vitrina de logros${mia?'':' de '+opBy(uid).nm}
       <span class="right">${total ? `${total} EN TOTAL · ${distintos}/${LOGROS.length} DISTINTOS` : `0 DE ${LOGROS.length}`}</span></div>
     <div class="vitrina">
       ${LOGROS.map(L=>{
@@ -2093,13 +2129,29 @@ function vitrinaHTML(uid){
         </div>`;
       }).join('')}
     </div>
-    <div class="vhint">Se ganan solos al vender y no se borran al cambiar de mes. El mismo logro suma otra vez si lo repites en otro día o semana.</div>
+    <div class="vhint">${mia
+      ? 'Se ganan solos al vender y no se borran al cambiar de mes. El mismo logro suma otra vez si lo repites en otro día o semana.'
+      : `Todo lo que ${opBy(uid).nm} lleva ganado desde que existe la vitrina.`}</div>
   </div>`;
 }
 
+/* ---------- PERFIL ----------
+   Sirve para cualquiera del escuadron. El mio (y todos, si soy admin) sale de
+   mis ventas; el de un companero sale del marcador, que trae solo conteos. */
+let perfilUid = null;      // null = el mio
+let perfilVolverA = 'lobby';
+
+function verPerfil(uid){
+  perfilUid = uid || ME;
+  perfilVolverA = tab === 'perfil' ? perfilVolverA : tab;
+  setTab('perfil');
+}
+
 function viewPerfil(){
-  const t = stats(), m = me(), r = ranked();
-  const pos = r.findIndex(x=>x.id===ME)+1;
+  const uid = perfilUid || ME;
+  const yo = uid === ME;
+  const t = statsDe(uid), m = opBy(uid), r = ranked();
+  const pos = r.findIndex(x=>x.id===uid)+1;
   const pct = Math.round(t.pts/m.meta*100);
   const nivel = Math.floor(t.pts/5)+1;
   const xpIn = (t.pts%5)/5*100;
@@ -2117,9 +2169,11 @@ function viewPerfil(){
     <div class="content">
       <!-- IZQUIERDA: ficha -->
       <div style="display:flex;flex-direction:column;gap:14px">
-        <button class="backbtn" style="align-self:flex-start" onclick="setTab('lobby')">◂ Volver al lobby</button>
+        <button class="backbtn" style="align-self:flex-start" onclick="setTab('${perfilVolverA}')">◂ Volver ${
+          perfilVolverA==='squad' ? 'al escuadrón' : perfilVolverA==='ops' ? 'a mis cierres' : 'al lobby'}</button>
         <div class="glass">
-          <div class="ph"><span class="tick"></span>Expediente</div>
+          <div class="ph"><span class="tick"></span>Expediente${yo?'':` de ${m.nm}`}</div>
+          ${t.sinDatos ? `<div class="notice" style="margin:12px 14px 4px">Todavía no ha entrado este mes, así que su marcador está en blanco. Sus números aparecen apenas abra la app.</div>` : ''}
           <div class="xpwrap">
             <div style="display:flex;align-items:baseline;gap:8px">
               <div style="font-family:'Barlow Condensed';font-size:13px;letter-spacing:.2em;color:var(--muted)">NIVEL ${nivel}</div>
@@ -2133,7 +2187,7 @@ function viewPerfil(){
           <div class="statrow"><div class="k">DÍAS CON CIERRE</div><div class="v">${t.diasActivos}<small style="color:var(--dim);font-size:12px">/${dayNow}</small></div></div>
           <div class="statrow"><div class="k">MEJOR DÍA</div><div class="v">${t.mejorDia} <small style="color:var(--lime);font-size:13px">+${t.mejorDiaPts}</small></div></div>
           <div class="statrow"><div class="k">SELF INSTALL</div><div class="v">${t.self}</div></div>
-          <div class="statrow"><div class="k">CON CITA</div><div class="v" style="color:var(--cyan)">${t.agendadas} <small style="color:var(--amber);font-size:12px">${t.pendientes.length} PEND.</small></div></div>
+          <div class="statrow"><div class="k">CON CITA</div><div class="v" style="color:var(--cyan)">${t.agendadas} <small style="color:var(--amber);font-size:12px">${t.nPendientes} PEND.</small></div></div>
         </div>
 
         <div class="glass">
@@ -2160,7 +2214,7 @@ function viewPerfil(){
           </div>
         </div>
         <div class="cs">
-          <div class="n">${m.nm}<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button></div>
+          <div class="n">${m.nm}${yo?`<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button>`:''}</div>
           <div class="r">${m.rol==='admin'?'MANDO':'OPERADOR'} · ${monthName} · RANGO #${pos}</div>
         </div>
       </div>
@@ -2172,7 +2226,7 @@ function viewPerfil(){
           <div class="bigstat">
             <div class="b"><div class="n" style="color:var(--lime)">${t.pts}</div><div class="l">PUNTOS</div></div>
             <div class="b"><div class="n" style="color:var(--cyan)">${t.bonus}</div><div class="l">BONOS VOICE</div></div>
-            <div class="b"><div class="n">${salesOf(ME).length}</div><div class="l">CIERRES</div></div>
+            <div class="b"><div class="n">${ventasDe(uid)}</div><div class="l">CIERRES</div></div>
             <div class="b"><div class="n" style="color:var(--amber)">${(t.pts/Math.max(1,t.diasActivos)).toFixed(1)}</div><div class="l">PTS / DÍA ACTIVO</div></div>
           </div>
         </div>
@@ -2191,14 +2245,38 @@ function viewPerfil(){
           <div style="padding:6px 0 12px">
             ${SPEEDS.map(s=>`<div class="mixrow">
               <div class="l">${s.l}</div>
-              <div class="t"><i style="width:${t.speeds[s.k]/maxSpd*100}%;background:var(--amber)"></i></div>
-              <div class="n">${t.speeds[s.k]}</div>
+              <div class="t"><i style="width:${(t.speeds[s.k]||0)/maxSpd*100}%;background:var(--amber)"></i></div>
+              <div class="n">${t.speeds[s.k]||0}</div>
             </div>`).join('')}
           </div>
         </div>
+
+        ${(()=>{ /* medallas que le dio el escuadron */
+          const ms = medallasDeUid(uid);
+          if(!ms.length && yo) return '';
+          const c = {};
+          ms.forEach(x=>{ c[x.tipo] = (c[x.tipo]||0)+1; });
+          return `<div class="glass">
+            <div class="ph"><span class="tick" style="background:#ff7ad9"></span>Medallas del escuadrón
+              <span class="right">${ms.length} ESTE MES</span></div>
+            ${ms.length ? `<div style="display:flex;gap:14px;flex-wrap:wrap;padding:12px 14px">
+              ${MEDALLAS.filter(md=>c[md.k]).map(md=>`
+                <div style="text-align:center">
+                  <div style="font-size:26px;line-height:1">${md.emo}</div>
+                  <div style="font-family:'Barlow Condensed';font-size:11px;letter-spacing:.08em;color:${md.color};margin-top:3px">${md.l}</div>
+                  <div style="font-family:'Barlow Condensed';font-size:16px;font-weight:700">×${c[md.k]}</div>
+                </div>`).join('')}
+            </div>` : `<div class="hint" style="padding:14px">Nadie le ha dado medallas todavía</div>`}
+            ${yo ? '' : `<div style="padding:0 14px 14px">
+              <button class="btn-ghost" style="width:100%" onclick="abrirDarMedalla('${uid}')">🎖️ Darle una medalla</button>
+            </div>`}
+          </div>`;
+        })()}
       </div>
     </div>
-  </div>`;
+  </div>
+
+  <div class="gridwrap" style="padding-top:0">${vitrinaHTML(uid, yo)}</div>`;
 }
 
 function viewRadio(){
