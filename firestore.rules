@@ -74,6 +74,14 @@ service cloud.firestore {
       allow delete: if soyAdmin();
     }
 
+    // Lo que cada quien se puso del pase: fondo, titulo, emote, marco y color.
+    // Son cinco textos. Todos lo leen porque los cosmeticos se ven en el
+    // ranking, pero solo puedes escribir el tuyo (el id del doc es tu id).
+    match /look/{uid} {
+      allow read:  if autenticado();
+      allow write: if soyAdmin() || (autenticado() && uid == miId());
+    }
+
     // Marca de la carga inicial de julio. Solo el admin la escribe.
     match /meta/{docId} {
       allow read:  if autenticado();

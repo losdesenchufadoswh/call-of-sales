@@ -578,6 +578,99 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   .logrobox,.lgimg,.lgring,.lgrays,.lgkicker,.lgsub,.lgcuando,.lgveces,.lgbtn{animation:none}
   .lgrays,.lgring{display:none}
 }
+/* ---- pase: chip del topbar ---- */
+.pasechip{display:flex;align-items:center;gap:8px;background:none;border:1px solid var(--line);
+  padding:4px 10px 4px 7px;cursor:pointer;color:var(--txt);font-family:'Barlow Condensed'}
+.pasechip:hover{border-color:var(--amber)}
+.pasechip .lvn{font-size:19px;font-weight:700;line-height:1;color:var(--amber);min-width:22px;text-align:center}
+.pasechip .col{display:flex;flex-direction:column;gap:3px;min-width:74px}
+.pasechip .cap{font-size:9px;letter-spacing:.19em;color:var(--dim);line-height:1}
+.pasechip .xpbar2{height:5px;background:#000;border:1px solid var(--line);overflow:hidden}
+.pasechip .xpbar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));
+  transition:width .5s cubic-bezier(.2,.9,.3,1)}
+.pasechip.tope .lvn{color:var(--gold)}
+.pasechip.tope .xpbar2 i{background:linear-gradient(90deg,var(--gold),#fff3c4,var(--gold));
+  background-size:200% 100%;animation:brillo 2.4s linear infinite}
+@keyframes brillo{to{background-position:200% 0}}
+/* ---- pase: recorrido de niveles ---- */
+.paseTop{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:15px}
+@media(max-width:640px){.paseTop{grid-template-columns:1fr}}
+.paseLv{text-align:center;border:1px solid var(--amber);padding:10px 18px;min-width:104px}
+.paseLv b{display:block;font-family:'Barlow Condensed';font-size:46px;font-weight:700;line-height:1;color:var(--amber)}
+.paseLv small{font-size:9.5px;letter-spacing:.2em;color:var(--muted)}
+.paseLv.tope{border-color:var(--gold)} .paseLv.tope b{color:var(--gold)}
+.paseProg .lbl{display:flex;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.paseProg .lbl b{margin-left:auto;color:var(--txt)}
+.paseBar{height:12px;background:#000;border:1px solid var(--line);overflow:hidden;margin-top:7px}
+.paseBar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));
+  transition:width .6s cubic-bezier(.2,.9,.3,1)}
+.paseDet{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-top:12px}
+.paseDet div{background:var(--panel-solid);padding:8px 6px;text-align:center}
+.paseDet b{display:block;font-family:'Barlow Condensed';font-size:17px;font-weight:700}
+.paseDet small{font-size:8.5px;letter-spacing:.13em;color:var(--dim)}
+.pasetrack{overflow-x:auto;padding:14px}
+.ptrack{display:flex;gap:6px;min-width:min-content;padding-bottom:6px}
+.pniv{position:relative;flex:0 0 72px;background:var(--panel-solid);border:1px solid var(--line);
+  padding:7px 4px 8px;text-align:center;opacity:.4}
+.pniv.on{opacity:1;border-color:rgba(255,138,0,.5);
+  background:linear-gradient(180deg,rgba(255,138,0,.12),var(--panel-solid))}
+.pniv.hito{flex-basis:92px}
+.pniv .n{font-family:'Barlow Condensed';font-size:16px;font-weight:700;color:var(--dim)}
+.pniv.on .n{color:var(--txt)}
+.pniv .ic{font-size:19px;line-height:1.3;min-height:25px;display:flex;align-items:center;justify-content:center}
+.pniv .ic img{width:26px;height:26px;object-fit:cover;display:block}
+.pniv .rw{font-family:'Barlow Condensed';font-size:9.5px;letter-spacing:.05em;line-height:1.2;
+  color:var(--dim);min-height:23px;display:flex;align-items:center;justify-content:center}
+.pniv.on .rw{color:var(--amber)}
+.pniv .mk{position:absolute;top:-1px;left:-1px;right:-1px;height:2px;background:var(--amber)}
+.pniv.legend.on{border-color:var(--gold)}
+.pniv.legend.on .mk{background:var(--gold)} .pniv.legend.on .rw{color:var(--gold)}
+/* ---- pase: escoger cosmeticos ---- */
+.cosgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:14px}
+.cosgrp .cgl{font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.17em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:6px}
+.coschips{display:flex;gap:6px;flex-wrap:wrap}
+.coschip{background:var(--panel-solid);border:1px solid var(--line);color:var(--muted);padding:6px 10px;
+  cursor:pointer;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.08em;
+  display:flex;align-items:center;gap:5px}
+.coschip:hover:not(.bloq){border-color:var(--line2);color:var(--txt)}
+.coschip.on{border-color:var(--amber);color:var(--amber);background:rgba(255,138,0,.1)}
+.coschip.bloq{opacity:.38;cursor:not-allowed}
+.coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
+.coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- cosmeticos puestos ---- */
+@keyframes legendGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.pasefondo{position:absolute;inset:0;background-size:cover;background-position:center 62%}
+.pasefondo:after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,9,11,.42),rgba(8,9,11,.82))}
+.cian{color:var(--cyan)!important} .lima{color:var(--lime)!important} .ambar{color:var(--amber2)!important}
+.dorado{background:linear-gradient(90deg,#ffd24a,#fff6d0,#ffd24a);background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent!important;animation:brillo 2.6s linear infinite}
+.emo{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;
+  width:22px;height:22px;font-size:15px;line-height:1;margin:0 2px;padding:0;
+  background:none;border:0;overflow:hidden}
+.emo img{width:100%;height:100%;object-fit:cover;display:block}
+.emo-lg{width:38px;height:38px;font-size:26px;margin-left:8px;border:1px solid var(--line2);background:#0a0d11}
+.emo.clickable{cursor:pointer}
+.emo.clickable:hover{transform:scale(1.12)}
+.minitit{color:var(--amber);letter-spacing:.1em;font-family:'Barlow Condensed'}
+.pasetit{display:inline-block;font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.2em;
+  padding:2px 9px;margin-top:7px;border:1px solid var(--amber);color:var(--amber)}
+.emblem.marco-bronce .hex{box-shadow:0 0 0 3px #b87333,0 0 26px rgba(184,115,51,.5)}
+.emblem.marco-plata  .hex{box-shadow:0 0 0 3px #dfe4e8,0 0 26px rgba(223,228,232,.45)}
+.emblem.marco-oro    .hex{box-shadow:0 0 0 3px #ffd24a,0 0 30px rgba(255,210,74,.55)}
+.emblem.marco-legend .hex{box-shadow:0 0 0 3px #ffd24a,0 0 44px rgba(255,210,74,.75);
+  animation:marcoLeg 3.2s ease infinite}
+@keyframes marcoLeg{50%{box-shadow:0 0 0 3px #fff3c4,0 0 60px rgba(255,210,74,.95)}}
+/* ---- emote legendario en grande ---- */
+.emov{z-index:88}
+.emobox{position:relative;text-align:center;padding:26px;background:#0b0d10;border:1px solid var(--gold);
+  box-shadow:0 0 90px rgba(255,210,74,.3),0 40px 90px rgba(0,0,0,.9);animation:lgIn .4s cubic-bezier(.16,1,.3,1)}
+.emobox img{display:block;width:min(300px,74vw);margin:0 auto;
+  animation:medPop .55s cubic-bezier(.2,1.4,.4,1) .05s both}
+.emobox h3{font-family:'Barlow Condensed';font-size:24px;letter-spacing:.18em;color:var(--gold);margin-top:16px}
+.emobox p{font-size:12.5px;color:var(--muted);margin-top:5px}
 /* ---- logros: vitrina ---- */
 .vitrina{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;padding:14px}
 .vcard{position:relative;text-align:center;padding:8px 4px 9px;background:#0f1216;border:1px solid var(--line);
@@ -737,6 +830,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <div class="chip" onclick="openFecha()" style="cursor:pointer" title="Cambiar la fecha del sistema">OPERACIÓN <b id="topMonth">JULIO</b><span id="topDia" style="color:var(--dim);margin-left:5px"></span></div>
       <div class="chip">ESCUADRÓN <b id="topSquad">5</b></div>
       <span id="bellWrap"></span>
+      <button class="pasechip" id="pasechip" onclick="setTab('pase')" title="Ver el pase"></button>
       <button class="namebtn chip" style="gap:9px" onclick="verPerfil(ME)" title="Ver perfil">
         <div class="rankbadge" id="topRank">3</div>
         <b id="topName">EL_FE</b>
@@ -872,6 +966,16 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ EMOTE LEGENDARIO EN GRANDE ============ -->
+<div class="overlay emov" id="emoOverlay" onclick="cerrarEmote()">
+  <div class="emobox" onclick="event.stopPropagation()">
+    <img id="emoImg" src="" alt="">
+    <h3 id="emoTit"></h3>
+    <p id="emoSub"></p>
+    <button class="btn-ghost" style="margin-top:16px;width:100%" onclick="cerrarEmote()">Cerrar</button>
+  </div>
+</div>
+
 <!-- ============ DAR UNA MEDALLA ============ -->
 <div class="overlay" id="darOverlay">
   <div class="modal" style="width:420px">
@@ -982,6 +1086,71 @@ const MEDALLAS = [
 ];
 const CIERRES_POR_MEDALLA = 3;
 const medBy = k => MEDALLAS.find(m=>m.k===k) || MEDALLAS[0];
+
+/* ==================== BATTLE PASS ====================
+   50 niveles por mes. Solo cosmeticos: los puntos son la produccion real y no
+   se tocan. La promesa es que cumplir la meta llega al 50, y eso no depende de
+   calibrar a ojo: el XP de cada punto sale de dividir el total del pase entre
+   la meta, asi que se cumple sola. Lo demas —cierres, voice, dias, logros,
+   medallas— solo sirve para llegar antes. */
+const PASE_NIVELES = 50;
+const XP_NIVEL = 36;                                   // 50 x 36 = 1800 para el tope
+const XP_TOTAL = PASE_NIVELES * XP_NIVEL;
+const XP_PUNTO = XP_TOTAL / META_PTS;                  // 40 exacto con la meta de 45
+const XP = {cierre:5, voice:5, dia:10, logro:60, medalla:20};
+
+/* lo que desbloquea cada nivel */
+const COSMETICOS = {
+  fondo: [
+    {k:'',         n:'Sin fondo',   lv:0},
+    {k:'nuketown', n:'NUKETOWN',    lv:18, img:'pase/bg-nuketown.webp'},
+    {k:'blackout', n:'BLACKOUT',    lv:32, css:'radial-gradient(ellipse at 70% -20%,#1b4a7a,transparent 62%),linear-gradient(160deg,#050a12,#01030a)'},
+    {k:'warzone',  n:'WARZONE',     lv:46, css:'radial-gradient(ellipse at 50% 130%,#4ad07a,transparent 58%),linear-gradient(160deg,#04180d,#010805)'},
+    {k:'nuclear',  n:'NUCLEAR',     lv:50, css:'linear-gradient(125deg,#0a1a2e,#123a52,#0a1a2e)', anim:true}
+  ],
+  titulo: [
+    {k:'',              n:'Sin título',    lv:0},
+    {k:'RECLUTA',       n:'RECLUTA',       lv:5},
+    {k:'OPERADOR',      n:'OPERADOR',      lv:15},
+    {k:'CAZADOR',       n:'CAZADOR',       lv:20},
+    {k:'DEMOLEDOR',     n:'DEMOLEDOR',     lv:25},
+    {k:'FRANCOTIRADOR', n:'FRANCOTIRADOR', lv:30},
+    {k:'VETERANO',      n:'VETERANO',      lv:35},
+    {k:'ESPECTRO',      n:'ESPECTRO',      lv:45},
+    {k:'NUKE DEALER',   n:'NUKE DEALER',   lv:50}
+  ],
+  emote: [
+    {k:'',    n:'Ninguno', lv:0},
+    {k:'💀',  n:'💀',      lv:10},
+    {k:'🎯',  n:'🎯',      lv:25},
+    {k:'☢️',  n:'☢️',      lv:42},
+    {k:'sol', n:'EL SOL',  lv:50, img:'pase/emote-sol.webp', legendario:true}
+  ],
+  marco: [
+    {k:'',       n:'Sin marco',  lv:0},
+    {k:'bronce', n:'BRONCE',     lv:8},
+    {k:'plata',  n:'PLATA',      lv:22},
+    {k:'oro',    n:'ORO',        lv:38},
+    {k:'legend', n:'LEGENDARIO', lv:50}
+  ],
+  color: [
+    {k:'',       n:'Blanco', lv:0},
+    {k:'cian',   n:'CIAN',   lv:12},
+    {k:'lima',   n:'LIMA',   lv:28},
+    {k:'ambar',  n:'ÁMBAR',  lv:40},
+    {k:'dorado', n:'DORADO', lv:50}
+  ]
+};
+const CAT_LABEL = {fondo:'Fondo del perfil', titulo:'Título', emote:'Emote',
+                   marco:'Marco del avatar', color:'Color del nombre'};
+const cosBy = (cat,k) => COSMETICOS[cat].find(o=>o.k===k) || COSMETICOS[cat][0];
+/* todo lo que da algun nivel, para pintar el recorrido */
+const premiosDeNivel = lv => {
+  const out = [];
+  Object.keys(COSMETICOS).forEach(cat=>
+    COSMETICOS[cat].filter(o=>o.lv===lv).forEach(o=>out.push({cat, ...o})));
+  return out;
+};
 
 /* ---------- LOGROS ----------
    Se ganan solos por vender, no los da nadie. Cada uno se cuenta una vez por
@@ -1143,6 +1312,7 @@ function escucharVentas(){
   escucharRanking();
   escucharMedallas();
   escucharLogros();
+  escucharLook();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -1339,6 +1509,54 @@ async function publicarLogros(){
   }catch(err){ console.error('no se pudieron guardar los logros:', err); }
 }
 
+/* ---------- LOOK: LO QUE CADA UNO SE PUSO ----------
+   Vive en `look`, un doc por operador. Son cinco textos, nada mas. Se lee de
+   todo el escuadron para que los cosmeticos se vean tambien en el leaderboard. */
+let LOOK = {};               // uid -> {fondo, titulo, emote, marco, color}
+let unsubLook = null;
+const lookDe = uid => LOOK[uid] || {};
+
+function escucharLook(){
+  if(unsubLook){ unsubLook(); unsubLook = null; }
+  unsubLook = db().collection('look').onSnapshot(snap=>{
+    LOOK = {};
+    snap.docs.forEach(d=>{ LOOK[d.id] = d.data(); });
+    render();
+  }, err => console.error('look:', err));
+}
+
+async function ponerse(cat, k){
+  if(!tieneDesbloqueado(ME, cat, k)){
+    toast(`Necesitas el <b>nivel ${cosBy(cat,k).lv}</b> para eso`);
+    return;
+  }
+  const antes = {...lookDe(ME)};
+  LOOK[ME] = {...antes, [cat]:k, owner:ME};      // se ve al instante
+  render();
+  try{
+    await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()});
+  }catch(err){
+    console.error(err);
+    LOOK[ME] = antes; render();
+    toast('No se pudo guardar: ' + (err.code||err.message));
+  }
+}
+
+/* si el mes nuevo te deja por debajo, no puedes seguir luciendo lo que ya no
+   tienes: se quita solo lo que quedo fuera de alcance */
+async function limpiarLookFueraDeAlcance(){
+  const mio = lookDe(ME);
+  if(!Object.keys(mio).length) return;
+  const lv = nivelDe(ME), quitar = {};
+  Object.keys(COSMETICOS).forEach(cat=>{
+    if(mio[cat] && cosBy(cat, mio[cat]).lv > lv) quitar[cat] = '';
+  });
+  if(!Object.keys(quitar).length) return;
+  LOOK[ME] = {...mio, ...quitar};
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()}); }
+  catch(err){ console.error(err); }
+}
+
 async function correrMigracion(){
   const btn = $('#btnMigrar');
   if(btn){ btn.disabled = true; btn.textContent = 'Subiendo…'; }
@@ -1445,6 +1663,32 @@ function statsDe(uid){
   };
 }
 const ventasDe = uid => (uid === ME || isAdmin()) ? salesOf(uid).length : (RANKING[uid]||{}).ventas || 0;
+
+/* ---------- XP Y NIVEL DEL PASE ---------- */
+function xpDe(uid){
+  const t = statsDe(uid);
+  const nLogros = logrosDe(uid).length;
+  const nMedallas = medallasDeUid(uid).length;
+  const det = {
+    puntos:  Math.round(t.pts * XP_PUNTO),
+    cierres: ventasDe(uid) * XP.cierre,
+    voice:   t.voice * XP.voice,
+    dias:    t.diasActivos * XP.dia,
+    logros:  nLogros * XP.logro,
+    medallas:nMedallas * XP.medalla
+  };
+  det.total = Object.values(det).reduce((a,b)=>a+b,0);
+  return det;
+}
+const nivelDe = uid => Math.min(PASE_NIVELES, Math.floor(xpDe(uid).total / XP_NIVEL));
+/* cuanto llevas dentro del nivel actual, para la barrita del topbar */
+function progresoNivel(uid){
+  const xp = xpDe(uid).total, lv = nivelDe(uid);
+  if(lv >= PASE_NIVELES) return {lv, dentro:XP_NIVEL, falta:0, pct:100, tope:true};
+  const dentro = xp - lv*XP_NIVEL;
+  return {lv, dentro, falta:XP_NIVEL-dentro, pct:dentro/XP_NIVEL*100, tope:false};
+}
+const tieneDesbloqueado = (uid,cat,k) => cosBy(cat,k).lv <= nivelDe(uid);
 function ranked(){
   return SQUAD.map(s=>{
     /* de mis propias ventas salgo yo (y todos, si soy admin, que las tengo);
@@ -1565,7 +1809,7 @@ function entrar(){
   pintaFecha();
   $('#topName').textContent = me().nm;
   tab = 'lobby'; opsScope = 'me'; alertShown = false;   // sesión limpia al cambiar de operador
-  perfilUid = null; perfilVolverA = 'lobby';
+  perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
   SALES = [];
   render();
   escucharVentas();   // baja los cierres del mes y se queda escuchando
@@ -1576,7 +1820,8 @@ function logout(){
   if(unsubRanking){ unsubRanking(); unsubRanking = null; }
   if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
   if(unsubLogros){ unsubLogros(); unsubLogros = null; }
-  SALES = []; RANKING = {}; MEDALLAS_MES = []; LOGROS_MIOS = [];
+  if(unsubLook){ unsubLook(); unsubLook = null; }
+  SALES = []; RANKING = {}; MEDALLAS_MES = []; LOGROS_MIOS = []; LOOK = {};
   medEnPantalla = null; logroEnPantalla = null;
   /* salir es a proposito: no vuelve a entrar solo, aunque el remember estuviera puesto */
   try{ localStorage.removeItem('ops.email'); }catch(e){}
@@ -1654,6 +1899,7 @@ const TABS = [
   {k:'lobby',  l:'Lobby'},
   {k:'ops',    l:'Mis cierres'},
   {k:'squad',  l:'Escuadrón'},
+  {k:'pase',   l:'Pase'},
   {k:'radio',  l:'Radio'},
   {k:'mando',  l:'Mando'}
 ];
@@ -1679,6 +1925,7 @@ function render(){
   $('#topName').textContent = m.nm;
   $('#topSquad').textContent = SQUAD.length;
   renderBell();
+  renderPaseChip();
   if(cargando && !SALES.length){
     $('#view').innerHTML = `<div class="gridwrap"><div class="notice">Bajando los cierres de ${monthName}…</div></div>`;
     return;
@@ -1686,6 +1933,7 @@ function render(){
   if(tab==='lobby') viewLobby();
   else if(tab==='ops') viewOps();
   else if(tab==='squad') viewSquad();
+  else if(tab==='pase') viewPase();
   else if(tab==='perfil') viewPerfil();
   else if(tab==='radio') viewRadio();
   else if(tab==='mando' && isAdmin()) viewMando();
@@ -2092,9 +2340,10 @@ function viewSquad(){
             <div class="rk">${i<3?['🥇','🥈','🥉'][i]:''} ${i+1}</div>
             <div class="lbwho" onclick="verPerfil('${s.id}')" title="Ver el expediente de ${s.nm}">
               <div class="lbav">${s.av?`<img class="avimg" src="${s.av}" alt="">`:''}</div>
-              <div class="nm">${s.nm}${s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}
+              <div class="nm"><span class="${lookDe(s.id).color||''}">${s.nm}</span>${emoteHTML(s.id)}${
+                s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}
                 ${s.id!==ME?`<button class="medbtn2" onclick="event.stopPropagation();abrirDarMedalla('${s.id}')" title="Darle una medalla">🎖️</button>`:''}
-                <small>${s.full}${medallasDe(s.id)}</small></div>
+                <small>${lookDe(s.id).titulo ? `<span class="minitit">${lookDe(s.id).titulo}</span> · ` : ''}${s.full}${medallasDe(s.id)}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
             <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.cuota}<small>${s.bono}% · ${s.internet}i+${s.celular}c</small></div>
@@ -2110,6 +2359,142 @@ function viewSquad(){
 }
 
 /* vitrina: los 7 badges, a color los que llevas (con su xN) y en gris los que no */
+/* el emote que lleva puesto. El legendario se puede tocar para verlo grande */
+function emoteHTML(uid, tam){
+  const e = cosBy('emote', lookDe(uid).emote || '');
+  if(!e.k) return '';
+  const cls = tam === 'grande' ? 'emo emo-lg' : 'emo';
+  return e.img
+    ? `<button class="${cls} clickable" onclick="event.stopPropagation();verEmote('${uid}')"
+         title="Ver el emote de ${opBy(uid).nm}"><img src="${e.img}" alt="${e.n}"></button>`
+    : `<span class="${cls}">${e.k}</span>`;
+}
+function verEmote(uid){
+  const e = cosBy('emote', lookDe(uid).emote || '');
+  if(!e.img) return;
+  $('#emoImg').src = e.img;
+  $('#emoTit').textContent = e.n;
+  $('#emoSub').innerHTML = `Emote legendario de <b>${opBy(uid).nm}</b> · se saca en el <b>nivel ${e.lv}</b> del pase`;
+  $('#emoOverlay').classList.add('on');
+}
+function cerrarEmote(){ $('#emoOverlay').classList.remove('on'); }
+
+/* ==================== VISTA DEL PASE ==================== */
+/* el nivel de la ultima vez que se pinto, para cantar la subida */
+let nivelVisto = null;
+
+function renderPaseChip(){
+  const el = $('#pasechip');
+  if(!el) return;
+  const p = progresoNivel(ME);
+
+  /* la primera pintada no canta nada: es el nivel con el que llegaste */
+  if(nivelVisto !== null && p.lv > nivelVisto){
+    const premios = [];
+    for(let lv = nivelVisto+1; lv <= p.lv; lv++) premiosDeNivel(lv).forEach(x=>premios.push(x.n));
+    toast(premios.length
+      ? `NIVEL <b>${p.lv}</b> · desbloqueaste <b>${premios.join(', ')}</b>`
+      : `SUBISTE AL NIVEL <b>${p.lv}</b> del pase`);
+    sonidoMedalla();
+    el.animate([{transform:'scale(1)'},{transform:'scale(1.09)'},{transform:'scale(1)'}], {duration:520, easing:'ease-out'});
+  }
+  nivelVisto = p.lv;
+  el.className = 'pasechip' + (p.tope ? ' tope' : '');
+  el.innerHTML = `
+    <div class="lvn">${p.lv}</div>
+    <div class="col">
+      <div class="cap">${p.tope ? 'PASE AL TOPE' : 'PASE · NIVEL'}</div>
+      <div class="xpbar2"><i style="width:${p.pct}%"></i></div>
+    </div>`;
+  el.title = p.tope ? 'Pase completo — nivel 50' : `Nivel ${p.lv} · te faltan ${p.falta} XP para el ${p.lv+1}`;
+}
+
+function viewPase(){
+  const p = progresoNivel(ME), d = xpDe(ME), mio = lookDe(ME);
+  const t = statsDe(ME);
+  const faltanPts = Math.max(0, META_PTS - t.pts);
+
+  $('#view').innerHTML = `
+  <div class="gridwrap">
+    <div class="notice">Pase de <b>${monthName}</b>: 50 niveles, todo cosmético.
+      Los puntos siguen siendo tu producción real y el pase no los toca.
+      <b>Cumplir la meta de ${META_PTS} puntos te deja en el nivel 50</b>, y todo lo demás
+      —registrar cierres, el voice, aparecerte cada día, los logros y las medallas— te hace llegar antes.</div>
+
+    <div class="panel cut">
+      <div class="ph"><span class="tick"></span>Tu pase
+        <span class="right">${p.tope ? 'COMPLETO' : `${d.total} / ${XP_TOTAL} XP`}</span></div>
+      <div class="paseTop">
+        <div class="paseLv ${p.tope?'tope':''}"><b>${p.lv}</b><small>DE ${PASE_NIVELES}</small></div>
+        <div class="paseProg">
+          <div class="lbl">${p.tope ? 'Pase completo' : `Nivel ${p.lv} → ${p.lv+1}`}
+            <b>${p.tope ? '¡al tope!' : `${p.dentro}/${XP_NIVEL} XP`}</b></div>
+          <div class="paseBar"><i style="width:${p.pct}%"></i></div>
+          <div class="hint" style="margin-top:7px">${p.tope
+            ? 'Ya tienes todo lo del mes. El pase vuelve a cero el mes que viene.'
+            : faltanPts > 0
+              ? `Con los <b>${faltanPts}</b> puntos que te faltan para la meta llegas al 50 seguro. También suben los cierres, el voice y venir cada día.`
+              : 'Ya pasaste la meta: lo que queda cae solo.'}</div>
+          <div class="paseDet">
+            <div><b style="color:var(--lime)">${d.puntos}</b><small>PUNTOS</small></div>
+            <div><b>${d.cierres}</b><small>CIERRES</small></div>
+            <div><b style="color:var(--cyan)">${d.voice}</b><small>VOICE</small></div>
+            <div><b style="color:var(--amber)">${d.dias}</b><small>DÍAS</small></div>
+            <div><b style="color:var(--lime)">${d.logros}</b><small>LOGROS</small></div>
+            <div><b style="color:#ff7ad9">${d.medallas}</b><small>MEDALLAS</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel cut">
+      <div class="ph"><span class="tick" style="background:var(--lime)"></span>Recorrido
+        <span class="right">ARRASTRA PARA VER →</span></div>
+      <div class="pasetrack"><div class="ptrack">
+        ${Array.from({length:PASE_NIVELES},(_,i)=>{
+          const lv = i+1, pr = premiosDeNivel(lv), on = lv <= p.lv;
+          const leg = pr.some(x=>x.legendario) || lv===PASE_NIVELES;
+          const ico = pr.length
+            ? (pr[0].img ? `<img src="${pr[0].img}" alt="">`
+               : pr[0].cat==='emote' ? pr[0].k
+               : {fondo:'🖼️', titulo:'🎖️', marco:'⬡', color:'🎨'}[pr[0].cat] || '★')
+            : '';
+          return `<div class="pniv ${on?'on':''} ${pr.length?'hito':''} ${leg?'legend':''}">
+            ${pr.length?'<div class="mk"></div>':''}
+            <div class="n">${lv}</div>
+            <div class="ic">${ico}</div>
+            <div class="rw">${pr.map(x=>x.n).join('<br>')}</div>
+          </div>`;
+        }).join('')}
+      </div></div>
+    </div>
+
+    <div class="panel cut">
+      <div class="ph"><span class="tick" style="background:#ff7ad9"></span>Ponte lo que ganaste
+        <span class="right">SE VE EN TU PERFIL Y EN EL RANKING</span></div>
+      <div class="cosgrid">
+        ${Object.keys(COSMETICOS).map(cat=>`
+          <div class="cosgrp">
+            <div class="cgl">${CAT_LABEL[cat]}</div>
+            <div class="coschips">
+              ${COSMETICOS[cat].map(o=>{
+                const bloq = o.lv > p.lv, puesto = (mio[cat]||'') === o.k;
+                return `<button class="coschip ${puesto?'on':''} ${bloq?'bloq':''}"
+                  ${bloq?`disabled title="Necesitas el nivel ${o.lv}"`:''}
+                  onclick="ponerse('${cat}','${o.k}')">
+                  ${o.img?`<img src="${o.img}" alt="">`:''}${o.n}
+                  ${o.lv?`<span class="rq">LV${o.lv}</span>`:''}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="vhint">Lo que te pongas se ve en tu perfil y al lado de tu nombre en el escuadrón.
+        El pase se reinicia cada mes, así que si bajas de nivel se te quita solo lo que ya no alcanza.</div>
+    </div>
+  </div>`;
+}
+
 function vitrinaHTML(uid, yo){
   const c = contarLogros(uid);
   const total = Object.values(c).reduce((a,b)=>a+b,0);
@@ -2161,10 +2546,19 @@ function viewPerfil(){
   const crates = [[3,120,64],[13,86,48],[24,148,78],[62,104,58],[74,170,92],[89,96,52]]
     .map(([l,w,h])=>`<div class="crate" style="left:${l}%;width:${w}px;height:${h}px;opacity:${.55+h/300}"></div>`).join('');
 
+  /* lo que este operador se puso desde el pase */
+  const lk = lookDe(uid);
+  const fondo = cosBy('fondo', lk.fondo||'');
+  const bannerCss = fondo.img ? `background-image:url('${fondo.img}');background-size:cover;background-position:center 62%`
+                    : fondo.css ? `background:${fondo.css}${fondo.anim?';background-size:220% 220%;animation:legendGrad 5s ease infinite':''}`
+                    : '';
+
   $('#view').innerHTML = `
   <div class="scene">
-    <div class="sky"></div><div class="haze"></div><div class="shaft"></div>
-    <div class="ground"></div>${crates}<div class="vig"></div><div class="grain"></div>
+    ${bannerCss ? `<div class="pasefondo" style="${bannerCss}"></div>`
+                : `<div class="sky"></div><div class="haze"></div><div class="shaft"></div>
+                   <div class="ground"></div>${crates}`}
+    <div class="vig"></div><div class="grain"></div>
 
     <div class="content">
       <!-- IZQUIERDA: ficha -->
@@ -2203,7 +2597,7 @@ function viewPerfil(){
       </div>
 
       <!-- CENTRO: emblema -->
-      <div class="emblem ${m.av?'haspic':''}">
+      <div class="emblem ${m.av?'haspic':''} marco-${lk.marco||'none'}">
         <div class="ring2"></div><div class="ring"></div>
         <div class="hex">
           ${m.av?`<div class="hexphoto"><img src="${m.av}" alt=""
@@ -2214,8 +2608,10 @@ function viewPerfil(){
           </div>
         </div>
         <div class="cs">
-          <div class="n">${m.nm}${yo?`<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button>`:''}</div>
-          <div class="r">${m.rol==='admin'?'MANDO':'OPERADOR'} · ${monthName} · RANGO #${pos}</div>
+          <div class="n"><span class="${lk.color||''}">${m.nm}</span>${emoteHTML(uid,'grande')}${
+            yo?`<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button>`:''}</div>
+          ${lk.titulo ? `<div class="pasetit">${lk.titulo}</div>` : ''}
+          <div class="r">${m.rol==='admin'?'MANDO':'OPERADOR'} · ${monthName} · RANGO #${pos} · PASE ${nivelDe(uid)}</div>
         </div>
       </div>
 
@@ -2837,7 +3233,7 @@ function renderBell(){
     : '';
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); } });
 </script>
 </body>
 </html>
