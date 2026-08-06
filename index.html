@@ -1439,6 +1439,10 @@ async function marcarVista(id){
    nunca duplica. Una vez guardados quedan para siempre. */
 let LOGROS_MIOS = [];        // los de todo el escuadron, all-time
 let unsubLogros = null;
+/* Sin esto los logros volvian a salir en cada arranque: el snapshot de ventas
+   llega antes que el de logros, asi que LOGROS_MIOS todavia estaba vacio,
+   publicarLogros() los daba por nuevos y los reescribia con visto:false. */
+let logrosCargados = false;
 
 const logrosDe = uid => LOGROS_MIOS.filter(l => l.owner === uid);
 /* cuantas veces lleva cada logro: {hardline:3, nuclear:1, ...} */
@@ -1453,8 +1457,10 @@ function escucharLogros(){
   /* sin filtro de mes: los logros son historicos y se lucen todo el tiempo */
   unsubLogros = db().collection('logros').onSnapshot(snap => {
     LOGROS_MIOS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    logrosCargados = true;
     render();
     colaDeLogros();
+    publicarLogros();     // ahora si: ya se cuales existen y cuales no
   }, err => console.error('logros:', err));
 }
 
@@ -1492,6 +1498,9 @@ function logrosAlcanzados(uid){
 /* guarda los que falten. El id fijo hace que repetir esto no duplique nada */
 async function publicarLogros(){
   if(!SALES.length) return;
+  /* primer candado: si todavia no se que hay guardado, no escribo nada */
+  if(!logrosCargados) return;
+
   const quienes = isAdmin() ? SQUAD.map(s=>s.id) : [ME];
   const nuevos = [];
   quienes.forEach(uid=>{
@@ -1502,10 +1511,14 @@ async function publicarLogros(){
   });
   if(!nuevos.length) return;
   try{
-    await Promise.all(nuevos.map(g => db().collection('logros').doc(g.id).set({
-      owner:g.owner, tipo:g.tipo, periodo:g.periodo,
-      creado: Date.now(), visto: false
-    })));
+    await Promise.all(nuevos.map(async g => {
+      const ref = db().collection('logros').doc(g.id);
+      /* segundo candado: aunque dos telefonos entren a la vez, el que llega
+         despues no pisa el `visto` del que ya estaba */
+      if((await ref.get()).exists) return;
+      return ref.set({owner:g.owner, tipo:g.tipo, periodo:g.periodo,
+                      creado: Date.now(), visto: false});
+    }));
   }catch(err){ console.error('no se pudieron guardar los logros:', err); }
 }
 
@@ -1821,6 +1834,7 @@ function logout(){
   if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
   if(unsubLogros){ unsubLogros(); unsubLogros = null; }
   if(unsubLook){ unsubLook(); unsubLook = null; }
+  logrosCargados = false;
   SALES = []; RANKING = {}; MEDALLAS_MES = []; LOGROS_MIOS = []; LOOK = {};
   medEnPantalla = null; logroEnPantalla = null;
   /* salir es a proposito: no vuelve a entrar solo, aunque el remember estuviera puesto */
