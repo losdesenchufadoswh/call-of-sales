@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PROTOTIPO · Battle Pass — Call of Sales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090b; --panel:#0d0f12; --panel2:#12161b;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.14);
+  --txt:#e8eaed; --muted:#8b9199; --dim:#5d646d;
+  --amber:#ff8a00; --amber2:#ffb545; --lime:#d8ff2e; --red:#e8402a;
+  --cyan:#39d0ff; --green:#4ad07a; --pink:#ff7ad9; --gold:#ffd24a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Barlow',system-ui,sans-serif;
+  padding:0 0 60px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif}
+
+/* ---------- aviso de prototipo ---------- */
+.lab{position:sticky;top:0;z-index:50;background:repeating-linear-gradient(135deg,#2a1c00 0 14px,#1d1400 14px 28px);
+  border-bottom:1px solid var(--amber);padding:9px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lab b{font-family:'Barlow Condensed';letter-spacing:.16em;color:var(--amber);font-size:14px}
+.lab span{font-size:12.5px;color:#c9a878}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.head{padding:26px 0 18px}
+.head h1{font-size:34px;letter-spacing:.14em;font-weight:700}
+.head h1 em{font-style:normal;color:var(--amber)}
+.head p{color:var(--muted);margin-top:6px;font-size:14px;max-width:66ch;line-height:1.5}
+
+.panel{background:var(--panel);border:1px solid var(--line);margin-top:16px}
+.ph{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--line);
+  font-family:'Barlow Condensed';font-size:15px;letter-spacing:.15em;text-transform:uppercase}
+.ph .tick{width:3px;height:14px;background:var(--amber)}
+.ph .right{margin-left:auto;font-size:11.5px;color:var(--dim);letter-spacing:.14em}
+.pb{padding:15px}
+.hint{font-size:12px;color:var(--dim);letter-spacing:.02em;line-height:1.5}
+
+/* ---------- simulador ---------- */
+.sims{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px;padding:15px}
+.sim{background:var(--panel2);border:1px solid var(--line);padding:13px}
+.sim .who{display:flex;align-items:baseline;gap:8px}
+.sim .who b{font-family:'Barlow Condensed';font-size:19px;letter-spacing:.11em}
+.sim .who small{color:var(--dim);font-size:11px;margin-left:auto;letter-spacing:.1em;font-family:'Barlow Condensed'}
+.sim .lv{font-family:'Barlow Condensed';font-size:44px;font-weight:700;line-height:1;margin-top:8px}
+.sim .lv small{font-size:14px;color:var(--dim);font-weight:500;letter-spacing:.1em}
+.simbar{height:7px;background:#000;border:1px solid var(--line);margin-top:9px;overflow:hidden}
+.simbar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2))}
+.sim.max .simbar i{background:linear-gradient(90deg,var(--gold),#fff3c4,var(--gold));
+  background-size:200% 100%;animation:shine 2.4s linear infinite}
+@keyframes shine{to{background-position:200% 0}}
+.sim .xp{font-size:11.5px;color:var(--muted);margin-top:7px;font-family:'Barlow Condensed';letter-spacing:.08em}
+.sim .desglose{margin-top:9px;padding-top:9px;border-top:1px solid var(--line);display:grid;gap:3px}
+.sim .desglose div{display:flex;font-size:11px;color:var(--dim)}
+.sim .desglose b{margin-left:auto;color:var(--muted);font-weight:600}
+.tagmax{display:inline-block;background:var(--gold);color:#2a1f00;font-family:'Barlow Condensed';
+  font-size:11px;font-weight:700;letter-spacing:.12em;padding:1px 7px;margin-left:6px}
+
+/* ---------- pesos ---------- */
+.pesos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;padding:15px}
+.peso label{display:flex;align-items:baseline;font-family:'Barlow Condensed';font-size:13px;
+  letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.peso label b{margin-left:auto;color:var(--amber);font-size:16px}
+.peso input[type=range]{width:100%;margin-top:7px;accent-color:var(--amber)}
+.peso .ej{font-size:11px;color:var(--dim);margin-top:3px}
+
+/* ---------- track de niveles ---------- */
+.trackwrap{overflow-x:auto;padding:15px;scrollbar-width:thin}
+.track{display:flex;gap:6px;min-width:min-content;padding-bottom:6px}
+.niv{position:relative;flex:0 0 76px;background:var(--panel2);border:1px solid var(--line);
+  padding:8px 5px 9px;text-align:center;opacity:.42;transition:opacity .2s,border-color .2s}
+.niv.on{opacity:1;border-color:color-mix(in srgb,var(--c,#ff8a00) 55%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c,#ff8a00) 13%,var(--panel2)),var(--panel2))}
+.niv.hito{flex-basis:96px}
+.niv .n{font-family:'Barlow Condensed';font-size:17px;font-weight:700;color:var(--dim)}
+.niv.on .n{color:var(--txt)}
+.niv .ico{font-size:21px;line-height:1.25;min-height:27px}
+.niv .rw{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;line-height:1.2;
+  color:var(--dim);min-height:24px;display:flex;align-items:center;justify-content:center}
+.niv.on .rw{color:var(--c,var(--amber))}
+.niv .tipo{font-size:8.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+.marca{position:absolute;top:-1px;left:-1px;right:-1px;height:2px;background:var(--c,var(--amber))}
+
+/* ---------- vista previa ---------- */
+.prev{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;padding:15px}
+.card{background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.card .cph{padding:9px 13px;border-bottom:1px solid var(--line);font-family:'Barlow Condensed';
+  font-size:12px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.fila{display:flex;align-items:center;gap:11px;padding:13px}
+.av{width:46px;height:46px;flex-shrink:0;background:#1a1f26;position:relative;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';
+  font-size:16px;font-weight:700;color:var(--dim)}
+.av.bronce{background:linear-gradient(145deg,#b87333,#7a4a1e);color:#2a1607}
+.av.plata{background:linear-gradient(145deg,#dfe4e8,#9aa3ac);color:#232a31}
+.av.oro{background:linear-gradient(145deg,#ffd24a,#c8912a);color:#2f2205}
+.av.legend{background:linear-gradient(145deg,#ffd24a,#fff6d0,#ff8a00,#ffd24a);
+  background-size:250% 250%;animation:legend 3.2s ease infinite;color:#2f2205}
+@keyframes legend{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.info{min-width:0;flex:1}
+.info .nm{font-family:'Barlow Condensed';font-size:19px;letter-spacing:.11em;font-weight:600}
+.info .nm.cian{color:var(--cyan)}
+.info .nm.lima{color:var(--lime)}
+.info .nm.ambar{color:var(--amber2)}
+.info .nm.dorado{background:linear-gradient(90deg,#ffd24a,#fff6d0,#ffd24a);background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 2.6s linear infinite}
+.titulo{display:inline-block;font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.16em;
+  padding:1px 7px;margin-top:3px;border:1px solid currentColor;opacity:.92}
+.pts{margin-left:auto;text-align:right;font-family:'Barlow Condensed'}
+.pts b{display:block;font-size:22px;font-weight:700;color:var(--lime);line-height:1}
+.pts small{font-size:9.5px;letter-spacing:.16em;color:var(--dim)}
+/* fondos de perfil */
+.fondo{height:98px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.fondo.nuketown{background:radial-gradient(ellipse at 30% 120%,#ff6a00,transparent 60%),
+  linear-gradient(160deg,#2a0f00,#120600)}
+.fondo.blackout{background:radial-gradient(ellipse at 70% -20%,#1b4a7a,transparent 62%),
+  linear-gradient(160deg,#050a12,#01030a)}
+.fondo.warzone{background:radial-gradient(ellipse at 50% 130%,#4ad07a,transparent 58%),
+  linear-gradient(160deg,#04180d,#010805)}
+.fondo.nuclear{background:linear-gradient(125deg,#0a1a2e,#123a52,#0a1a2e);background-size:220% 220%;
+  animation:legend 5s ease infinite}
+.fondo:after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg,transparent 0 34px,rgba(255,255,255,.045) 34px 35px)}
+.fondo .lbl{position:absolute;left:12px;bottom:9px;font-family:'Barlow Condensed';font-size:12px;
+  letter-spacing:.2em;color:rgba(255,255,255,.72);z-index:2}
+
+.tabla{width:100%;border-collapse:collapse;font-size:13px}
+.tabla th,.tabla td{padding:8px 11px;border-bottom:1px solid var(--line);text-align:left}
+.tabla th{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em;color:var(--dim);
+  text-transform:uppercase;font-weight:600}
+.tabla td b{font-family:'Barlow Condensed';font-size:15px}
+.tabla .num{text-align:right;font-family:'Barlow Condensed';font-size:15px}
+.ok{color:var(--green)}.casi{color:var(--amber)}.no{color:var(--red)}
+
+.botonera{display:flex;gap:8px;flex-wrap:wrap;padding:0 15px 15px}
+.btn{background:none;border:1px solid var(--line2);color:var(--muted);padding:7px 13px;cursor:pointer;
+  font-family:'Barlow Condensed';font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn.on{background:var(--amber);border-color:var(--amber);color:#120a00;font-weight:700}
+@media(max-width:640px){
+  .head h1{font-size:25px}
+  .niv{flex-basis:66px}.niv.hito{flex-basis:84px}
+}
+</style>
+</head>
+<body>
+
+<div class="lab">
+  <b>PROTOTIPO</b>
+  <span>Esto no está en la app — es una maqueta para decidir los números antes de tocar nada.</span>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>BATTLE <em>PASS</em></h1>
+    <p>50 niveles por mes, recompensas solo cosméticas: títulos, fondos, marcos de avatar y color de nombre.
+       Los puntos de venta no se tocan — siguen siendo tu producción real.
+       Abajo puedes mover los pesos y ver, con las ventas de verdad de julio y agosto, hasta qué nivel habría llegado cada uno.</p>
+  </div>
+
+  <!-- ============ SIMULADOR ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick"></span>¿Llega el escuadrón al 50?
+      <span class="right" id="mesLbl">JULIO 2026 · MES COMPLETO</span></div>
+    <div class="botonera" style="padding-top:15px">
+      <button class="btn on" onclick="setMes('2026-07',this)">Julio (mes completo)</button>
+      <button class="btn" onclick="setMes('2026-08',this)">Agosto (va por el día 6)</button>
+    </div>
+    <div class="sims" id="sims"></div>
+    <div class="pb" style="padding-top:0"><div class="hint" id="veredicto"></div></div>
+  </div>
+
+  <!-- ============ PESOS ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick" style="background:var(--cyan)"></span>De dónde sale el XP
+      <span class="right">MUÉVELO Y MIRA ARRIBA</span></div>
+    <div class="pesos" id="pesos"></div>
+    <div class="pb" style="padding-top:0">
+      <div class="hint">
+        La idea del <b>easy mode</b>: que el XP no salga solo de los puntos. Registrar el cierre suma,
+        el voice suma aunque no dé puntos, y aparecerse todos los días suma. Así el que vende parejo
+        también llega al 50, no solo el que hace números grandes.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TRACK ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick" style="background:var(--lime)"></span>Los 50 niveles
+      <span class="right" id="trackLbl">ARRASTRA PARA VER →</span></div>
+    <div class="botonera" style="padding-top:15px">
+      <button class="btn on" onclick="setQuien('elwin',this)">Ver como ELWIN</button>
+      <button class="btn" onclick="setQuien('carlos',this)">CARLOS</button>
+      <button class="btn" onclick="setQuien('elfe',this)">EL_FE</button>
+      <button class="btn" onclick="setQuien('felix',this)">FELIX</button>
+    </div>
+    <div class="trackwrap"><div class="track" id="track"></div></div>
+    <div class="pb" style="padding-top:0">
+      <div class="hint">19 de los 50 niveles dan algo. El resto son escalones para que se sienta el avance.
+        Cada mes cambia el set completo, así que llegar al 50 en agosto no te regala el de septiembre.</div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA PREVIA ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick" style="background:var(--pink)"></span>Cómo se vería puesto</div>
+    <div class="prev">
+      <div class="card">
+        <div class="cph">Nivel 5 · título recluta</div>
+        <div class="fila">
+          <div class="av">CA</div>
+          <div class="info"><div class="nm">CARLOS</div>
+            <div class="titulo" style="color:var(--muted)">RECLUTA</div></div>
+          <div class="pts"><b>18</b><small>PTS</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cph">Nivel 22 · marco plata + nombre cian</div>
+        <div class="fila">
+          <div class="av plata">CA</div>
+          <div class="info"><div class="nm cian">CARLOS</div>
+            <div class="titulo" style="color:var(--cyan)">DEMOLEDOR</div></div>
+          <div class="pts"><b>34</b><small>PTS</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cph">Nivel 38 · marco oro + nombre lima</div>
+        <div class="fila">
+          <div class="av oro">EL</div>
+          <div class="info"><div class="nm lima">ELWIN</div>
+            <div class="titulo" style="color:var(--lime)">FANTASMA</div></div>
+          <div class="pts"><b>61</b><small>PTS</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cph">Nivel 50 · todo desbloqueado</div>
+        <div class="fila">
+          <div class="av legend">EL</div>
+          <div class="info"><div class="nm dorado">ELWIN</div>
+            <div class="titulo" style="color:var(--gold)">NUKE DEALER</div></div>
+          <div class="pts"><b>97</b><small>PTS</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="fondo nuketown"><div class="lbl">NIVEL 18 · FONDO NUKETOWN</div></div>
+        <div class="cph" style="border-top:0">Fondo del perfil</div>
+      </div>
+      <div class="card">
+        <div class="fondo blackout"><div class="lbl">NIVEL 32 · FONDO BLACKOUT</div></div>
+        <div class="cph" style="border-top:0">Fondo del perfil</div>
+      </div>
+      <div class="card">
+        <div class="fondo warzone"><div class="lbl">NIVEL 46 · FONDO WARZONE</div></div>
+        <div class="cph" style="border-top:0">Fondo del perfil</div>
+      </div>
+      <div class="card">
+        <div class="fondo nuclear"><div class="lbl">NIVEL 50 · FONDO NUCLEAR (ANIMADO)</div></div>
+        <div class="cph" style="border-top:0">Fondo del perfil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TABLA DE CALIBRADO ============ -->
+  <div class="panel">
+    <div class="ph"><span class="tick" style="background:var(--red)"></span>Calibrado contra los meses reales</div>
+    <div style="overflow-x:auto">
+      <table class="tabla" id="tabla"></table>
+    </div>
+    <div class="pb"><div class="hint" id="notaTabla"></div></div>
+  </div>
+</div>
+
+<script>
+/* ==================== DATOS REALES ====================
+   Sacados de Firestore el 6 de agosto de 2026. Julio es mes cerrado;
+   agosto va por el día 6, o sea un quinto del mes. */
+const REAL = {
+  '2026-07': [
+    {id:'elwin',  nm:'ELWIN',  cierres:70, pts:97, internet:38, tv:59, celular:0, voice:29, dias:30},
+    {id:'carlos', nm:'CARLOS', cierres:45, pts:57, internet:15, tv:38, celular:4, voice:26, dias:25},
+    {id:'elfe',   nm:'EL_FE',  cierres:36, pts:44, internet:11, tv:32, celular:1, voice:23, dias:23},
+    {id:'felix',  nm:'FELIX',  cierres:30, pts:36, internet:11, tv:25, celular:0, voice:12, dias:21},
+    {id:'angel',  nm:'ANGEL',  cierres:0,  pts:0,  internet:0,  tv:0,  celular:0, voice:0,  dias:0}
+  ],
+  '2026-08': [
+    {id:'carlos', nm:'CARLOS', cierres:18, pts:18, internet:4, tv:14, celular:0, voice:4, dias:4},
+    {id:'elfe',   nm:'EL_FE',  cierres:16, pts:17, internet:3, tv:12, celular:2, voice:8, dias:4},
+    {id:'felix',  nm:'FELIX',  cierres:11, pts:16, internet:9, tv:7,  celular:0, voice:7, dias:2},
+    {id:'angel',  nm:'ANGEL',  cierres:2,  pts:3,  internet:2, tv:1,  celular:0, voice:1, dias:1},
+    {id:'elwin',  nm:'ELWIN',  cierres:0,  pts:0,  internet:0, tv:0,  celular:0, voice:0, dias:0}
+  ]
+};
+/* logros y medallas estimados: en julio nadie los tenia todavia, asi que el
+   simulador los deja en 0 y el calculo queda del lado conservador */
+const EXTRA = {logros:0, medallas:0};
+
+/* ==================== PESOS AJUSTABLES ==================== */
+const P = {
+  porPunto:  {v:20,  min:0, max:40, l:'Por punto de venta',      ej:t=>`45 pts de meta = ${45*t} XP`},
+  porCierre: {v:10,  min:0, max:30, l:'Por cierre registrado',   ej:t=>`30 cierres = ${30*t} XP`},
+  porVoice:  {v:8,   min:0, max:30, l:'Por voice (no da puntos)',ej:t=>`20 voice = ${20*t} XP`},
+  porDia:    {v:25,  min:0, max:60, l:'Por día con cierre',      ej:t=>`22 días = ${22*t} XP`},
+  porLogro:  {v:120, min:0, max:300,l:'Por logro desbloqueado',  ej:t=>`4 logros = ${4*t} XP`},
+  porMedalla:{v:30,  min:0, max:100,l:'Por medalla recibida',    ej:t=>`5 medallas = ${5*t} XP`},
+  xpNivel:   {v:36,  min:10,max:90, l:'XP por nivel',            ej:t=>`nivel 50 = ${50*t} XP en total`}
+};
+const NIVELES = 50;
+
+function xpDe(v){
+  return v.pts*P.porPunto.v + v.cierres*P.porCierre.v + v.voice*P.porVoice.v +
+         v.dias*P.porDia.v + EXTRA.logros*P.porLogro.v + EXTRA.medallas*P.porMedalla.v;
+}
+const nivelDe = xp => Math.min(NIVELES, Math.floor(xp / P.xpNivel.v));
+const xpTotal = () => NIVELES * P.xpNivel.v;
+
+/* ==================== RECOMPENSAS ==================== */
+const REWARDS = {
+  5: {t:'título',  n:'RECLUTA',        ico:'🎖️', c:'#8b9199'},
+  8: {t:'marco',   n:'MARCO BRONCE',   ico:'🥉', c:'#b87333'},
+  10:{t:'emoji',   n:'RANGO 💀',        ico:'💀', c:'#8b9199'},
+  12:{t:'nombre',  n:'NOMBRE CIAN',    ico:'🔵', c:'#39d0ff'},
+  15:{t:'título',  n:'OPERADOR',       ico:'🎖️', c:'#39d0ff'},
+  18:{t:'fondo',   n:'NUKETOWN',       ico:'🏘️', c:'#ff6a00'},
+  20:{t:'título',  n:'CAZADOR',        ico:'🎖️', c:'#ff8a00'},
+  22:{t:'marco',   n:'MARCO PLATA',    ico:'🥈', c:'#dfe4e8'},
+  25:{t:'título',  n:'DEMOLEDOR',      ico:'🎖️', c:'#ff8a00'},
+  28:{t:'nombre',  n:'NOMBRE LIMA',    ico:'🟢', c:'#d8ff2e'},
+  30:{t:'título',  n:'FRANCOTIRADOR',  ico:'🎖️', c:'#d8ff2e'},
+  32:{t:'fondo',   n:'BLACKOUT',       ico:'🌑', c:'#39d0ff'},
+  35:{t:'título',  n:'VETERANO',       ico:'🎖️', c:'#d8ff2e'},
+  38:{t:'marco',   n:'MARCO ORO',      ico:'🥇', c:'#ffd24a'},
+  40:{t:'nombre',  n:'NOMBRE ÁMBAR',   ico:'🟠', c:'#ffb545'},
+  42:{t:'emoji',   n:'RANGO ☢️',        ico:'☢️', c:'#d8ff2e'},
+  45:{t:'título',  n:'ESPECTRO',       ico:'🎖️', c:'#ffd24a'},
+  46:{t:'fondo',   n:'WARZONE',        ico:'🌿', c:'#4ad07a'},
+  50:{t:'legendario', n:'NUKE DEALER', ico:'☢️', c:'#ffd24a'}
+};
+
+/* ==================== ESTADO ==================== */
+let mesActivo = '2026-07';
+let quienActivo = 'elwin';
+
+/* ==================== SIMULADOR ==================== */
+function pintarSims(){
+  const lista = REAL[mesActivo];
+  document.getElementById('mesLbl').textContent =
+    mesActivo === '2026-07' ? 'JULIO 2026 · MES COMPLETO' : 'AGOSTO 2026 · VA POR EL DÍA 6';
+
+  document.getElementById('sims').innerHTML = lista.map(v=>{
+    const xp = xpDe(v), lv = nivelDe(xp), tope = lv >= NIVELES;
+    const pct = Math.min(100, xp / xpTotal() * 100);
+    const col = tope ? 'var(--gold)' : lv>=35 ? 'var(--lime)' : lv>=20 ? 'var(--amber)' : 'var(--muted)';
+    return `<div class="sim ${tope?'max':''}">
+      <div class="who"><b>${v.nm}</b><small>${v.pts} PTS · ${v.cierres} CIERRES</small></div>
+      <div class="lv" style="color:${col}">${lv}<small>/50</small>${tope?'<span class="tagmax">AL TOPE</span>':''}</div>
+      <div class="simbar"><i style="width:${pct}%"></i></div>
+      <div class="xp">${xp.toLocaleString('es')} XP de ${xpTotal().toLocaleString('es')}</div>
+      <div class="desglose">
+        <div>Puntos de venta <b>${(v.pts*P.porPunto.v).toLocaleString('es')}</b></div>
+        <div>Cierres <b>${(v.cierres*P.porCierre.v).toLocaleString('es')}</b></div>
+        <div>Voice <b>${(v.voice*P.porVoice.v).toLocaleString('es')}</b></div>
+        <div>Días activos <b>${(v.dias*P.porDia.v).toLocaleString('es')}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* veredicto: cuantos de los que vendieron llegan al tope */
+  const activos = lista.filter(v=>v.cierres>0);
+  const llegan = activos.filter(v=>nivelDe(xpDe(v))>=NIVELES).length;
+  const niveles = activos.map(v=>nivelDe(xpDe(v)));
+  const menor = Math.min(...niveles, NIVELES);
+  document.getElementById('veredicto').innerHTML = !activos.length ? '' :
+    mesActivo==='2026-07'
+      ? `Con estos pesos, <b>${llegan} de ${activos.length}</b> habrían llegado al 50 en julio.
+         El que menos vendió se habría quedado en el <b>nivel ${menor}</b>.
+         ${llegan===activos.length ? 'Todos al tope: es el easy mode que pediste.'
+          : llegan===0 ? 'Nadie llega: está demasiado duro, baja el XP por nivel.'
+          : 'Sube el XP por día o por cierre si quieres que también llegue el que vende parejo.'}`
+      : `Agosto va por el día 6 (un quinto del mes). El mejor va por el <b>nivel ${Math.max(...niveles)}</b>;
+         a ese ritmo termina el mes cerca del <b>${Math.min(NIVELES, Math.round(Math.max(...niveles)*31/6))}</b>.`;
+}
+
+/* ==================== PESOS ==================== */
+function pintarPesos(){
+  document.getElementById('pesos').innerHTML = Object.keys(P).map(k=>{
+    const p = P[k];
+    return `<div class="peso">
+      <label>${p.l}<b>${p.v}</b></label>
+      <input type="range" min="${p.min}" max="${p.max}" value="${p.v}"
+             oninput="cambiaPeso('${k}',this.value)">
+      <div class="ej">${p.ej(p.v)}</div>
+    </div>`;
+  }).join('');
+}
+function cambiaPeso(k, v){
+  P[k].v = Number(v);
+  pintarPesos(); pintarSims(); pintarTrack(); pintarTabla();
+}
+
+/* ==================== TRACK ==================== */
+function pintarTrack(){
+  const v = REAL[mesActivo].find(x=>x.id===quienActivo) || REAL[mesActivo][0];
+  const lv = nivelDe(xpDe(v));
+  document.getElementById('trackLbl').textContent = `${v.nm} LLEGÓ AL ${lv}`;
+  let html = '';
+  for(let i=1;i<=NIVELES;i++){
+    const r = REWARDS[i];
+    const on = i <= lv;
+    html += `<div class="niv ${on?'on':''} ${r?'hito':''}" style="--c:${r?r.c:'#ff8a00'}">
+      ${r?'<div class="marca"></div>':''}
+      <div class="n">${i}</div>
+      <div class="ico">${r?r.ico:''}</div>
+      <div class="rw">${r?r.n:''}</div>
+      <div class="tipo">${r?r.t:''}</div>
+    </div>`;
+  }
+  document.getElementById('track').innerHTML = html;
+}
+
+/* ==================== TABLA ==================== */
+function pintarTabla(){
+  const filas = [];
+  ['2026-07','2026-08'].forEach(m=>{
+    REAL[m].filter(v=>v.cierres>0).forEach(v=>{
+      const xp = xpDe(v), lv = nivelDe(xp);
+      filas.push({mes:m==='2026-07'?'Julio':'Agosto (día 6)', ...v, xp, lv});
+    });
+  });
+  document.getElementById('tabla').innerHTML = `
+    <thead><tr>
+      <th>Mes</th><th>Operador</th><th class="num">Pts</th><th class="num">Cierres</th>
+      <th class="num">Voice</th><th class="num">Días</th><th class="num">XP</th><th class="num">Nivel</th>
+    </tr></thead>
+    <tbody>${filas.map(f=>`<tr>
+      <td>${f.mes}</td><td><b>${f.nm}</b></td>
+      <td class="num">${f.pts}</td><td class="num">${f.cierres}</td>
+      <td class="num">${f.voice}</td><td class="num">${f.dias}</td>
+      <td class="num">${f.xp.toLocaleString('es')}</td>
+      <td class="num ${f.lv>=50?'ok':f.lv>=40?'casi':'no'}">${f.lv}</td>
+    </tr>`).join('')}</tbody>`;
+
+  const jul = REAL['2026-07'].filter(v=>v.cierres>0);
+  const lleganJul = jul.filter(v=>nivelDe(xpDe(v))>=NIVELES).length;
+  document.getElementById('notaTabla').innerHTML =
+    `Julio es el único mes cerrado que tenemos, así que es la mejor vara: ahí
+     <b>${lleganJul} de ${jul.length}</b> llegan al 50 con los pesos de ahora.
+     El simulador no cuenta logros ni medallas (en julio no existían), así que en la vida real
+     todos llegarían un poco más arriba de lo que sale aquí.`;
+}
+
+/* ==================== CONTROLES ==================== */
+function setMes(m, btn){
+  mesActivo = m;
+  [...btn.parentNode.children].forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(!REAL[m].some(x=>x.id===quienActivo && x.cierres>0)){
+    const primero = REAL[m].find(x=>x.cierres>0);
+    if(primero) quienActivo = primero.id;
+  }
+  pintarSims(); pintarTrack();
+}
+function setQuien(q, btn){
+  quienActivo = q;
+  [...btn.parentNode.children].forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  pintarTrack();
+}
+
+pintarPesos(); pintarSims(); pintarTrack(); pintarTabla();
+</script>
+</body>
+</html>
