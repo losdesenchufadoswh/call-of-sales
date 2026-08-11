@@ -86,11 +86,13 @@ body{
 .fld{margin-bottom:14px}
 .fld label{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:6px;font-family:'Barlow Condensed';text-transform:uppercase}
 .fld label i{color:var(--amber);font-style:normal}
-.fld input,.fld select{
+.fld input,.fld select,.fld textarea{
   width:100%;background:#08090b;border:1px solid var(--line2);color:var(--txt);
   padding:11px 12px;font-family:'Barlow';font-size:14px;outline:none;
 }
-.fld input:focus,.fld select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,138,0,.12)}
+.fld textarea{resize:vertical;min-height:56px;line-height:1.45}
+.fld textarea::placeholder{color:var(--dim)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,138,0,.12)}
 .btn-lime{
   width:100%;background:var(--lime);color:#0b0d06;border:0;padding:12px;
   font-family:'Barlow Condensed';font-weight:700;font-size:16px;letter-spacing:.18em;
@@ -639,6 +641,8 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+.notaic{display:inline-block;margin-left:6px;color:var(--amber);cursor:pointer;font-size:13px;opacity:.75}
+.notaic:hover{opacity:1}
 /* ---- cosmeticos puestos ---- */
 @keyframes legendGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .pasefondo{position:absolute;inset:0;background-size:cover;background-position:center 62%}
@@ -888,7 +892,16 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
           <option value="referido">Referido</option>
           <option value="canva">Canva</option>
           <option value="base">Base de datos</option>
+          <option value="evento">Evento</option>
         </select>
+      </div>
+      <div class="fld" style="margin-top:14px;margin-bottom:0">
+        <label>Notas <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:.02em">— opcional</span></label>
+        <textarea id="fNota" rows="2" maxlength="300" oninput="contarNota()"
+          placeholder="Lo que quieras recordar de este cierre: qué pidió, a qué hora llamarlo, si quedó algo pendiente…"></textarea>
+        <div class="hint" style="margin-top:4px;text-transform:none;letter-spacing:.02em">
+          Solo las ves tú<span id="notaAdmin"></span>. <span id="notaCount">300</span> caracteres.
+        </div>
       </div>
     </div>
     <div class="mf">
@@ -966,6 +979,25 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ NOTA DE UN CIERRE ============ -->
+<div class="overlay" id="notaOverlay" onclick="cerrarNota()">
+  <div class="modal" style="width:400px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <span style="width:3px;height:14px;background:var(--amber)"></span>
+      <div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;letter-spacing:.1em" id="notaCliente"></div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:2px" id="notaMeta"></div>
+      </div>
+      <button class="close" onclick="cerrarNota()">✕</button>
+    </div>
+    <div style="padding:16px 18px;font-size:14px;line-height:1.6;white-space:pre-wrap" id="notaTexto"></div>
+    <div class="mf"><div class="grow"></div>
+      <button class="btn-ghost" id="notaEditar">Editar cierre</button>
+      <button class="btn-amber" onclick="cerrarNota()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ EMOTE LEGENDARIO EN GRANDE ============ -->
 <div class="overlay emov" id="emoOverlay" onclick="cerrarEmote()">
   <div class="emobox" onclick="event.stopPropagation()">
@@ -1022,8 +1054,8 @@ const PRODS = [
   {k:'tv',      label:'TV',             pts:1, cls:'tv',    icon:'📺'},
   {k:'voice',   label:'Voice de casa',  pts:0, cls:'voice', icon:'☎️'}
 ];
-const SRC = {redes:'Redes', referido:'Referido', canva:'Canva', base:'Base de datos'};
-const SRCCOLOR = {redes:'#39d0ff', referido:'#d8ff2e', canva:'#ff7ad9', base:'#ff8a00'};
+const SRC = {redes:'Redes', referido:'Referido', canva:'Canva', base:'Base de datos', evento:'Evento'};
+const SRCCOLOR = {redes:'#39d0ff', referido:'#d8ff2e', canva:'#ff7ad9', base:'#ff8a00', evento:'#4ad07a'};
 
 /* planes que vendemos: el plan es LO QUE VENDISTE, los checks son LO QUE TE CONTÓ */
 const PLAY = [
@@ -1621,7 +1653,7 @@ const salesOf = uid => SALES.filter(s => s.owner === uid);
 function stats(uid){
   const SALES = salesOf(uid || ME);   // sombra a propósito: el resto del cuerpo no cambia
   const t = {pts:0,bonus:0,celular:0,internet:0,tv:0,voice:0,
-             src:{redes:0,referido:0,canva:0,base:0},
+             src:Object.keys(SRC).reduce((o,k)=>(o[k]=0,o),{}),
              plans:{'1play':0,'2play':0,'3play':0,celular:0},
              speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0,'double':0},
              self:0, agendadas:0, pendientes:[], hoy:[], byDay:{}};
@@ -1665,7 +1697,7 @@ function statsDe(uid){
   return {
     pts:cero('pts'), bonus:cero('voice'), celular:cero('celular'), internet:cero('internet'),
     tv:cero('tv'), voice:cero('voice'),
-    src:   r.src   || {redes:0,referido:0,canva:0,base:0},
+    src:   r.src   || Object.keys(SRC).reduce((o,k)=>(o[k]=0,o),{}),
     plans: r.plans || {'1play':0,'2play':0,'3play':0,celular:0},
     speeds:r.speeds|| SPEEDS.reduce((o,s)=>(o[s.k]=0,o),{}),
     self:cero('self'), agendadas:cero('agendadas'), nPendientes:cero('pendientes'),
@@ -1724,6 +1756,10 @@ function instalacionesHoy(){
   return (isAdmin() ? SALES : salesOf(ME)).filter(s => isHoy(s.inst))
     .sort((a,b)=> a.owner.localeCompare(b.owner));
 }
+/* para meter texto del vendedor dentro de un atributo, que ahi tambien estorban
+   las comillas simples */
+const escAttr = s => esc(s).replace(/'/g,'&#39;');
+
 function toast(msg){
   const t=$('#toast'); t.innerHTML=msg; t.classList.add('on');
   clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2200);
@@ -2167,11 +2203,12 @@ function exportarPDF(scope){
       <td class="c">${i+1}</td>
       <td class="c">${s.d||'—'}</td>
       ${quien==='all' ? `<td>${opBy(s.owner).nm}</td>` : ''}
-      <td>${(s.nm||'—').replace(/</g,'&lt;')}</td>
+      <td>${esc(s.nm||'—')}${s.nota?`<div class="nota">${esc(s.nota)}</div>`:''}</td>
       <td class="mono">${s.tel||'—'}</td>
       <td>${planLabel(s.plan)}</td>
       <td>${serv}</td>
       <td class="c b">${ptsOf(s)}</td>
+      <td>${SRC[s.src]||'—'}</td>
       <td>${s.inst?.mode==='self' ? 'Self install' : (instLabel(s.inst)||'—')}</td>
     </tr>`;
   }).join('');
@@ -2201,6 +2238,7 @@ function exportarPDF(scope){
   .c{text-align:center}.b{font-weight:bold}
   .mono{font-family:'Courier New',monospace}
   tfoot td{background:#ebebeb;font-weight:bold}
+  .nota{margin-top:3px;font-size:9.5px;color:#666;font-style:italic;line-height:1.35}
   .pie{margin-top:14px;color:#777;font-size:10px}
   /* que los fondos grises salgan tambien en el papel / PDF */
   @media print{ body{padding:0} *{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
@@ -2221,12 +2259,12 @@ function exportarPDF(scope){
     <thead><tr>
       <th class="c">#</th><th class="c">Fecha</th>${quien==='all'?'<th>Operador</th>':''}
       <th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Qué contó</th>
-      <th class="c">Pts</th><th>Instalación</th>
+      <th class="c">Pts</th><th>Origen</th><th>Instalación</th>
     </tr></thead>
     <tbody>${filas}</tbody>
     <tfoot><tr>
       <td colspan="${quien==='all'?7:6}" style="text-align:right">TOTAL DE PUNTOS</td>
-      <td class="c">${tot.pts}</td><td></td>
+      <td class="c">${tot.pts}</td><td></td><td></td>
     </tr></tfoot>
   </table>
 
@@ -2300,7 +2338,8 @@ function viewOps(){
             <tr>
               <td class="src-tag c-fecha">${s.d}</td>
               ${verOp?`<td class="c-op"><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
-              <td class="c-nm"><b>${s.nm}</b></td>
+              <td class="c-nm"><b>${esc(s.nm)}</b>${s.nota?`<span class="notaic" title="${escAttr(s.nota)}"
+                onclick="verNota('${s.id}')">✎</span>`:''}</td>
               <td class="mono c-tel" style="color:var(--muted)" data-lbl="TEL">${s.tel || "—"}</td>
               <td class="c-plan"><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
               <td class="c-prods">${prodPills(s)}</td>
@@ -2383,6 +2422,18 @@ function emoteHTML(uid, tam){
          title="Ver el emote de ${opBy(uid).nm}"><img src="${e.img}" alt="${e.n}"></button>`
     : `<span class="${cls}">${e.k}</span>`;
 }
+/* la nota completa, que en la tabla solo cabe el iconito */
+function verNota(id){
+  const s = SALES.find(x=>x.id===id);
+  if(!s || !s.nota) return;
+  $('#notaCliente').textContent = s.nm;
+  $('#notaMeta').textContent = `${s.d} · ${planLabel(s.plan)}` + (isAdmin() ? ` · ${opBy(s.owner).nm}` : '');
+  $('#notaTexto').textContent = s.nota;
+  $('#notaEditar').setAttribute('onclick', `cerrarNota();openModal('${id}')`);
+  $('#notaOverlay').classList.add('on');
+}
+function cerrarNota(){ $('#notaOverlay').classList.remove('on'); }
+
 function verEmote(uid){
   const e = cosBy('emote', lookDe(uid).emote || '');
   if(!e.img) return;
@@ -2720,7 +2771,9 @@ function viewRadio(){
   const log = $('#chatlog'); log.scrollTop = log.scrollHeight;
   $('#chatInput').focus();
 }
-function esc(s){ return s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+/* tolera null y numeros: ahora tambien pasa por aqui el nombre del cliente y
+   la nota del cierre, que pueden venir vacios */
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function sendMsg(){
   const i = $('#chatInput'), txt = i.value.trim();
   if(!txt) return;
@@ -2861,6 +2914,11 @@ function openModal(id){
   $('#fName').value = s?s.nm:'';
   $('#fTel').value  = s?s.tel:'';
   $('#fSrc').value  = s?s.src:'redes';
+  $('#fNota').value = s && s.nota ? s.nota : '';
+  /* el admin ve los cierres de todos, asi que la nota no es tan privada: hay
+     que decirlo antes de que alguien escriba algo pensando que solo lo ve el */
+  $('#notaAdmin').textContent = isAdmin() ? '' : ' y el mando';
+  contarNota();
   $('#mDelete').style.display = s?'block':'none';
   const ownerDef = s ? s.owner : (isAdmin() && opsScope!=='me' && opsScope!=='all' ? opsScope : ME);
   $('#fOwnerWrap').style.display = isAdmin() ? 'block' : 'none';
@@ -2871,6 +2929,15 @@ function openModal(id){
   renderChecks();
   $('#overlay').classList.add('on');
   setTimeout(()=>$('#fName').focus(),50);
+}
+
+/* cuenta atras de lo que queda por escribir en la nota */
+function contarNota(){
+  const el = $('#fNota'), c = $('#notaCount');
+  if(!el || !c) return;
+  const quedan = 300 - el.value.length;
+  c.textContent = quedan;
+  c.style.color = quedan <= 30 ? 'var(--amber)' : '';
 }
 
 function renderPlan(){
@@ -2957,6 +3024,7 @@ async function saveSale(){
   const {anio, mes} = mesActual();
   const payload = {
     nm, tel, p:{...draft}, plan:{...dplan}, inst:{...dinst}, src:$('#fSrc').value,
+    nota: $('#fNota').value.trim().slice(0,300),
     owner: isAdmin() ? $('#fOwner').value : ME,
     d: String(today.getMonth()+1).padStart(2,'0')+'/'+String(dayNow).padStart(2,'0'),
     anio, mes,
@@ -3247,7 +3315,7 @@ function renderBell(){
     : '';
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); } });
 </script>
 </body>
 </html>
