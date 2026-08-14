@@ -641,6 +641,45 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- lo que esta en el aire, en el lobby ---- */
+.enjuego{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.ej{flex:1;min-width:180px;text-align:left;background:none;cursor:pointer;padding:9px 12px;
+  font-family:'Barlow Condensed';font-size:13px;letter-spacing:.06em;color:var(--muted)}
+.ej b{font-size:21px;font-weight:700;margin-right:5px}
+.ej small{display:block;font-size:10.5px;color:var(--dim);letter-spacing:.09em;margin-top:2px}
+.ej.esp{border:1px solid rgba(255,138,0,.42)} .ej.esp b{color:var(--amber)}
+.ej.esp:hover{border-color:var(--amber);background:rgba(255,138,0,.07)}
+.ej.cai{border:1px solid rgba(232,64,42,.42)} .ej.cai b{color:var(--red)}
+.ej.cai:hover{border-color:var(--red);background:rgba(232,64,42,.07)}
+.bell.conf{border-color:rgba(57,208,255,.5);color:var(--cyan)}
+.bell.conf .dot{background:var(--cyan);color:#04141a}
+/* ---- confirmar instalaciones ---- */
+.cfli{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.05);
+  transition:background .2s,opacity .2s}
+.cfli .info{flex:1;min-width:0}
+.cfli .info b{display:block;font-family:'Barlow Condensed';font-size:16px;letter-spacing:.05em}
+.cfli .meta{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Barlow Condensed';letter-spacing:.06em}
+.cfli .tel{font-family:'Barlow';font-size:12.5px;color:var(--dim);margin-top:2px;letter-spacing:.03em}
+.cfli .acc{display:flex;gap:7px;flex-shrink:0}
+.cfli .acc button{border:1px solid var(--line2);background:none;cursor:pointer;padding:9px 15px;
+  font-family:'Barlow Condensed';font-weight:700;font-size:14px;letter-spacing:.12em}
+.cfli .acc .si{color:var(--green);border-color:rgba(74,208,122,.45)}
+.cfli .acc .si:hover{background:var(--green);color:#04140a}
+.cfli .acc .no{color:var(--red);border-color:rgba(232,64,42,.45)}
+.cfli .acc .no:hover{background:var(--red);color:#fff}
+.cfli.hecho{background:rgba(74,208,122,.08);opacity:.6}
+.cfli.caido{background:rgba(232,64,42,.08);opacity:.6}
+.cfli .marca{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.12em;white-space:nowrap}
+.cfli .marca.ok{color:var(--green)} .cfli .marca.no{color:var(--red)}
+/* ---- cierres sin instalar en la lista ---- */
+.tcierres tr.caido{background:rgba(232,64,42,.07)}
+.tcierres tr.caido td{border-top:1px solid rgba(232,64,42,.5);border-bottom:1px solid rgba(232,64,42,.5)}
+.tcierres tr.caido td:first-child{border-left:3px solid var(--red)}
+.tcierres tr.espera td:first-child{border-left:3px solid var(--amber)}
+.estado{display:inline-block;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.13em;
+  padding:1px 6px;margin-top:3px}
+.estado.no{color:var(--red);border:1px solid rgba(232,64,42,.5)}
+.estado.espera{color:var(--amber);border:1px solid rgba(255,138,0,.45)}
 .notaic{display:inline-block;margin-left:6px;color:var(--amber);cursor:pointer;font-size:13px;opacity:.75}
 .notaic:hover{opacity:1}
 /* ---- cosmeticos puestos ---- */
@@ -979,6 +1018,26 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ ¿SE INSTALÓ? ============ -->
+<div class="overlay" id="cfOverlay">
+  <div class="alertbox" style="border-color:var(--cyan);box-shadow:0 0 60px rgba(57,208,255,.25),0 40px 90px rgba(0,0,0,.85)">
+    <div class="alerthead" style="background:linear-gradient(90deg,rgba(57,208,255,.16),transparent)">
+      <div class="pulse" style="background:var(--cyan);box-shadow:0 0 0 0 rgba(57,208,255,.7)"></div>
+      <div>
+        <h3 id="cfTitulo" style="color:var(--cyan)">¿SE INSTALÓ?</h3>
+        <div class="sub" id="cfSub"></div>
+      </div>
+      <button class="close" onclick="cerrarConfirmar()">✕</button>
+    </div>
+    <div id="cfLista"></div>
+    <div class="mf">
+      <div class="hint" style="text-transform:none;letter-spacing:.02em">Lo que no confirmes sigue sin sumar</div>
+      <div class="grow"></div>
+      <button class="btn-ghost" onclick="cerrarConfirmar()">Después</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ NOTA DE UN CIERRE ============ -->
 <div class="overlay" id="notaOverlay" onclick="cerrarNota()">
   <div class="modal" style="width:400px" onclick="event.stopPropagation()">
@@ -1091,6 +1150,21 @@ const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); re
 const instLabel = i => !i ? '—' : i.mode==='self' ? 'SELF INSTALL' : fmtDate(i.d);
 const isHoy  = i => i && i.mode==='fecha' && i.d === TODAY_ISO;
 const isPend = i => i && i.mode==='fecha' && i.d && i.d > TODAY_ISO;
+
+/* ---------- ¿SE INSTALÓ? ----------
+   Una cita agendada no es una venta hecha: hasta que el cliente no tenga el
+   servicio puesto, ese cierre no suma puntos. `inst.st` guarda la respuesta:
+   'ok' instalado, 'no' se cayo, y sin nada es que todavia no se sabe.
+   El self install cuenta desde el momento cero, que ahi no hay cita que esperar. */
+const estadoInst = s => !s.inst ? 'ok'
+  : s.inst.mode === 'self' ? 'ok'
+  : s.inst.st === 'ok' ? 'ok'
+  : s.inst.st === 'no'  ? 'no'
+  : 'espera';
+/* los que suman a la metrica */
+const cuenta = s => estadoInst(s) === 'ok';
+/* los que ya pasaron su fecha y nadie ha dicho si entraron o no */
+const porConfirmar = s => estadoInst(s) === 'espera' && s.inst && s.inst.d && s.inst.d < TODAY_ISO;
 
 /* OJO: la foto de EL_FE está confirmada. Las otras 4 las asigné al azar —
    cambia el 'av' de cada uno si le toca otra. Archivos en avatars/ */
@@ -1334,7 +1408,9 @@ function escucharVentas(){
     render();
     publicarRanking();          // deja al dia el marcador que ve el escuadron
     publicarLogros();           // y registra los badges que se hayan ganado
-    if(!alertShown && instalacionesHoy().length) setTimeout(openAlert, 400);
+    /* primero lo de ayer —que sin confirmar no suma— y luego las citas de hoy */
+    if(!confirmShown && pendientesDeConfirmar().length) setTimeout(abrirConfirmar, 500);
+    else if(!alertShown && instalacionesHoy().length) setTimeout(openAlert, 400);
   }, err => {
     cargando = false;
     console.error('firestore:', err);
@@ -1379,7 +1455,8 @@ async function publicarRanking(){
       return db().collection('ranking').doc(`${anio}-${mes}-${uid}`).set({
         owner:uid, anio, mes,
         pts:t.pts, internet:t.internet, celular:t.celular, voice:t.voice, tv:t.tv,
-        cuota:cuotaBono(t), ventas:salesOf(uid).length,
+        cuota:cuotaBono(t), ventas:t.cierres,
+        espera:t.espera, esperaPts:t.esperaPts,
         /* agregados para que el escuadron pueda abrir el perfil del otro.
            Son todos conteos: aqui no entra ni un nombre ni un telefono. */
         src:t.src, plans:t.plans, speeds:t.speeds,
@@ -1417,7 +1494,7 @@ function escucharMedallas(){
 
 /* saldo: una medalla por cada 3 cierres del mes, menos las que ya mandé */
 function saldoMedallas(){
-  const ganadas = Math.floor(salesOf(ME).length / CIERRES_POR_MEDALLA);
+  const ganadas = Math.floor(stats(ME).cierres / CIERRES_POR_MEDALLA);
   const gastadas = MED_TX().length;
   return {ganadas, gastadas, quedan: Math.max(0, ganadas - gastadas)};
 }
@@ -1434,7 +1511,7 @@ function medallasDe(uid){
 }
 /* cuántos cierres faltan para ganar la próxima */
 function faltanParaMedalla(){
-  const n = salesOf(ME).length;
+  const n = stats(ME).cierres;
   return CIERRES_POR_MEDALLA - (n % CIERRES_POR_MEDALLA);
 }
 
@@ -1500,6 +1577,7 @@ function escucharLogros(){
 function totalesPorPeriodo(uid, per){
   const acc = {};
   salesOf(uid).forEach(s=>{
+    if(!cuenta(s)) return;          // un logro no se gana con citas sin instalar
     const iso = isoDeVenta(s);
     if(!iso) return;
     const p = periodoDe(per, iso);
@@ -1656,9 +1734,24 @@ function stats(uid){
              src:Object.keys(SRC).reduce((o,k)=>(o[k]=0,o),{}),
              plans:{'1play':0,'2play':0,'3play':0,celular:0},
              speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0,'double':0},
-             self:0, agendadas:0, pendientes:[], hoy:[], byDay:{}};
+             self:0, agendadas:0, pendientes:[], hoy:[], byDay:{},
+             /* lo agendado que todavia no esta puesto: no suma, pero se enseña
+                aparte para que el vendedor sepa lo que tiene en el aire */
+             espera:0, esperaPts:0, caidos:0, caidosPts:0, porConfirmar:[], cierres:0};
   SALES.forEach(s=>{
-    const pt = ptsOf(s);
+    const pt = ptsOf(s), est = estadoInst(s);
+
+    if(est === 'espera'){ t.espera++; t.esperaPts += pt; if(porConfirmar(s)) t.porConfirmar.push(s); }
+    if(est === 'no'){ t.caidos++; t.caidosPts += pt; }
+
+    /* de aqui para abajo solo entra lo que de verdad esta instalado */
+    if(est !== 'ok'){
+      if(s.inst){ if(s.inst.mode==='self') t.self++; else t.agendadas++;
+                  if(isPend(s.inst)) t.pendientes.push(s);
+                  if(isHoy(s.inst))  t.hoy.push(s); }
+      return;
+    }
+    t.cierres++;
     t.pts += pt;
     t.celular += lineasCel(s);                                   // suma lineas, no cierres
     ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) t[k]++; });
@@ -1707,7 +1800,8 @@ function statsDe(uid){
     ajeno:true, sinDatos:!RANKING[uid]
   };
 }
-const ventasDe = uid => (uid === ME || isAdmin()) ? salesOf(uid).length : (RANKING[uid]||{}).ventas || 0;
+/* cierres que cuentan: los instalados. Los agendados sin confirmar no entran */
+const ventasDe = uid => (uid === ME || isAdmin()) ? stats(uid).cierres : (RANKING[uid]||{}).ventas || 0;
 
 /* ---------- XP Y NIVEL DEL PASE ---------- */
 function xpDe(uid){
@@ -1743,12 +1837,14 @@ function ranked(){
       const t = stats(s.id);
       const cuota = cuotaBono(t);
       return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
-              cuota, bono:bonoPct(cuota), ventas:salesOf(s.id).length};
+              cuota, bono:bonoPct(cuota), ventas:t.cierres,
+              espera:t.espera, esperaPts:t.esperaPts};
     }
     const r = RANKING[s.id] || {};
     const cuota = r.cuota != null ? r.cuota : (r.internet||0)+(r.celular||0);
     return {...s, pts:r.pts||0, bonus:r.voice||0, internet:r.internet||0, celular:r.celular||0,
-            cuota, bono:bonoPct(cuota), ventas:r.ventas||0, ajeno:true};
+            cuota, bono:bonoPct(cuota), ventas:r.ventas||0,
+            espera:r.espera||0, esperaPts:r.esperaPts||0, ajeno:true};
   }).sort((a,b)=> b.pts-a.pts || b.bonus-a.bonus);
 }
 /* instalaciones de hoy: las mías, o las de todo el escuadrón si soy admin */
@@ -1857,7 +1953,7 @@ function entrar(){
   $('#app').style.display='flex';
   pintaFecha();
   $('#topName').textContent = me().nm;
-  tab = 'lobby'; opsScope = 'me'; alertShown = false;   // sesión limpia al cambiar de operador
+  tab = 'lobby'; opsScope = 'me'; alertShown = false; confirmShown = false;
   perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
   SALES = [];
   render();
@@ -1879,7 +1975,7 @@ function logout(){
   /* cierra lo que haya quedado abierto para que no flote sobre el login */
   document.querySelectorAll('.overlay.on').forEach(o => o.classList.remove('on'));
   cerrarFecha();
-  alertShown = false;
+  alertShown = false; confirmShown = false;
   renderRoster();
   lgError('');
   $('#app').style.display='none';
@@ -1928,7 +2024,7 @@ function aplicarFecha(){
   pintaFecha();
   const ahoraMes = mesActual();
   /* si cambiaste de mes hay que bajar los cierres de ese otro mes */
-  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; escucharVentas(); }
+  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; confirmShown = false; escucharVentas(); }
   else render();
   toast(v === HOY_REAL ? 'Fecha en <b>hoy real</b>' : `Fecha movida a <b>${v}</b>`);
 }
@@ -1939,7 +2035,7 @@ function resetFecha(){
   cerrarFecha();
   pintaFecha();
   const ahoraMes = mesActual();
-  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; escucharVentas(); }
+  if(antesMes.anio !== ahoraMes.anio || antesMes.mes !== ahoraMes.mes){ alertShown = false; confirmShown = false; escucharVentas(); }
   else render();
   toast('De vuelta en <b>hoy real</b>');
 }
@@ -2073,6 +2169,16 @@ function viewLobby(){
           </div>
           <div class="gscale"><span>0</span><span>${Math.round(pctReal)}% DE TU META</span><span>${meta} PTS</span></div>
         </div>
+        ${t.espera || t.caidos ? `
+        <div class="enjuego">
+          ${t.espera ? `<button class="ej esp" onclick="${t.porConfirmar.length?'abrirConfirmar()':`setTab('ops')`}">
+            <b>${t.esperaPts}</b> pts esperando instalación
+            <small>${t.espera} cierre${t.espera===1?'':'s'} agendado${t.espera===1?'':'s'}${
+              t.porConfirmar.length ? ` · ${t.porConfirmar.length} por confirmar` : ''}</small></button>` : ''}
+          ${t.caidos ? `<button class="ej cai" onclick="setTab('ops')">
+            <b>${t.caidosPts}</b> pts que no entraron
+            <small>${t.caidos} cierre${t.caidos===1?'':'s'} sin instalar</small></button>` : ''}
+        </div>` : ''}
       </div>
 
       <div class="tiles">
@@ -2185,21 +2291,25 @@ function exportarPDF(scope){
   if(!lista.length){ toast('No hay cierres de '+monthName+' para exportar'); return; }
 
   const titular = quien === 'all' ? 'ESCUADRÓN COMPLETO' : opBy(quien).nm;
-  const tot = {pts:0, internet:0, celular:0, tv:0, voice:0};
+  const tot = {pts:0, internet:0, celular:0, tv:0, voice:0, espera:0, esperaPts:0, caidos:0};
   lista.forEach(s=>{
+    const est = estadoInst(s);
+    if(est === 'espera'){ tot.espera++; tot.esperaPts += ptsOf(s); return; }
+    if(est === 'no'){ tot.caidos++; return; }
     tot.pts += ptsOf(s); tot.celular += lineasCel(s);
     ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) tot[k]++; });
   });
   const cuota = tot.internet + tot.celular;
 
   const filas = lista.map((s,i)=>{
+    const est = estadoInst(s);
     const serv = [
       lineasCel(s) ? 'Celular'+(lineasCel(s)>1?' ×'+lineasCel(s):'') : null,
       s.p.internet ? 'Internet' : null,
       s.p.tv ? 'TV' : null,
       s.p.voice ? 'Voice' : null
     ].filter(Boolean).join(', ');
-    return `<tr>
+    return `<tr class="${est==='ok'?'':est}">
       <td class="c">${i+1}</td>
       <td class="c">${s.d||'—'}</td>
       ${quien==='all' ? `<td>${opBy(s.owner).nm}</td>` : ''}
@@ -2207,9 +2317,11 @@ function exportarPDF(scope){
       <td class="mono">${s.tel||'—'}</td>
       <td>${planLabel(s.plan)}</td>
       <td>${serv}</td>
-      <td class="c b">${ptsOf(s)}</td>
+      <td class="c b">${est==='ok' ? ptsOf(s) : '—'}</td>
       <td>${SRC[s.src]||'—'}</td>
-      <td>${s.inst?.mode==='self' ? 'Self install' : (instLabel(s.inst)||'—')}</td>
+      <td>${s.inst?.mode==='self' ? 'Self install' : (instLabel(s.inst)||'—')}${
+        est==='no' ? '<div class="est">NO SE INSTALÓ</div>'
+        : est==='espera' ? '<div class="est">sin instalar</div>' : ''}</td>
     </tr>`;
   }).join('');
 
@@ -2239,12 +2351,16 @@ function exportarPDF(scope){
   .mono{font-family:'Courier New',monospace}
   tfoot td{background:#ebebeb;font-weight:bold}
   .nota{margin-top:3px;font-size:9.5px;color:#666;font-style:italic;line-height:1.35}
+  .est{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+  tbody tr.no td{background:#fdecea} tbody tr.no .est{color:#b3261e;font-weight:bold}
+  tbody tr.espera td{background:#fff8e6} tbody tr.espera .est{color:#8a6100}
   .pie{margin-top:14px;color:#777;font-size:10px}
   /* que los fondos grises salgan tambien en el papel / PDF */
   @media print{ body{padding:0} *{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
 </style></head><body>
   <h1>Cierres de ${monthName} ${today.getFullYear()} — ${titular}</h1>
-  <div class="sub">${lista.length} ${lista.length===1?'cierre':'cierres'} · generado el ${sello}</div>
+  <div class="sub">${lista.length} ${lista.length===1?'cierre':'cierres'} · generado el ${sello}${
+    tot.espera||tot.caidos ? ` · solo cuentan los instalados` : ''}</div>
 
   <div class="tot">
     <div>PUNTOS<b>${tot.pts}</b></div>
@@ -2253,6 +2369,8 @@ function exportarPDF(scope){
     <div>TV<b>${tot.tv}</b></div>
     <div>VOICE (bono)<b>${tot.voice}</b></div>
     <div>CUOTA DE BONO<b>${cuota} / ${INT_100} → ${bonoPct(cuota)}%</b></div>
+    ${tot.espera ? `<div>SIN INSTALAR<b>${tot.espera} · ${tot.esperaPts} pts en el aire</b></div>` : ''}
+    ${tot.caidos ? `<div>NO ENTRARON<b>${tot.caidos}</b></div>` : ''}
   </div>
 
   <table>
@@ -2334,8 +2452,8 @@ function viewOps(){
           <th style="width:110px">Origen</th><th style="width:110px"></th>
         </tr></thead>
         <tbody>
-          ${lista.map(s=>`
-            <tr>
+          ${lista.map(s=>{ const est = estadoInst(s); return `
+            <tr class="${est==='no'?'caido':est==='espera'?'espera':''}">
               <td class="src-tag c-fecha">${s.d}</td>
               ${verOp?`<td class="c-op"><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
               <td class="c-nm"><b>${esc(s.nm)}</b>${s.nota?`<span class="notaic" title="${escAttr(s.nota)}"
@@ -2343,16 +2461,19 @@ function viewOps(){
               <td class="mono c-tel" style="color:var(--muted)" data-lbl="TEL">${s.tel || "—"}</td>
               <td class="c-plan"><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
               <td class="c-prods">${prodPills(s)}</td>
-              <td class="c-pts"><span class="ptbadge ${ptsOf(s)?'':'zero'}">${ptsOf(s)}</span></td>
+              <td class="c-pts"><span class="ptbadge ${ptsOf(s)&&est==='ok'?'':'zero'}">${ptsOf(s)}</span></td>
               <td class="c-inst" data-lbl="INSTALACIÓN">${s.inst?.mode==='self'
                     ? `<span class="pill" style="color:var(--muted)">SELF</span>`
-                    : `<span class="src-tag" style="color:${isPend(s.inst)?'var(--amber)':'var(--green)'}">${instLabel(s.inst)}${isPend(s.inst)?' ⏳':' ✓'}</span>`}</td>
+                    : `<span class="src-tag" style="color:${est==='ok'?'var(--green)':est==='no'?'var(--red)':'var(--amber)'}">${instLabel(s.inst)}</span>`}
+                ${est==='no' ? '<div class="estado no">NO SE INSTALÓ</div>'
+                 : est==='espera' ? `<div class="estado espera">${porConfirmar(s)?'CONFIRMA SI ENTRÓ':'SIN INSTALAR'}</div>`
+                 : s.inst?.mode==='fecha' ? '<div class="estado" style="color:var(--green)">✓ INSTALADO</div>' : ''}</td>
               <td class="c-src" data-lbl="ORIGEN"><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]||'—'}</span></td>
               <td class="c-acc" style="text-align:right">
                 <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
                 <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>
               </td>
-            </tr>`).join('')}
+            </tr>`; }).join('')}
         </tbody>
       </table>
       </div>
@@ -2401,7 +2522,7 @@ function viewSquad(){
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
             <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.cuota}<small>${s.bono}% · ${s.internet}i+${s.celular}c</small></div>
             <div class="num" style="color:var(--cyan)">${s.bonus}<small>VOICE</small></div>
-            <div class="num">${s.ventas}<small>VENTAS</small></div>
+            <div class="num">${s.ventas}<small>${s.espera?`<span style="color:var(--amber)">+${s.esperaPts} EN ESPERA</span>`:'VENTAS'}</small></div>
             <div class="num" style="color:${pct>=100?'var(--green)':pct>=75?'var(--amber)':'var(--red)'}">${pct}%<small>DE ${s.meta}</small></div>
           </div>
         </div>
@@ -3079,6 +3200,78 @@ function saveRename(){
   toast('CALLSIGN ACTUALIZADO <b>'+v+'</b>');
 }
 
+/* ==================== ¿SE INSTALÓ? ====================
+   Al dia siguiente de la cita hay que decir si el cliente quedo instalado.
+   Mientras no se diga, ese cierre no suma puntos. Se preguntan todos juntos
+   en una lista: de otro modo, con veinte citas viejas serian veinte popups. */
+let confirmShown = false;
+
+function pendientesDeConfirmar(){
+  return (isAdmin() ? SALES : salesOf(ME))
+    .filter(porConfirmar)
+    .sort((a,b)=> (a.inst.d||'').localeCompare(b.inst.d||''));
+}
+
+function abrirConfirmar(){
+  const lista = pendientesDeConfirmar();
+  confirmShown = true;
+  if(!lista.length){ toast('NADA POR CONFIRMAR'); renderBell(); return; }
+
+  $('#cfTitulo').textContent = lista.length === 1
+    ? '¿SE INSTALÓ?' : `${lista.length} INSTALACIONES POR CONFIRMAR`;
+  $('#cfSub').textContent = lista.length === 1
+    ? 'Su cita ya pasó: dinos si quedó puesto'
+    : 'Sus citas ya pasaron. Hasta que no digas, no suman puntos.';
+  pintarConfirmar(lista);
+  $('#cfOverlay').classList.add('on');
+  renderBell();
+}
+
+function pintarConfirmar(lista){
+  $('#cfLista').innerHTML = lista.map(s=>`
+    <div class="cfli" id="cf-${s.id}">
+      <div class="info">
+        <b>${esc(s.nm)}</b>
+        <div class="meta">${fmtDate(s.inst.d)} · ${planLabel(s.plan)} · <b>${ptsOf(s)} pt${ptsOf(s)===1?'':'s'}</b>${
+          isAdmin() ? ` · <span style="color:var(--amber)">${opBy(s.owner).nm}</span>` : ''}</div>
+        <div class="tel">${s.tel||''}</div>
+      </div>
+      <div class="acc">
+        <button class="si" onclick="responderInst('${s.id}','ok')">SÍ</button>
+        <button class="no" onclick="responderInst('${s.id}','no')">NO</button>
+      </div>
+    </div>`).join('');
+}
+
+async function responderInst(id, st){
+  const s = SALES.find(x=>x.id===id);
+  if(!s) return;
+  const fila = $('#cf-'+id);
+  if(fila){
+    fila.classList.add(st==='ok'?'hecho':'caido');
+    fila.querySelector('.acc').innerHTML = st==='ok'
+      ? '<span class="marca ok">✓ INSTALADO</span>'
+      : '<span class="marca no">✕ NO SE INSTALÓ</span>';
+  }
+  try{
+    await db().collection('ventas').doc(id).update({'inst.st': st, 'inst.resp': Date.now()});
+    if(st === 'ok') toast(`<b>${esc(s.nm)}</b> instalado · +${ptsOf(s)} pts`);
+  }catch(err){
+    console.error(err);
+    toast('No se pudo guardar: ' + (err.code||err.message));
+    if(fila){ fila.classList.remove('hecho','caido'); pintarConfirmar(pendientesDeConfirmar()); }
+    return;
+  }
+  /* si ya no queda ninguno, cierro solo tras un momento */
+  setTimeout(()=>{
+    if(!pendientesDeConfirmar().length && $('#cfOverlay').classList.contains('on')){
+      cerrarConfirmar();
+      toast('TODO CONFIRMADO');
+    }
+  }, 900);
+}
+function cerrarConfirmar(){ $('#cfOverlay').classList.remove('on'); renderBell(); }
+
 /* ==================== ALERTA DE INSTALACIÓN ==================== */
 let alertShown = false;
 
@@ -3310,12 +3503,13 @@ function cerrarDarMedalla(){ $('#darOverlay').classList.remove('on'); medDestino
 
 function renderBell(){
   const n = instalacionesHoy().length;
-  $('#bellWrap').innerHTML = n
-    ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>`
-    : '';
+  const c = pendientesDeConfirmar().length;
+  $('#bellWrap').innerHTML =
+    (c ? `<button class="bell conf" onclick="abrirConfirmar()" title="Instalaciones por confirmar">❓ ¿ENTRÓ?<span class="dot">${c}</span></button>` : '') +
+    (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); } });
 </script>
 </body>
 </html>
