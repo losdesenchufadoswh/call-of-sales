@@ -680,6 +680,15 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   padding:1px 6px;margin-top:3px}
 .estado.no{color:var(--red);border:1px solid rgba(232,64,42,.5)}
 .estado.espera{color:var(--amber);border:1px solid rgba(255,138,0,.45)}
+/* confirmar sin abrir el popup, desde la propia fila */
+.cfmini{display:flex;align-items:center;gap:5px;margin-top:4px;font-family:'Barlow Condensed';
+  font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.cfmini button{background:none;cursor:pointer;padding:2px 8px;font-family:'Barlow Condensed';
+  font-weight:700;font-size:11px;letter-spacing:.1em}
+.cfmini .si{color:var(--green);border:1px solid rgba(74,208,122,.45)}
+.cfmini .si:hover{background:var(--green);color:#04140a}
+.cfmini .no{color:var(--red);border:1px solid rgba(232,64,42,.45)}
+.cfmini .no:hover{background:var(--red);color:#fff}
 .notaic{display:inline-block;margin-left:6px;color:var(--amber);cursor:pointer;font-size:13px;opacity:.75}
 .notaic:hover{opacity:1}
 /* ---- cosmeticos puestos ---- */
@@ -1493,8 +1502,9 @@ function escucharMedallas(){
 }
 
 /* saldo: una medalla por cada 3 cierres del mes, menos las que ya mandé */
+/* por cierre, igual que los logros: esto es para picarse, no es la metrica */
 function saldoMedallas(){
-  const ganadas = Math.floor(stats(ME).cierres / CIERRES_POR_MEDALLA);
+  const ganadas = Math.floor(salesOf(ME).length / CIERRES_POR_MEDALLA);
   const gastadas = MED_TX().length;
   return {ganadas, gastadas, quedan: Math.max(0, ganadas - gastadas)};
 }
@@ -1511,7 +1521,7 @@ function medallasDe(uid){
 }
 /* cuántos cierres faltan para ganar la próxima */
 function faltanParaMedalla(){
-  const n = stats(ME).cierres;
+  const n = salesOf(ME).length;
   return CIERRES_POR_MEDALLA - (n % CIERRES_POR_MEDALLA);
 }
 
@@ -1577,7 +1587,9 @@ function escucharLogros(){
 function totalesPorPeriodo(uid, per){
   const acc = {};
   salesOf(uid).forEach(s=>{
-    if(!cuenta(s)) return;          // un logro no se gana con citas sin instalar
+    /* Los logros van por el dia que cerraste, se instale o no. Decision suya:
+       los badges son la parte divertida y no tiene sentido endurecerlos.
+       La metrica de puntos si exige instalacion, pero eso es aparte. */
     const iso = isoDeVenta(s);
     if(!iso) return;
     const p = periodoDe(per, iso);
@@ -1809,8 +1821,10 @@ function xpDe(uid){
   const nLogros = logrosDe(uid).length;
   const nMedallas = medallasDeUid(uid).length;
   const det = {
+    /* los puntos si exigen instalacion, que son la produccion de verdad; el
+       resto del XP va por actividad, que el pase es cosmetico y no una metrica */
     puntos:  Math.round(t.pts * XP_PUNTO),
-    cierres: ventasDe(uid) * XP.cierre,
+    cierres: ((uid===ME||isAdmin()) ? salesOf(uid).length : (RANKING[uid]||{}).ventas||0) * XP.cierre,
     voice:   t.voice * XP.voice,
     dias:    t.diasActivos * XP.dia,
     logros:  nLogros * XP.logro,
@@ -2466,7 +2480,12 @@ function viewOps(){
                     ? `<span class="pill" style="color:var(--muted)">SELF</span>`
                     : `<span class="src-tag" style="color:${est==='ok'?'var(--green)':est==='no'?'var(--red)':'var(--amber)'}">${instLabel(s.inst)}</span>`}
                 ${est==='no' ? '<div class="estado no">NO SE INSTALÓ</div>'
-                 : est==='espera' ? `<div class="estado espera">${porConfirmar(s)?'CONFIRMA SI ENTRÓ':'SIN INSTALAR'}</div>`
+                 : est==='espera' ? (porConfirmar(s)
+                     ? `<div class="cfmini">¿entró?
+                          <button class="si" onclick="responderInst('${s.id}','ok')">SÍ</button>
+                          <button class="no" onclick="responderInst('${s.id}','no')">NO</button>
+                        </div>`
+                     : '<div class="estado espera">SIN INSTALAR</div>')
                  : s.inst?.mode==='fecha' ? '<div class="estado" style="color:var(--green)">✓ INSTALADO</div>' : ''}</td>
               <td class="c-src" data-lbl="ORIGEN"><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]||'—'}</span></td>
               <td class="c-acc" style="text-align:right">
@@ -3206,8 +3225,11 @@ function saveRename(){
    en una lista: de otro modo, con veinte citas viejas serian veinte popups. */
 let confirmShown = false;
 
+/* Solo los propios, tambien si eres el admin: el mando ve los cierres de todo el
+   escuadron y le saldrian veinte popups de citas ajenas cada vez que entra.
+   Los de los demas los confirma cada quien, o el admin a mano desde Mis cierres. */
 function pendientesDeConfirmar(){
-  return (isAdmin() ? SALES : salesOf(ME))
+  return salesOf(ME)
     .filter(porConfirmar)
     .sort((a,b)=> (a.inst.d||'').localeCompare(b.inst.d||''));
 }
