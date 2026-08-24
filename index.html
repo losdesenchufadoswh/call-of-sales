@@ -641,6 +641,12 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- cuantas citas quedaron puestas ---- */
+.instbar{height:6px;background:#000;border:1px solid var(--line);margin:0 0 7px;overflow:hidden}
+.instbar i{display:block;height:100%;transition:width .5s cubic-bezier(.2,.9,.3,1)}
+.instleg{display:flex;gap:12px;flex-wrap:wrap;font-family:'Barlow Condensed';font-size:11px;
+  letter-spacing:.08em;padding-bottom:10px}
+.lbinst{font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.08em}
 /* ---- lo que esta en el aire, en el lobby ---- */
 .enjuego{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
 .ej{flex:1;min-width:180px;text-align:left;background:none;cursor:pointer;padding:9px 12px;
@@ -1469,7 +1475,8 @@ async function publicarRanking(){
         /* agregados para que el escuadron pueda abrir el perfil del otro.
            Son todos conteos: aqui no entra ni un nombre ni un telefono. */
         src:t.src, plans:t.plans, speeds:t.speeds,
-        self:t.self, agendadas:t.agendadas, pendientes:t.pendientes.length,
+        self:t.self, agendadas:t.agendadas, instaladas:t.instaladas, caidos:t.caidos,
+        pendientes:t.pendientes.length,
         diasActivos:t.diasActivos, mejorDia:t.mejorDia, mejorDiaPts:t.mejorDiaPts,
         topSrc:t.topSrc, topSpeed:t.topSpeed,
         actualizado: Date.now()
@@ -1780,6 +1787,8 @@ function stats(uid){
     }
     t.byDay[s.d] = (t.byDay[s.d]||0)+pt;
   });
+  /* de las citas agendadas, cuantas quedaron puestas: "7 de 10" */
+  t.instaladas = t.agendadas - t.espera - t.caidos;
   t.pendientes.sort((a,b)=> a.inst.d.localeCompare(b.inst.d));
   const days = Object.keys(t.byDay);
   t.diasActivos = days.length;
@@ -1805,7 +1814,8 @@ function statsDe(uid){
     src:   r.src   || Object.keys(SRC).reduce((o,k)=>(o[k]=0,o),{}),
     plans: r.plans || {'1play':0,'2play':0,'3play':0,celular:0},
     speeds:r.speeds|| SPEEDS.reduce((o,s)=>(o[s.k]=0,o),{}),
-    self:cero('self'), agendadas:cero('agendadas'), nPendientes:cero('pendientes'),
+    self:cero('self'), agendadas:cero('agendadas'), instaladas:cero('instaladas'),
+    caidos:cero('caidos'), nPendientes:cero('pendientes'),
     diasActivos:cero('diasActivos'), mejorDia:r.mejorDia||'—', mejorDiaPts:cero('mejorDiaPts'),
     topSrc:r.topSrc||'redes', topSpeed:r.topSpeed||'100',
     ventas:cero('ventas'), pendientes:[], byDay:{},
@@ -1852,13 +1862,15 @@ function ranked(){
       const cuota = cuotaBono(t);
       return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
               cuota, bono:bonoPct(cuota), ventas:t.cierres,
-              espera:t.espera, esperaPts:t.esperaPts};
+              espera:t.espera, esperaPts:t.esperaPts,
+              instaladas:t.instaladas, agendadas:t.agendadas};
     }
     const r = RANKING[s.id] || {};
     const cuota = r.cuota != null ? r.cuota : (r.internet||0)+(r.celular||0);
     return {...s, pts:r.pts||0, bonus:r.voice||0, internet:r.internet||0, celular:r.celular||0,
             cuota, bono:bonoPct(cuota), ventas:r.ventas||0,
-            espera:r.espera||0, esperaPts:r.esperaPts||0, ajeno:true};
+            espera:r.espera||0, esperaPts:r.esperaPts||0,
+            instaladas:r.instaladas||0, agendadas:r.agendadas||0, ajeno:true};
   }).sort((a,b)=> b.pts-a.pts || b.bonus-a.bonus);
 }
 /* instalaciones de hoy: las mías, o las de todo el escuadrón si soy admin */
@@ -2536,7 +2548,10 @@ function viewSquad(){
               <div class="nm"><span class="${lookDe(s.id).color||''}">${s.nm}</span>${emoteHTML(s.id)}${
                 s.id===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}
                 ${s.id!==ME?`<button class="medbtn2" onclick="event.stopPropagation();abrirDarMedalla('${s.id}')" title="Darle una medalla">🎖️</button>`:''}
-                <small>${lookDe(s.id).titulo ? `<span class="minitit">${lookDe(s.id).titulo}</span> · ` : ''}${s.full}${medallasDe(s.id)}</small></div>
+                <small>${lookDe(s.id).titulo ? `<span class="minitit">${lookDe(s.id).titulo}</span> · ` : ''}${s.full}${
+                  s.agendadas ? ` · <span class="lbinst" style="color:${
+                    s.instaladas/s.agendadas>=.8?'var(--green)':s.instaladas/s.agendadas>=.5?'var(--amber)':'var(--red)'
+                  }">🔧 ${s.instaladas}/${s.agendadas} instaladas</span>` : ''}${medallasDe(s.id)}</small></div>
             </div>
             <div class="num" style="color:${COLORS[i]}">${s.pts}<small>PTS</small></div>
             <div class="num" style="color:${s.bono===100?'var(--green)':s.bono===50?'var(--amber)':'var(--muted)'}">${s.cuota}<small>${s.bono}% · ${s.internet}i+${s.celular}c</small></div>
@@ -2786,7 +2801,19 @@ function viewPerfil(){
           <div class="statrow"><div class="k">DÍAS CON CIERRE</div><div class="v">${t.diasActivos}<small style="color:var(--dim);font-size:12px">/${dayNow}</small></div></div>
           <div class="statrow"><div class="k">MEJOR DÍA</div><div class="v">${t.mejorDia} <small style="color:var(--lime);font-size:13px">+${t.mejorDiaPts}</small></div></div>
           <div class="statrow"><div class="k">SELF INSTALL</div><div class="v">${t.self}</div></div>
-          <div class="statrow"><div class="k">CON CITA</div><div class="v" style="color:var(--cyan)">${t.agendadas} <small style="color:var(--amber);font-size:12px">${t.nPendientes} PEND.</small></div></div>
+          ${t.agendadas ? (()=>{
+            const pct = Math.round(t.instaladas / t.agendadas * 100);
+            const col = pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+            return `<div class="statrow"><div class="k">CITAS INSTALADAS</div>
+              <div class="v" style="color:${col}">${t.instaladas}<small style="color:var(--dim);font-size:15px"> / ${t.agendadas}</small>
+                <small style="color:${col};font-size:12px;display:block;margin-top:1px">${pct}%</small></div></div>
+            <div class="instbar"><i style="width:${pct}%;background:${col}"></i></div>
+            <div class="instleg">
+              <span style="color:var(--green)">✓ ${t.instaladas} puestas</span>
+              ${t.espera?`<span style="color:var(--amber)">⏳ ${t.espera} esperando</span>`:''}
+              ${t.caidos?`<span style="color:var(--red)">✕ ${t.caidos} no entraron</span>`:''}
+            </div>`;
+          })() : `<div class="statrow"><div class="k">CON CITA</div><div class="v" style="color:var(--dim)">0</div></div>`}
         </div>
 
         <div class="glass">
