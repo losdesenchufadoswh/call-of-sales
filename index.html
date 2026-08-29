@@ -31,6 +31,7 @@
   --red:#e8402a;
   --cyan:#39d0ff;
   --green:#4ad07a;
+  --gold:#ffd24a;      /* lo legendario del pase: nivel 50, marcos y emotes */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -662,6 +663,34 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   background-clip:text;color:transparent}
 .ranio{font-family:'Barlow Condensed';font-size:20px;letter-spacing:.5em;color:var(--dim);margin-top:6px}
 .rsub{font-size:14.5px;color:var(--muted);margin-top:14px;max-width:34ch;line-height:1.5}
+/* foto del operador en la portada, con el marco que llevaba puesto */
+.rhex{width:118px;height:118px;padding:3px;background:var(--line2);margin-bottom:12px;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  animation:rpop .6s cubic-bezier(.18,1.5,.35,1) both}
+.rhex.bronce{background:linear-gradient(145deg,#e0925a,#7a4a1e)}
+.rhex.plata{background:linear-gradient(145deg,#fbfdff,#8c959f)}
+.rhex.oro{background:linear-gradient(145deg,#ffe9a3,#c8912a)}
+.rhex.legend{background:linear-gradient(145deg,#ffd24a,#fff6d0,#ff8a00,#ffd24a);
+  background-size:250% 250%;animation:rpop .6s cubic-bezier(.18,1.5,.35,1) both, legendGrad 3.2s ease infinite .6s}
+.rhex i{display:block;width:100%;height:100%;background:#0a0d11;overflow:hidden;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.rhex img{width:100%;height:100%;object-fit:cover;display:block}
+.rini{display:flex;align-items:center;justify-content:center;height:100%;
+  font-family:'Barlow Condensed';font-size:34px;font-weight:700;color:var(--dim)}
+.rnombre{font-family:'Barlow Condensed';font-size:26px;font-weight:700;letter-spacing:.16em}
+/* niveles subidos */
+.rniv{font-family:'Barlow Condensed';font-size:clamp(76px,24vw,150px);font-weight:700;line-height:.9;
+  color:var(--amber);display:flex;align-items:flex-start;justify-content:center}
+.rniv .mas{font-size:.45em;margin-top:.22em;margin-right:.04em;opacity:.8}
+/* color solido: el degradado con background-clip:text desaparecia sobre un
+   contenedor flex y el numero se quedaba invisible */
+.rniv.tope{color:var(--gold);text-shadow:0 0 34px rgba(255,210,74,.55)}
+.rpasebar{width:min(400px,88vw);height:9px;background:#000;border:1px solid var(--line);
+  overflow:hidden;margin-top:18px}
+.rpasebar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold))}
+.rdesb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px;
+  font-family:'Barlow Condensed';font-size:11px;letter-spacing:.1em}
+.rdesb span{border:1px solid currentColor;padding:2px 8px;opacity:.85}
 .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(430px,92vw);margin-top:6px}
 .rgrid div{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:16px 10px}
 .rgrid b{display:block;font-family:'Barlow Condensed';font-size:42px;font-weight:700;line-height:1}
@@ -1828,11 +1857,21 @@ async function cargarRecap(clave){
     .map(v=>({...v, ...(SQUAD.find(s=>s.id===v.owner)||{nm:v.owner})}))
     .sort((a,b)=>(b.pts||0)-(a.pts||0));
 
+  const logros   = LOGROS_MIOS.filter(l => l.owner===ME && mesDelPeriodo(l.periodo)===clave);
+  const medallas = md.docs.map(d=>d.data()).filter(m => m.para===ME);
+
+  /* el pase arranca de cero cada mes, asi que el nivel al que llego es
+     exactamente lo que subio en el mes */
+  const xp = Math.round(t.pts * XP_PUNTO) + mias.length * XP.cierre + t.voice * XP.voice
+           + t.diasActivos * XP.dia + logros.length * XP.logro + medallas.length * XP.medalla;
+  const nivel = Math.min(PASE_NIVELES, Math.floor(xp / XP_NIVEL));
+  /* lo cosmetico que ese nivel deja desbloqueado */
+  const desbloqueado = [];
+  for(let lv=1; lv<=nivel; lv++) premiosDeNivel(lv).forEach(p=>desbloqueado.push(p));
+
   return {
     clave, nombre: MESES[Number(mes)-1], anio,
-    t, podio,
-    logros: LOGROS_MIOS.filter(l => l.owner===ME && mesDelPeriodo(l.periodo)===clave),
-    medallas: md.docs.map(d=>d.data()).filter(m => m.para===ME),
+    t, podio, logros, medallas, xp, nivel, desbloqueado,
     puesto: podio.findIndex(p=>p.owner===ME) + 1
   };
 }
@@ -3452,8 +3491,16 @@ function construirSlides(d){
   const pct = Math.round(t.pts / meta * 100);
   const s = [];
 
+  const m = me(), lk = lookDe(ME);
+  const foto = m.av
+    ? `<div class="rhex ${lk.marco||''}"><i><img src="${m.av}" alt=""
+         onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${m.nm.replace(/_/g,'').slice(0,2)}',className:'rini'}))"></i></div>`
+    : `<div class="rhex ${lk.marco||''}"><i><div class="rini">${m.nm.replace(/_/g,'').slice(0,2)}</div></i></div>`;
+
   s.push({clase:'portada', html:`
-    <div class="rkick">OPERACIÓN CERRADA</div>
+    ${foto}
+    <div class="rnombre ${lk.color||''}">${m.nm}</div>
+    <div class="rkick" style="margin-top:14px">OPERACIÓN CERRADA</div>
     <h1 class="rmes">${d.nombre}</h1>
     <div class="ranio">${d.anio}</div>
     <div class="rsub">Esto fue lo que hiciste</div>`});
@@ -3502,6 +3549,23 @@ function construirSlides(d){
             <div class="x">×${c[m.k]}</div></div>`).join('')}
       </div>
       <div class="rline">${d.medallas.length} medalla${d.medallas.length===1?'':'s'} en total</div>`});
+  }
+
+  if(d.nivel){
+    const tope = d.nivel >= PASE_NIVELES;
+    s.push({clase:'pase', html:`
+      <div class="rkick">TU PASE DE ${d.nombre}</div>
+      <div class="rniv ${tope?'tope':''}">
+        <span class="mas">+</span>${d.nivel}
+      </div>
+      <div class="rbigsub">${tope ? 'NIVELES · LO COMPLETASTE' : 'NIVELES SUBIDOS'}</div>
+      <div class="rpasebar"><i style="width:${d.nivel/PASE_NIVELES*100}%"></i></div>
+      <div class="rline">${d.xp.toLocaleString('es')} XP de ${XP_TOTAL.toLocaleString('es')}${
+        tope ? ' · llegaste al 50' : ` · te quedaste a ${PASE_NIVELES-d.nivel} del tope`}</div>
+      ${d.desbloqueado.length ? `<div class="rdesb">
+        ${d.desbloqueado.slice(-6).map(p=>`<span style="color:${p.c||'var(--amber)'}">${p.n}</span>`).join('')}
+        ${d.desbloqueado.length>6?`<span style="color:var(--dim)">y ${d.desbloqueado.length-6} más</span>`:''}
+      </div>` : ''}`});
   }
 
   if(d.podio.length) s.push({clase:'podio', html:`
