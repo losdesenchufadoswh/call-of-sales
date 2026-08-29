@@ -641,6 +641,64 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- recap de fin de mes ---- */
+.recapov{position:fixed;inset:0;z-index:95;display:none;flex-direction:column;
+  background:radial-gradient(ellipse at 50% 8%,#15202b,#08090b 62%)}
+.recapov.on{display:flex}
+#recapConfetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.rclose{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:5;
+  background:none;border:1px solid var(--line2);color:var(--muted);width:34px;height:34px;
+  cursor:pointer;font-size:15px}
+.rclose:hover{border-color:var(--amber);color:var(--amber)}
+.rslide{position:relative;z-index:3;flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:26px 22px;overflow-y:auto;gap:2px}
+.rkick{font-family:'Barlow Condensed';font-size:12.5px;letter-spacing:.4em;color:var(--amber);
+  text-transform:uppercase;margin-bottom:10px}
+.rmes{font-family:'Barlow Condensed';font-size:clamp(46px,14vw,96px);font-weight:700;letter-spacing:.06em;
+  line-height:.94;background:linear-gradient(180deg,#fff,var(--amber));-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.ranio{font-family:'Barlow Condensed';font-size:20px;letter-spacing:.5em;color:var(--dim);margin-top:6px}
+.rsub{font-size:14.5px;color:var(--muted);margin-top:14px;max-width:34ch;line-height:1.5}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(430px,92vw);margin-top:6px}
+.rgrid div{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:16px 10px}
+.rgrid b{display:block;font-family:'Barlow Condensed';font-size:42px;font-weight:700;line-height:1}
+.rgrid span{font-size:9.5px;letter-spacing:.2em;color:var(--dim)}
+.rmeta{width:min(430px,92vw);margin-top:18px}
+.rmetabar{height:10px;background:#000;border:1px solid var(--line);overflow:hidden}
+.rmetabar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--lime))}
+.rmetatxt{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.1em;color:var(--muted);margin-top:8px}
+.rbig{font-family:'Barlow Condensed';font-size:clamp(56px,18vw,120px);font-weight:700;color:var(--lime);line-height:1}
+.rbigsub{font-family:'Barlow Condensed';font-size:19px;letter-spacing:.12em;color:var(--txt);margin-top:6px}
+.rline{font-size:13px;color:var(--dim);margin-top:16px}
+.rbadge{width:min(280px,68vw);display:block;margin:4px auto 0;
+  filter:drop-shadow(0 0 30px rgba(255,210,74,.4));
+  animation:rpop .6s cubic-bezier(.18,1.5,.35,1) both}
+@keyframes rpop{0%{transform:scale(.3) rotate(-12deg);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+.rlogrosub{font-family:'Barlow Condensed';font-size:17px;letter-spacing:.13em;color:var(--muted);margin-top:12px}
+.rveces{font-family:'Barlow Condensed';font-size:30px;font-weight:700;margin-top:4px}
+.rmeds{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.rmeds .e{font-size:46px;line-height:1}
+.rmeds .n{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.1em;margin-top:5px}
+.rmeds .x{font-family:'Barlow Condensed';font-size:22px;font-weight:700;margin-top:2px}
+.rpodio{width:min(430px,92vw);margin-top:4px}
+.rp{display:flex;align-items:center;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(255,255,255,.07)}
+.rp.yo{background:linear-gradient(90deg,rgba(255,138,0,.16),transparent 72%)}
+.rp .pos{font-family:'Barlow Condensed';font-size:19px;width:34px;text-align:left}
+.rp .nm{font-family:'Barlow Condensed';font-size:17px;letter-spacing:.1em;flex:1;text-align:left}
+.rp .pt{font-family:'Barlow Condensed';font-size:24px;font-weight:700;color:var(--lime)}
+.rp .pt small{font-size:9px;letter-spacing:.15em;color:var(--dim);margin-left:4px}
+.rgo{margin-top:26px;padding:14px 40px;font-size:16px}
+.rnav{position:relative;z-index:4;display:flex;align-items:center;gap:12px;padding:14px 16px;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);
+  background:rgba(8,9,11,.72);backdrop-filter:blur(6px)}
+.rbtn{background:none;border:1px solid var(--line2);color:var(--muted);padding:9px 15px;cursor:pointer;
+  font-family:'Barlow Condensed';font-size:12.5px;letter-spacing:.14em;white-space:nowrap}
+.rbtn:hover{border-color:var(--amber);color:var(--amber)}
+.rbtn.on{background:var(--amber);border-color:var(--amber);color:#120a00;font-weight:700}
+.rpuntos{flex:1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.rpuntos button{width:8px;height:8px;border-radius:50%;border:0;background:var(--line2);cursor:pointer;padding:0}
+.rpuntos button.on{background:var(--amber);transform:scale(1.35)}
+@media(prefers-reduced-motion:reduce){ .rbadge{animation:none} }
 /* ---- cuantas citas quedaron puestas ---- */
 .instbar{height:6px;background:#000;border:1px solid var(--line);margin:0 0 7px;overflow:hidden}
 .instbar i{display:block;height:100%;transition:width .5s cubic-bezier(.2,.9,.3,1)}
@@ -1030,6 +1088,18 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
     <div class="lgveces" id="logroVeces"></div>
     <button class="btn-amber lgbtn" id="logroBtn" onclick="cerrarLogro()">SEGUIR</button>
     <button class="lgtodos" id="logroTodos" onclick="cerrarTodosLosLogros()">Ver todos en la vitrina</button>
+  </div>
+</div>
+
+<!-- ============ RECAP DE FIN DE MES ============ -->
+<div class="recapov" id="recapOverlay">
+  <canvas id="recapConfetti"></canvas>
+  <button class="rclose" onclick="cerrarRecap()" title="Cerrar">✕</button>
+  <div class="rslide" id="recapSlide"></div>
+  <div class="rnav">
+    <button class="rbtn" id="recapPrev" onclick="irSlide(recapIdx-1)">◂ ATRÁS</button>
+    <div class="rpuntos" id="recapPuntos"></div>
+    <button class="rbtn on" id="recapNext" onclick="siguienteSlide()">SIGUIENTE ▸</button>
   </div>
 </div>
 
@@ -1423,8 +1493,9 @@ function escucharVentas(){
     render();
     publicarRanking();          // deja al dia el marcador que ve el escuadron
     publicarLogros();           // y registra los badges que se hayan ganado
-    /* primero lo de ayer —que sin confirmar no suma— y luego las citas de hoy */
-    if(!confirmShown && pendientesDeConfirmar().length) setTimeout(abrirConfirmar, 500);
+    /* el recap del mes que cerro va primero: es lo primero que quieres ver el dia 1 */
+    if(!recapShown){ recapShown = true; setTimeout(quizaRecap, 700); }
+    else if(!confirmShown && pendientesDeConfirmar().length) setTimeout(abrirConfirmar, 500);
     else if(!alertShown && instalacionesHoy().length) setTimeout(openAlert, 400);
   }, err => {
     cargando = false;
@@ -1697,6 +1768,69 @@ async function limpiarLookFueraDeAlcance(){
   LOOK[ME] = {...mio, ...quitar};
   try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()}); }
   catch(err){ console.error(err); }
+}
+
+/* ==================== RECAP DE FIN DE MES ====================
+   El dia 1, al entrar, se enseña como quedo el mes que acaba de cerrar: tus
+   numeros, tus logros, tus medallas y el podio del escuadron. Una sola vez.
+   Los datos del mes viejo no estan en memoria —el listener solo trae el mes en
+   curso— asi que se piden aparte cuando toca. */
+function mesAnterior(){
+  const d = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  return {anio: String(d.getFullYear()), mes: String(d.getMonth()+1).padStart(2,'0'),
+          nombre: MESES[d.getMonth()], clave: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+}
+
+/* a que mes pertenece el periodo de un logro: el dia y el mes salen del propio
+   texto; la semana se decide por su jueves, que es lo que manda en ISO */
+function mesDelPeriodo(p){
+  if(!p) return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(p)) return p.slice(0,7);
+  if(/^\d{4}-\d{2}$/.test(p)) return p;
+  const m = p.match(/^(\d{4})-W(\d{2})$/);
+  if(!m) return null;
+  const ene4 = new Date(Number(m[1]), 0, 4);
+  const jue = new Date(ene4);
+  jue.setDate(ene4.getDate() - ((ene4.getDay()+6)%7) + (Number(m[2])-1)*7 + 3);
+  return `${jue.getFullYear()}-${String(jue.getMonth()+1).padStart(2,'0')}`;
+}
+
+async function cargarRecap(clave){
+  const [anio, mes] = clave.split('-');
+  const [vs, rk, md] = await Promise.all([
+    db().collection('ventas').where('anio','==',anio).where('mes','==',mes).where('owner','==',ME).get(),
+    db().collection('ranking').where('anio','==',anio).where('mes','==',mes).get(),
+    db().collection('medallas').where('anio','==',anio).where('mes','==',mes).get()
+  ]);
+  const mias = vs.docs.map(d=>({id:d.id, ...d.data()}));
+
+  /* los mismos totales de siempre, pero sobre las ventas de aquel mes */
+  const t = {pts:0, cierres:0, internet:0, celular:0, tv:0, voice:0, dias:{}, espera:0, caidos:0};
+  mias.forEach(s=>{
+    const est = estadoInst(s);
+    if(est === 'espera'){ t.espera++; return; }
+    if(est === 'no'){ t.caidos++; return; }
+    t.cierres++; t.pts += ptsOf(s); t.celular += lineasCel(s);
+    ['internet','tv','voice'].forEach(k=>{ if(s.p && s.p[k]) t[k]++; });
+    if(s.d) t.dias[s.d] = (t.dias[s.d]||0) + ptsOf(s);
+  });
+  const dias = Object.keys(t.dias);
+  t.diasActivos = dias.length;
+  const mejor = dias.sort((a,b)=>t.dias[b]-t.dias[a])[0];
+  t.mejorDia = mejor || '—';
+  t.mejorDiaPts = mejor ? t.dias[mejor] : 0;
+
+  const podio = rk.docs.map(d=>d.data())
+    .map(v=>({...v, ...(SQUAD.find(s=>s.id===v.owner)||{nm:v.owner})}))
+    .sort((a,b)=>(b.pts||0)-(a.pts||0));
+
+  return {
+    clave, nombre: MESES[Number(mes)-1], anio,
+    t, podio,
+    logros: LOGROS_MIOS.filter(l => l.owner===ME && mesDelPeriodo(l.periodo)===clave),
+    medallas: md.docs.map(d=>d.data()).filter(m => m.para===ME),
+    puesto: podio.findIndex(p=>p.owner===ME) + 1
+  };
 }
 
 async function correrMigracion(){
@@ -1979,7 +2113,7 @@ function entrar(){
   $('#app').style.display='flex';
   pintaFecha();
   $('#topName').textContent = me().nm;
-  tab = 'lobby'; opsScope = 'me'; alertShown = false; confirmShown = false;
+  tab = 'lobby'; opsScope = 'me'; alertShown = false; confirmShown = false; recapShown = false;
   perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
   SALES = [];
   render();
@@ -2001,7 +2135,7 @@ function logout(){
   /* cierra lo que haya quedado abierto para que no flote sobre el login */
   document.querySelectorAll('.overlay.on').forEach(o => o.classList.remove('on'));
   cerrarFecha();
-  alertShown = false; confirmShown = false;
+  alertShown = false; confirmShown = false; recapShown = false;
   renderRoster();
   lgError('');
   $('#app').style.display='none';
@@ -2964,6 +3098,15 @@ function viewMando(){
     <div class="notice"><b>CONSOLA DE MANDO</b> — acceso total. Ves y editas los cierres de cualquiera, fijas cuotas y roles, y tienes la agenda completa de instalaciones.</div>
 
     <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+      ${(()=>{ /* los ultimos meses que se pueden repasar */
+        const ms = [];
+        for(let i=1;i<=3;i++){
+          const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+          ms.push({clave:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, nm:MESES[d.getMonth()]});
+        }
+        return ms.map(m=>`<button class="iconbtn" style="padding:9px 14px;font-size:12.5px;margin-left:0;border-color:rgba(255,138,0,.45);color:var(--amber)"
+          onclick="verRecapDe('${m.clave}')">🎉 Recap de ${m.nm}</button>`).join('');
+      })()}
       <button class="iconbtn" style="padding:9px 14px;font-size:12.5px;margin-left:0"
               onclick="exportarPDF('all')">⤓ PDF de todo el escuadrón</button>
       ${SQUAD.map(o=>`<button class="iconbtn" style="padding:9px 12px;font-size:12px;margin-left:0"
@@ -3244,6 +3387,216 @@ function saveRename(){
   me().nm = v;
   closeRename(); renderRoster(); render();
   toast('CALLSIGN ACTUALIZADO <b>'+v+'</b>');
+}
+
+/* ==================== RECAP: LA PANTALLA ==================== */
+let recapSlides = [], recapIdx = 0, recapAuto = null, recapDatos = null, recapShown = false;
+
+/* se guarda en `look`, que ya es donde viven las preferencias de cada uno */
+const recapYaVisto = clave => (lookDe(ME).recapVisto || '').split(',').includes(clave);
+
+async function marcarRecapVisto(clave){
+  const prev = (lookDe(ME).recapVisto || '').split(',').filter(Boolean);
+  if(prev.includes(clave)) return;
+  const val = [...prev, clave].slice(-12).join(',');   // guarda el ultimo año
+  LOOK[ME] = {...lookDe(ME), recapVisto: val, owner: ME};
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  catch(err){ console.error('no se pudo marcar el recap:', err); }
+}
+
+/* Solo los primeros dias del mes: el recap es la noticia de que acaba de cerrar
+   un mes. A dia 29 no tiene ninguna gracia que te salte el del mes pasado, y
+   quien no entro el dia 1 todavia lo alcanza. Despues queda en Mando. */
+const DIAS_DE_RECAP = 5;
+
+async function quizaRecap(){
+  if(dayNow > DIAS_DE_RECAP) return;
+  const ant = mesAnterior();
+  if(recapYaVisto(ant.clave)) return;
+  try{
+    const d = await cargarRecap(ant.clave);
+    if(!d.t.cierres && !d.logros.length) { marcarRecapVisto(ant.clave); return; }  // mes vacio, nada que contar
+    abrirRecap(d);
+  }catch(err){ console.error('recap:', err); }
+}
+
+async function verRecapDe(clave){
+  try{
+    toast('Preparando el resumen…');
+    abrirRecap(await cargarRecap(clave));
+  }catch(err){ toast('No se pudo cargar: ' + (err.code||err.message)); }
+}
+
+function abrirRecap(d){
+  recapDatos = d;
+  recapSlides = construirSlides(d);
+  recapIdx = 0;
+  $('#recapOverlay').classList.add('on');
+  pintarSlide();
+  arrancarConfetti();
+  autoAvance();
+}
+
+function construirSlides(d){
+  const t = d.t, meta = me().meta || META_PTS;
+  const pct = Math.round(t.pts / meta * 100);
+  const s = [];
+
+  s.push({clase:'portada', html:`
+    <div class="rkick">OPERACIÓN CERRADA</div>
+    <h1 class="rmes">${d.nombre}</h1>
+    <div class="ranio">${d.anio}</div>
+    <div class="rsub">Esto fue lo que hiciste</div>`});
+
+  s.push({clase:'cifras', html:`
+    <div class="rkick">TUS NÚMEROS</div>
+    <div class="rgrid">
+      <div><b style="color:var(--lime)">${t.pts}</b><span>PUNTOS</span></div>
+      <div><b>${t.cierres}</b><span>CIERRES</span></div>
+      <div><b style="color:var(--cyan)">${t.voice}</b><span>VOICE</span></div>
+      <div><b style="color:var(--amber)">${t.diasActivos}</b><span>DÍAS ACTIVOS</span></div>
+    </div>
+    <div class="rmeta">
+      <div class="rmetabar"><i style="width:${Math.min(100,pct)}%"></i></div>
+      <div class="rmetatxt">${pct}% de tu meta de ${meta} pts${pct>=100?' · <b style="color:var(--green)">CUMPLIDA</b>':''}</div>
+    </div>`});
+
+  if(t.mejorDiaPts) s.push({clase:'mejordia', html:`
+    <div class="rkick">TU MEJOR DÍA</div>
+    <div class="rbig">${t.mejorDia}</div>
+    <div class="rbigsub">+${t.mejorDiaPts} puntos en un solo día</div>
+    <div class="rline">${t.internet} internet · ${t.celular} celular · ${t.tv} TV en el mes</div>`});
+
+  /* un slide por cada tipo de logro, con su badge */
+  const porTipo = {};
+  d.logros.forEach(l=>{ porTipo[l.tipo] = (porTipo[l.tipo]||0)+1; });
+  Object.keys(porTipo).forEach(k=>{
+    const L = logroBy(k);
+    if(!L) return;
+    s.push({clase:'logro', html:`
+      <div class="rkick">LOGRO DEL MES</div>
+      <img class="rbadge" src="${imgLogro(k)}" alt="${L.l}">
+      <div class="rlogrosub">${L.sub}</div>
+      ${porTipo[k]>1?`<div class="rveces" style="color:${L.color}">×${porTipo[k]} veces</div>`:''}`});
+  });
+
+  if(d.medallas.length){
+    const c = {};
+    d.medallas.forEach(m=>{ c[m.tipo] = (c[m.tipo]||0)+1; });
+    s.push({clase:'medallas', html:`
+      <div class="rkick">EL ESCUADRÓN TE DIO</div>
+      <div class="rmeds">
+        ${MEDALLAS.filter(m=>c[m.k]).map(m=>`
+          <div><div class="e">${m.emo}</div>
+            <div class="n" style="color:${m.color}">${m.l}</div>
+            <div class="x">×${c[m.k]}</div></div>`).join('')}
+      </div>
+      <div class="rline">${d.medallas.length} medalla${d.medallas.length===1?'':'s'} en total</div>`});
+  }
+
+  if(d.podio.length) s.push({clase:'podio', html:`
+    <div class="rkick">CÓMO QUEDÓ EL ESCUADRÓN</div>
+    <div class="rpodio">
+      ${d.podio.slice(0,5).map((p,i)=>`
+        <div class="rp ${p.owner===ME?'yo':''}">
+          <div class="pos">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</div>
+          <div class="nm">${p.nm}${p.owner===ME?' <span style="color:var(--amber)">◂ TÚ</span>':''}</div>
+          <div class="pt">${p.pts||0}<small>PTS</small></div>
+        </div>`).join('')}
+    </div>
+    ${d.puesto?`<div class="rline">Terminaste en el puesto <b style="color:var(--amber)">#${d.puesto}</b></div>`:''}`});
+
+  s.push({clase:'cierre', html:`
+    <div class="rkick">Y AHORA</div>
+    <h1 class="rmes" style="font-size:clamp(38px,11vw,74px)">${MESES[today.getMonth()]}</h1>
+    <div class="rsub">Todos arrancan de cero otra vez</div>
+    <button class="btn-amber rgo" onclick="cerrarRecap()">A VENDER</button>`});
+
+  return s;
+}
+
+function pintarSlide(){
+  const s = recapSlides[recapIdx];
+  if(!s) return;
+  const cont = $('#recapSlide');
+  cont.className = 'rslide ' + s.clase;
+  cont.innerHTML = s.html;
+  cont.animate([{opacity:0, transform:'translateY(16px)'},{opacity:1, transform:'none'}],
+               {duration:420, easing:'cubic-bezier(.16,1,.3,1)'});
+  $('#recapPuntos').innerHTML = recapSlides.map((_,i)=>
+    `<button class="${i===recapIdx?'on':''}" onclick="irSlide(${i})" aria-label="Lámina ${i+1}"></button>`).join('');
+  $('#recapPrev').style.visibility = recapIdx ? '' : 'hidden';
+  $('#recapNext').textContent = recapIdx === recapSlides.length-1 ? 'CERRAR' : 'SIGUIENTE ▸';
+}
+
+function irSlide(i){
+  recapIdx = Math.max(0, Math.min(recapSlides.length-1, i));
+  pintarSlide();
+  autoAvance();
+  if(recapSlides[recapIdx].clase === 'logro' || recapIdx === 0) soplarConfetti();
+}
+function siguienteSlide(){
+  if(recapIdx === recapSlides.length-1){ cerrarRecap(); return; }
+  irSlide(recapIdx+1);
+}
+function autoAvance(){
+  clearTimeout(recapAuto);
+  if(recapIdx < recapSlides.length-1) recapAuto = setTimeout(()=>siguienteSlide(), 4200);
+}
+
+async function cerrarRecap(){
+  clearTimeout(recapAuto);
+  pararConfetti();
+  $('#recapOverlay').classList.remove('on');
+  if(recapDatos) await marcarRecapVisto(recapDatos.clave);
+  recapDatos = null;
+}
+
+/* ---------- confetti ---------- */
+let confCtx = null, confPart = [], confRaf = null;
+const CONF_COL = ['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#ffd24a','#e8402a'];
+
+function arrancarConfetti(){
+  const c = $('#recapConfetti');
+  if(!c) return;
+  c.width = c.offsetWidth; c.height = c.offsetHeight;
+  confCtx = c.getContext('2d');
+  confPart = [];
+  soplarConfetti(90);
+  if(!confRaf) pintarConfetti();
+}
+function soplarConfetti(n){
+  const c = $('#recapConfetti');
+  if(!c || !confCtx) return;
+  for(let i=0;i<(n||55);i++) confPart.push({
+    x: Math.random()*c.width, y: -20 - Math.random()*c.height*0.5,
+    vx: (Math.random()-0.5)*1.6, vy: 1.4 + Math.random()*2.6,
+    w: 5 + Math.random()*7, h: 8 + Math.random()*9,
+    g: Math.random()*Math.PI, vg: (Math.random()-0.5)*0.22,
+    col: CONF_COL[(Math.random()*CONF_COL.length)|0]
+  });
+  if(confPart.length > 420) confPart.splice(0, confPart.length-420);
+}
+function pintarConfetti(){
+  const c = $('#recapConfetti');
+  if(!c || !confCtx){ confRaf = null; return; }
+  confCtx.clearRect(0,0,c.width,c.height);
+  confPart.forEach(p=>{
+    p.x += p.vx; p.y += p.vy; p.g += p.vg;
+    confCtx.save();
+    confCtx.translate(p.x, p.y);
+    confCtx.rotate(p.g);
+    confCtx.fillStyle = p.col;
+    confCtx.globalAlpha = .9;
+    confCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h * Math.abs(Math.cos(p.g)));  // giro de papelito
+    confCtx.restore();
+  });
+  confPart = confPart.filter(p => p.y < c.height + 30);
+  confRaf = requestAnimationFrame(pintarConfetti);
+}
+function pararConfetti(){
+  if(confRaf) cancelAnimationFrame(confRaf);
+  confRaf = null; confPart = []; confCtx = null;
 }
 
 /* ==================== ¿SE INSTALÓ? ====================
@@ -3558,7 +3911,14 @@ function renderBell(){
     (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar();
+  if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
+  /* en el recap, las flechas pasan de lamina */
+  if($('#recapOverlay').classList.contains('on')){
+    if(e.key==='ArrowRight') siguienteSlide();
+    if(e.key==='ArrowLeft')  irSlide(recapIdx-1);
+  }
+});
 </script>
 </body>
 </html>
