@@ -646,37 +646,47 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
    El marco es una imagen con el centro transparente. El hueco util va del 15%
    al 85% de ancho y del 14% al 90% de alto, medido sobre el propio archivo. */
 .pokewrap{display:flex;justify-content:center}
-.pokemarco{position:relative;width:min(420px,92vw);aspect-ratio:1086/1448;
+/* el marco manda el tamaño: se estira hasta donde quepa de alto sin pasarse de ancho */
+.pokemarco{position:relative;aspect-ratio:1086/1448;
+  width:min(460px,94vw,(100vh - 210px) * 0.75);
   background:url('pokedex/marco.webp') center/100% 100% no-repeat}
 .pokehueco{position:absolute;left:15.5%;top:13.7%;right:14.5%;bottom:10.3%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.pokeadd{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;
-  background:linear-gradient(180deg,rgba(232,64,42,.16),rgba(8,9,11,.5));
-  border:2px solid var(--red);color:var(--txt);padding:20px 16px;width:100%;
-  box-shadow:0 0 26px rgba(232,64,42,.28),inset 0 0 22px rgba(232,64,42,.12);
+  display:flex;flex-direction:column;gap:7px;min-height:0}
+.pokeadd{display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;flex-shrink:0;
+  background:linear-gradient(180deg,rgba(232,64,42,.2),rgba(8,9,11,.55));
+  border:2px solid var(--red);color:var(--txt);padding:9px 10px;width:100%;
+  font-family:'Barlow Condensed';font-size:12.5px;font-weight:700;letter-spacing:.1em;
+  box-shadow:0 0 20px rgba(232,64,42,.26),inset 0 0 18px rgba(232,64,42,.1);
   transition:transform .14s,box-shadow .14s}
-.pokeadd:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(232,64,42,.45),inset 0 0 26px rgba(232,64,42,.2)}
-.pokeadd .mas{font-family:'Barlow Condensed';font-size:44px;font-weight:700;line-height:.8;color:var(--red)}
-.pokeadd .txt{font-family:'Barlow Condensed';font-size:15px;font-weight:700;letter-spacing:.16em;line-height:1.25}
-.pokecount{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.2em;color:var(--muted);
-  background:rgba(8,9,11,.72);padding:3px 12px;border:1px solid var(--line2)}
-.pibuscar{width:100%;background:#08090b;border:1px solid var(--line2);color:var(--txt);
-  padding:10px 12px;font-family:'Barlow';font-size:14px;outline:none}
+.pokeadd:hover{transform:translateY(-1px);box-shadow:0 0 34px rgba(232,64,42,.45),inset 0 0 22px rgba(232,64,42,.18)}
+.pokeadd .mas{font-size:19px;line-height:.8;color:var(--red)}
+/* la lista vive dentro del hueco y scrollea ella sola */
+.pokelista{flex:1;min-height:0;overflow-y:auto;background:rgba(6,8,11,.72);
+  border:1px solid rgba(232,64,42,.3);scrollbar-width:thin;scrollbar-color:var(--red) transparent}
+.pokelista::-webkit-scrollbar{width:5px}
+.pokelista::-webkit-scrollbar-thumb{background:var(--red)}
+.pokelista::-webkit-scrollbar-track{background:rgba(255,255,255,.05)}
+.pokevacio{padding:22px 14px;text-align:center;font-size:12px;color:var(--dim);line-height:1.6}
+.pokecount{flex-shrink:0;text-align:center;font-family:'Barlow Condensed';font-size:10.5px;
+  letter-spacing:.18em;color:var(--muted);background:rgba(8,9,11,.7);padding:3px;
+  border:1px solid var(--line2)}
+.pibuscar{flex-shrink:0;width:100%;background:#08090b;border:1px solid var(--line2);color:var(--txt);
+  padding:6px 9px;font-family:'Barlow';font-size:12.5px;outline:none}
 .pibuscar:focus{border-color:var(--red)}
-.pizona{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.2em;color:var(--red);
-  padding:14px 14px 6px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
-.pizona span{background:rgba(232,64,42,.18);color:var(--red);padding:0 7px;font-size:11px}
-.pili{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.pizona{position:sticky;top:0;z-index:1;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.18em;
+  color:var(--red);background:#0b0e12;padding:5px 8px;display:flex;align-items:center;gap:6px;
+  text-transform:uppercase;border-bottom:1px solid rgba(232,64,42,.25)}
+.pizona span{background:rgba(232,64,42,.2);padding:0 5px;font-size:9.5px}
+.pili{display:flex;align-items:center;gap:7px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
 .pili .info{flex:1;min-width:0}
-.pili .info b{font-family:'Barlow Condensed';font-size:16px;letter-spacing:.05em}
-.pili .tel{font-family:'Barlow';font-size:14px;color:var(--txt);letter-spacing:.04em;margin-top:1px}
-.pili .nota{font-size:11.5px;color:var(--dim);margin-top:3px;line-height:1.35}
-.pili .callbtn{padding:9px 13px;font-size:15px;flex-shrink:0}
-.pili .acc{display:flex;gap:4px;flex-shrink:0}
-@media(max-width:520px){
-  .pili{flex-wrap:wrap}
-  .pili .acc{width:100%;justify-content:flex-end;margin-top:2px}
-}
+.pili .info b{display:block;font-family:'Barlow Condensed';font-size:13px;letter-spacing:.04em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pili .tel{font-family:'Barlow';font-size:12px;color:var(--muted);letter-spacing:.03em}
+.pili .nota{font-size:10px;color:var(--dim);margin-top:2px;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pili .callbtn{padding:6px 8px;font-size:13px;flex-shrink:0}
+.pili .acc{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.pili .acc .iconbtn{margin-left:0;padding:2px 5px;font-size:9.5px}
 /* ---- recap de fin de mes ---- */
 .recapov{position:fixed;inset:0;z-index:95;display:none;flex-direction:column;
   background:radial-gradient(ellipse at 50% 8%,#15202b,#08090b 62%)}
@@ -2926,31 +2936,49 @@ function viewPoke(){
       <div class="pokemarco">
         <div class="pokehueco">
           <button class="pokeadd" onclick="abrirInstalador()">
-            <span class="mas">+</span>
-            <span class="txt">AÑADIR<br>POKEINSTALADOR</span>
+            <span class="mas">+</span> AÑADIR POKEINSTALADOR
           </button>
-          <div class="pokecount">${INSTALADORES.length} registrado${INSTALADORES.length===1?'':'s'}</div>
+          ${INSTALADORES.length > 3 ? `
+            <input id="piBuscar" class="pibuscar" placeholder="Buscar…" value="${escAttr(q)}"
+                   oninput="filtrarPoke(this.value)">` : ''}
+
+          <div class="pokelista" id="pokeLista">
+            ${!INSTALADORES.length ? `<div class="pokevacio">
+                Todavía no hay ninguno.<br>Toca el botón de arriba y empieza la colección.</div>`
+              : !lista.length ? `<div class="pokevacio">Nadie cuadra con esa búsqueda.</div>`
+              : Object.keys(zonas).sort().map(z =>
+                  `<div class="pizona">${esc(z)}<span>${zonas[z].length}</span></div>` +
+                  zonas[z].map(filaInstalador).join('')
+                ).join('')}
+          </div>
+
+          <div class="pokecount">${
+            q ? `${lista.length} de ${INSTALADORES.length}`
+              : `${INSTALADORES.length} registrado${INSTALADORES.length===1?'':'s'}`}</div>
         </div>
       </div>
     </div>
-
-    <div class="panel cut" style="margin-top:14px">
-      <div class="ph"><span class="tick" style="background:var(--red)"></span>Instaladores
-        <span class="right">${lista.length} DE ${INSTALADORES.length}</span></div>
-      <div style="padding:12px 14px 0">
-        <input id="piBuscar" placeholder="Buscar por nombre, zona o teléfono…" value="${escAttr(q)}"
-               oninput="render()" class="pibuscar">
-      </div>
-      ${!INSTALADORES.length ? `<div class="hint" style="padding:18px 14px">
-          Todavía no hay ninguno. Toca <b>AÑADIR POKEINSTALADOR</b> y empieza la colección.</div>`
-        : !lista.length ? `<div class="hint" style="padding:18px 14px">Nadie cuadra con esa búsqueda.</div>`
-        : Object.keys(zonas).sort().map(z =>
-            `<div class="pizona">${esc(z)}<span>${zonas[z].length}</span></div>` +
-            zonas[z].map(filaInstalador).join('')
-          ).join('')}
-      <div class="vhint">La lista es del escuadrón: lo que apuntes aquí lo ve todo el mundo.</div>
-    </div>
+    <div class="vhint" style="text-align:center;padding-top:10px">
+      La lista es del escuadrón: lo que apuntes aquí lo ve todo el mundo.</div>
   </div>`;
+}
+
+/* redibuja solo la lista, para no perder el foco ni lo escrito en el buscador */
+function filtrarPoke(q){
+  const t = (q||'').toLowerCase();
+  const lista = INSTALADORES.filter(i =>
+    !t || (i.nm||'').toLowerCase().includes(t) || (i.zona||'').toLowerCase().includes(t) || (i.tel||'').includes(t));
+  const zonas = {};
+  lista.forEach(i => { const z = i.zona || 'SIN ZONA'; (zonas[z] = zonas[z] || []).push(i); });
+  $('#pokeLista').innerHTML = !lista.length
+    ? `<div class="pokevacio">Nadie cuadra con esa búsqueda.</div>`
+    : Object.keys(zonas).sort().map(z =>
+        `<div class="pizona">${esc(z)}<span>${zonas[z].length}</span></div>` +
+        zonas[z].map(filaInstalador).join('')
+      ).join('');
+  const c = $('.pokecount');
+  if(c) c.textContent = t ? `${lista.length} de ${INSTALADORES.length}`
+                          : `${INSTALADORES.length} registrado${INSTALADORES.length===1?'':'s'}`;
 }
 
 function abrirInstalador(id){
