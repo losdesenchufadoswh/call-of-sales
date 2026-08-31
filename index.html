@@ -642,6 +642,57 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- subiste de nivel ---- */
+.lvov{z-index:90}
+.lvbox{--lv:var(--amber);position:relative;width:min(420px,92vw);padding:26px 22px 22px;text-align:center;
+  background:radial-gradient(ellipse at 50% 24%,color-mix(in srgb,var(--lv) 17%,#0b0d10),#0b0d10 68%);
+  border:1px solid var(--lv);overflow:hidden;
+  box-shadow:0 0 100px color-mix(in srgb,var(--lv) 32%,transparent),0 40px 90px rgba(0,0,0,.92);
+  animation:lgIn .45s cubic-bezier(.16,1,.3,1)}
+.lvrays{position:absolute;left:50%;top:36%;width:620px;height:620px;margin:-310px 0 0 -310px;
+  pointer-events:none;opacity:.18;animation:lgSpin 16s linear infinite;
+  background:repeating-conic-gradient(from 0deg,var(--lv) 0deg 4deg,transparent 4deg 20deg);
+  -webkit-mask-image:radial-gradient(circle,#000 12%,transparent 60%);
+          mask-image:radial-gradient(circle,#000 12%,transparent 60%)}
+.lvring{position:absolute;left:50%;top:36%;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;
+  border:2px solid var(--lv);pointer-events:none;animation:lgRing .9s cubic-bezier(.2,.8,.3,1) .1s both}
+.lvkick{position:relative;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.32em;color:var(--lv)}
+.lvarte{position:relative;margin-top:10px;min-height:150px;display:flex;align-items:center;justify-content:center}
+.lvimg{width:min(190px,52vw);display:block;filter:drop-shadow(0 0 26px color-mix(in srgb,var(--lv) 55%,transparent));
+  animation:lgPop .6s cubic-bezier(.18,1.5,.35,1) .06s both}
+.lvnum{font-family:'Barlow Condensed';font-size:clamp(78px,22vw,132px);font-weight:700;line-height:1;
+  color:var(--lv);text-shadow:0 0 34px color-mix(in srgb,var(--lv) 55%,transparent);
+  animation:lgPop .6s cubic-bezier(.18,1.5,.35,1) .06s both}
+.lvnum.tope{color:var(--gold)}
+.lvtit{position:relative;font-family:'Barlow Condensed';font-size:27px;font-weight:700;letter-spacing:.13em;
+  margin-top:12px;color:var(--lv);animation:lgUp .45s .42s both}
+.lvsub{position:relative;font-size:12.5px;color:var(--muted);margin-top:5px;animation:lgUp .45s .5s both}
+.lvbtn{position:relative;margin-top:20px;width:100%;padding:13px;animation:lgUp .45s .58s both}
+.lvdesp{position:relative;display:block;margin:9px auto 0;background:none;border:0;cursor:pointer;
+  color:var(--dim);font-size:12.5px;text-decoration:underline;text-underline-offset:3px}
+.lvdesp:hover{color:var(--txt)}
+/* ---- temporada nueva ---- */
+.promoov{z-index:92}
+#promoConfetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.promobox{position:relative;z-index:2;width:min(430px,92vw);padding:28px 22px 22px;text-align:center;
+  background:radial-gradient(ellipse at 50% 10%,#1b2430,#08090b 70%);border:1px solid var(--gold);
+  box-shadow:0 0 110px rgba(255,210,74,.28),0 40px 90px rgba(0,0,0,.92);
+  animation:lgIn .5s cubic-bezier(.16,1,.3,1);max-height:94vh;overflow-y:auto}
+.promotemp{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.4em;color:var(--gold)}
+.promonom{font-family:'Barlow Condensed';font-size:clamp(40px,12vw,68px);font-weight:700;letter-spacing:.08em;
+  line-height:1;margin-top:4px;background:linear-gradient(180deg,#fff,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.promolema{font-size:13.5px;color:var(--muted);margin-top:8px}
+.promoimg{width:min(210px,54vw);display:block;margin:16px auto 0;
+  filter:drop-shadow(0 0 30px rgba(255,210,74,.45));
+  animation:lgPop .65s cubic-bezier(.18,1.5,.35,1) .12s both}
+.promonota{font-size:13px;color:var(--txt);line-height:1.6;margin-top:14px;
+  border:1px solid rgba(255,210,74,.35);padding:11px 13px;background:rgba(255,210,74,.06)}
+.promobtn{margin-top:18px;width:100%;padding:13px}
+@media(prefers-reduced-motion:reduce){
+  .lvrays,.lvring{display:none}
+  .lvimg,.lvnum,.promoimg{animation:none}
+}
 /* ---- pokedex de instaladores ----
    El marco es una imagen con el centro transparente. El hueco util va del 15%
    al 85% de ancho y del 14% al 90% de alto, medido sobre el propio archivo. */
@@ -1168,6 +1219,34 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ SUBISTE DE NIVEL ============ -->
+<div class="overlay lvov" id="lvOverlay" onclick="cerrarSubida()">
+  <div class="lvbox" id="lvBox" onclick="event.stopPropagation()">
+    <div class="lvrays"></div>
+    <div class="lvring"></div>
+    <div class="lvkick" id="lvKick">RECOMPENSA DESBLOQUEADA</div>
+    <div class="lvarte" id="lvArte"></div>
+    <h2 class="lvtit" id="lvTit"></h2>
+    <div class="lvsub" id="lvSub"></div>
+    <button class="btn-amber lvbtn" id="lvPonerse">PONÉRMELO YA</button>
+    <button class="lvdesp" onclick="cerrarSubida()">Después</button>
+  </div>
+</div>
+
+<!-- ============ TEMPORADA NUEVA ============ -->
+<div class="overlay promoov" id="promoOverlay">
+  <canvas id="promoConfetti"></canvas>
+  <div class="promobox" onclick="event.stopPropagation()">
+    <div class="promotemp" id="promoTemp">TEMPORADA 2</div>
+    <h1 class="promonom" id="promoNombre">BLACKOUT</h1>
+    <div class="promolema" id="promoLema"></div>
+    <img class="promoimg" id="promoImg" src="" alt="">
+    <div class="promonota" id="promoNota"></div>
+    <button class="btn-amber promobtn" onclick="cerrarPromo();setTab('pase')">VER EL PASE</button>
+    <button class="lvdesp" onclick="cerrarPromo()">Luego lo miro</button>
+  </div>
+</div>
+
 <!-- ============ POKEINSTALADOR ============ -->
 <div class="overlay" id="piOverlay">
   <div class="modal" style="width:420px">
@@ -1398,8 +1477,64 @@ const XP_TOTAL = PASE_NIVELES * XP_NIVEL;
 const XP_PUNTO = XP_TOTAL / META_PTS;                  // 40 exacto con la meta de 45
 const XP = {cierre:5, voice:5, dia:10, logro:60, medalla:20};
 
+/* ---------- TEMPORADAS ----------
+   Cada temporada trae su propio set. La que manda es la ultima cuyo `desde`
+   ya paso, asi que para estrenar la siguiente basta con añadirla aqui. */
+const TEMPORADAS = [
+  {desde:'0000-00', n:1, nombre:'NUKETOWN', lema:'La primera operación'},
+  {desde:'2026-09', n:2, nombre:'BLACKOUT',  lema:'Nadie te va a regalar el 50'}
+];
+function temporadaDe(clave){
+  const c = clave || (mesActual().anio+'-'+mesActual().mes);
+  return TEMPORADAS.filter(t => t.desde <= c).slice(-1)[0] || TEMPORADAS[0];
+}
+const temporada = () => temporadaDe();
+
+/* set de la temporada 2: los fondos, emotes y el sticker del jefe */
+const COS_S2 = {
+  fondo: [
+    {k:'',         n:'Sin fondo',   lv:0},
+    {k:'s2mapa',   n:'MAPA TÁCTICO',lv:10, img:'s2/bg-mapa.webp'},
+    {k:'s2desier', n:'DESIERTO',    lv:20, img:'s2/bg-desierto.webp'},
+    {k:'s2hangar', n:'HANGAR',      lv:30, img:'s2/bg-hangar.webp'},
+    {k:'s2ruinas', n:'RUINAS',      lv:42, img:'s2/bg-ruinas.webp'},
+    {k:'s2oper',   n:'EL OPERADOR', lv:48, img:'s2/bg-operador.webp'}
+  ],
+  titulo: [
+    {k:'',                n:'Sin título',       lv:0},
+    {k:'RECLUTA',         n:'RECLUTA',          lv:3},
+    {k:'RASTREADOR',      n:'RASTREADOR',       lv:15},
+    {k:'CAZADOR NOCTURNO',n:'CAZADOR NOCTURNO', lv:25},
+    {k:'VETERANO',        n:'VETERANO',         lv:35},
+    {k:'COMANDANTE',      n:'COMANDANTE',       lv:45},
+    {k:'EL JEFE',         n:'EL JEFE',          lv:50}
+  ],
+  emote: [
+    {k:'',          n:'Ninguno',   lv:0},
+    {k:'s2radar',   n:'RADAR',     lv:5,  img:'s2/em-radar.webp'},
+    {k:'s2calavera',n:'CALAVERA',  lv:18, img:'s2/em-calavera.webp'},
+    {k:'s2fantasma',n:'FANTASMA',  lv:32, img:'s2/em-fantasma.webp'},
+    {k:'s2corona',  n:'CORONA',    lv:45, img:'s2/em-corona.webp'},
+    {k:'s2jefe',    n:'EL JEFE',   lv:50, img:'s2/sticker-jefe.webp', legendario:true}
+  ],
+  marco: [
+    {k:'',       n:'Sin marco',  lv:0},
+    {k:'bronce', n:'BRONCE',     lv:8},
+    {k:'plata',  n:'PLATA',      lv:22},
+    {k:'oro',    n:'ORO',        lv:38},
+    {k:'legend', n:'LEGENDARIO', lv:50}
+  ],
+  color: [
+    {k:'',       n:'Blanco', lv:0},
+    {k:'cian',   n:'CIAN',   lv:12},
+    {k:'lima',   n:'LIMA',   lv:28},
+    {k:'ambar',  n:'ÁMBAR',  lv:40},
+    {k:'dorado', n:'DORADO', lv:50}
+  ]
+};
+
 /* lo que desbloquea cada nivel */
-const COSMETICOS = {
+const COS_S1 = {
   fondo: [
     {k:'',         n:'Sin fondo',   lv:0},
     {k:'nuketown', n:'NUKETOWN',    lv:18, img:'pase/bg-nuketown.webp'},
@@ -1442,12 +1577,28 @@ const COSMETICOS = {
 };
 const CAT_LABEL = {fondo:'Fondo del perfil', titulo:'Título', emote:'Emote',
                    marco:'Marco del avatar', color:'Color del nombre'};
-const cosBy = (cat,k) => COSMETICOS[cat].find(o=>o.k===k) || COSMETICOS[cat][0];
+
+/* el catalogo vigente segun la temporada en curso */
+const SETS = {1: COS_S1, 2: COS_S2};
+function catalogo(){ return SETS[temporada().n] || COS_S1; }
+
+/* busca en el catalogo de ahora y, si no esta, en todos: alguien puede llevar
+   puesto algo de una temporada vieja y hay que saber pintarlo igual */
+function cosBy(cat, k){
+  const hoy = catalogo()[cat];
+  const aqui = hoy.find(o=>o.k===k);
+  if(aqui) return aqui;
+  for(const s of Object.values(SETS)){
+    const o = (s[cat]||[]).find(x=>x.k===k);
+    if(o) return {...o, deOtraTemporada:true};
+  }
+  return hoy[0];
+}
 /* todo lo que da algun nivel, para pintar el recorrido */
 const premiosDeNivel = lv => {
-  const out = [];
-  Object.keys(COSMETICOS).forEach(cat=>
-    COSMETICOS[cat].filter(o=>o.lv===lv).forEach(o=>out.push({cat, ...o})));
+  const out = [], cat = catalogo();
+  Object.keys(cat).forEach(c =>
+    cat[c].filter(o=>o.lv===lv).forEach(o=>out.push({cat:c, ...o})));
   return out;
 };
 
@@ -1917,7 +2068,7 @@ async function limpiarLookFueraDeAlcance(){
   const mio = lookDe(ME);
   if(!Object.keys(mio).length) return;
   const lv = nivelDe(ME), quitar = {};
-  Object.keys(COSMETICOS).forEach(cat=>{
+  Object.keys(catalogo()).forEach(cat=>{
     if(mio[cat] && cosBy(cat, mio[cat]).lv > lv) quitar[cat] = '';
   });
   if(!Object.keys(quitar).length) return;
@@ -2143,7 +2294,19 @@ function xpDe(uid){
   det.total = Object.values(det).reduce((a,b)=>a+b,0);
   return det;
 }
-const nivelDe = uid => Math.min(PASE_NIVELES, Math.floor(xpDe(uid).total / XP_NIVEL));
+/* El 50 no se compra con actividad: hay que cumplir la meta del mes. Todo lo
+   demas —cierres, voice, dias, logros, medallas— te lleva hasta el 49 y ahi se
+   para. El ultimo escalon, y con el lo legendario, lo abren los puntos. */
+function nivelDe(uid){
+  const bruto = Math.floor(xpDe(uid).total / XP_NIVEL);
+  const cumplioMeta = statsDe(uid).pts >= META_PTS;
+  return Math.min(cumplioMeta ? PASE_NIVELES : PASE_NIVELES - 1, bruto);
+}
+/* si esta clavado en el 49 es porque le faltan puntos, no XP */
+function frenadoPorMeta(uid){
+  const t = statsDe(uid);
+  return t.pts < META_PTS && Math.floor(xpDe(uid).total / XP_NIVEL) >= PASE_NIVELES;
+}
 /* cuanto llevas dentro del nivel actual, para la barrita del topbar */
 function progresoNivel(uid){
   const xp = xpDe(uid).total, lv = nivelDe(uid);
@@ -2999,6 +3162,43 @@ function cerrarInstalador(){ $('#piOverlay').classList.remove('on'); piEditando 
 /* ==================== VISTA DEL PASE ==================== */
 /* el nivel de la ultima vez que se pinto, para cantar la subida */
 let nivelVisto = null;
+let colaSubidas = [], subidaEnPantalla = null;
+
+/* ==================== SUBISTE DE NIVEL ====================
+   A pantalla completa, que para eso costo. Si la subida trae recompensa se
+   enseña la recompensa; si no, el numero del nivel nuevo. */
+function mostrarSubida(){
+  if(subidaEnPantalla || !colaSubidas.length) return;
+  if($('#logroOverlay').classList.contains('on') || $('#medOverlay').classList.contains('on')) return;
+  const s = colaSubidas.shift();
+  subidaEnPantalla = s;
+
+  const p = s.premios[0];
+  const tope = s.hasta >= PASE_NIVELES;
+  const arte = p && p.img
+    ? `<img class="lvimg" src="${p.img}" alt="${p.n}">`
+    : `<div class="lvnum ${tope?'tope':''}">${s.hasta}</div>`;
+
+  $('#lvBox').style.setProperty('--lv', tope ? 'var(--gold)' : 'var(--amber)');
+  $('#lvKick').textContent = tope ? '¡PASE COMPLETADO!'
+    : s.premios.length ? 'RECOMPENSA DESBLOQUEADA' : 'SUBISTE DE NIVEL';
+  $('#lvArte').innerHTML = arte;
+  $('#lvTit').textContent = p ? p.n : `NIVEL ${s.hasta}`;
+  $('#lvSub').innerHTML = p
+    ? `${CAT_LABEL[p.cat]} · nivel ${p.lv}${s.premios.length>1?` · y ${s.premios.length-1} más`:''}`
+    : `Del ${s.desde} al ${s.hasta} del pase de ${temporada().nombre}`;
+  $('#lvPonerse').style.display = p && p.cat && p.k ? '' : 'none';
+  $('#lvPonerse').setAttribute('onclick', p ? `ponerse('${p.cat}','${p.k}');cerrarSubida()` : 'cerrarSubida()');
+  $('#lvOverlay').classList.add('on');
+  sonidoLogro();
+}
+
+function cerrarSubida(){
+  subidaEnPantalla = null;
+  $('#lvOverlay').classList.remove('on');
+  /* si en la misma tanda hubo mas de una recompensa, van saliendo */
+  setTimeout(()=>{ if(colaSubidas.length) mostrarSubida(); }, 350);
+}
 
 function renderPaseChip(){
   const el = $('#pasechip');
@@ -3007,12 +3207,11 @@ function renderPaseChip(){
 
   /* la primera pintada no canta nada: es el nivel con el que llegaste */
   if(nivelVisto !== null && p.lv > nivelVisto){
-    const premios = [];
-    for(let lv = nivelVisto+1; lv <= p.lv; lv++) premiosDeNivel(lv).forEach(x=>premios.push(x.n));
-    toast(premios.length
-      ? `NIVEL <b>${p.lv}</b> · desbloqueaste <b>${premios.join(', ')}</b>`
-      : `SUBISTE AL NIVEL <b>${p.lv}</b> del pase`);
-    sonidoMedalla();
+    const subida = {desde: nivelVisto, hasta: p.lv, premios: []};
+    for(let lv = nivelVisto+1; lv <= p.lv; lv++)
+      premiosDeNivel(lv).forEach(x => subida.premios.push({...x, lv}));
+    colaSubidas.push(subida);
+    mostrarSubida();
     el.animate([{transform:'scale(1)'},{transform:'scale(1.09)'},{transform:'scale(1)'}], {duration:520, easing:'ease-out'});
   }
   nivelVisto = p.lv;
@@ -3031,12 +3230,18 @@ function viewPase(){
   const t = statsDe(ME);
   const faltanPts = Math.max(0, META_PTS - t.pts);
 
+  const T = temporada(), frenado = frenadoPorMeta(ME);
   $('#view').innerHTML = `
   <div class="gridwrap">
-    <div class="notice">Pase de <b>${monthName}</b>: 50 niveles, todo cosmético.
-      Los puntos siguen siendo tu producción real y el pase no los toca.
-      <b>Cumplir la meta de ${META_PTS} puntos te deja en el nivel 50</b>, y todo lo demás
-      —registrar cierres, el voice, aparecerte cada día, los logros y las medallas— te hace llegar antes.</div>
+    <div class="notice"><b>TEMPORADA ${T.n} · ${T.nombre}</b> — pase de ${monthName}, 50 niveles,
+      todo cosmético: los puntos son tu producción y el pase no los toca.<br>
+      Del <b>1 al 49</b> se sube con actividad: cada cierre, cada voice, venir todos los días,
+      los logros y las medallas. <b>El 50 es otra cosa</b>: solo lo abre cumplir los
+      <b>${META_PTS} puntos</b> del mes. Ahí está lo legendario.</div>
+
+    ${frenado ? `<div class="notice" style="border-color:var(--amber);color:var(--amber2)">
+      Tienes XP de sobra para el 50, pero te faltan <b>${META_PTS - t.pts} puntos</b> para la meta.
+      Hasta que no los cierres, el pase se queda en el 49.</div>` : ''}
 
     <div class="panel cut">
       <div class="ph"><span class="tick"></span>Tu pase
@@ -3090,11 +3295,11 @@ function viewPase(){
       <div class="ph"><span class="tick" style="background:#ff7ad9"></span>Ponte lo que ganaste
         <span class="right">SE VE EN TU PERFIL Y EN EL RANKING</span></div>
       <div class="cosgrid">
-        ${Object.keys(COSMETICOS).map(cat=>`
+        ${Object.keys(catalogo()).map(cat=>`
           <div class="cosgrp">
             <div class="cgl">${CAT_LABEL[cat]}</div>
             <div class="coschips">
-              ${COSMETICOS[cat].map(o=>{
+              ${catalogo()[cat].map(o=>{
                 const bloq = o.lv > p.lv, puesto = (mio[cat]||'') === o.k;
                 return `<button class="coschip ${puesto?'on':''} ${bloq?'bloq':''}"
                   ${bloq?`disabled title="Necesitas el nivel ${o.lv}"`:''}
@@ -3371,6 +3576,8 @@ function viewMando(){
           m.ahora ? 'border-color:var(--lime);color:var(--lime)' : 'border-color:rgba(255,138,0,.45);color:var(--amber)'}"
           onclick="verRecapDe('${m.clave}')">🎉 ${m.ahora?'Ensayo con':'Recap de'} ${m.nm}</button>`).join('');
       })()}
+      <button class="iconbtn" style="padding:9px 14px;font-size:12.5px;margin-left:0;border-color:rgba(255,210,74,.5);color:var(--gold)"
+              onclick="abrirPromo(temporada(), true)">🎬 Ensayo del anuncio de temporada</button>
       <button class="iconbtn" style="padding:9px 14px;font-size:12.5px;margin-left:0"
               onclick="exportarPDF('all')">⤓ PDF de todo el escuadrón</button>
       ${SQUAD.map(o=>`<button class="iconbtn" style="padding:9px 12px;font-size:12px;margin-left:0"
@@ -3842,16 +4049,63 @@ async function cerrarRecap(){
   clearTimeout(recapAuto);
   pararConfetti();
   $('#recapOverlay').classList.remove('on');
+  const eraEnsayo = recapEnsayo;
   if(recapDatos && !recapEnsayo) await marcarRecapVisto(recapDatos.clave);
   recapDatos = null; recapEnsayo = false;
+  /* justo despues del resumen del mes viejo, el anuncio de la temporada nueva */
+  if(!eraEnsayo) setTimeout(quizaPromo, 500);
 }
 
+/* ==================== PROMO DE TEMPORADA ====================
+   Se enseña una vez, el mes en que arranca una temporada nueva. */
+const promoYaVista = n => (lookDe(ME).promoVista || '').split(',').includes(String(n));
+
+async function quizaPromo(){
+  const t = temporada();
+  if(t.n === 1) return;                       // la primera no se anuncia
+  if(t.desde !== (mesActual().anio+'-'+mesActual().mes)) return;  // solo su mes de estreno
+  if(promoYaVista(t.n)) return;
+  abrirPromo(t);
+}
+
+function abrirPromo(t, ensayo){
+  const cat = SETS[t.n] || catalogo();
+  const sticker = (cat.emote||[]).find(o=>o.legendario);
+  promoEnsayo = !!ensayo;
+  $('#promoTemp').textContent = `TEMPORADA ${t.n}`;
+  $('#promoNombre').textContent = t.nombre;
+  $('#promoLema').textContent = t.lema || '';
+  $('#promoImg').src = sticker && sticker.img ? sticker.img : '';
+  $('#promoImg').style.display = sticker && sticker.img ? '' : 'none';
+  $('#promoNota').innerHTML = sticker
+    ? `<b>${sticker.n}</b> es el premio del nivel <b>${PASE_NIVELES}</b>.<br>
+       Y al ${PASE_NIVELES} solo se llega cumpliendo los <b>${META_PTS} puntos</b> del mes:
+       vender es lo único que lo abre.`
+    : 'Set nuevo de fondos, emotes y títulos.';
+  $('#promoOverlay').classList.add('on');
+  arrancarConfetti('#promoConfetti');
+}
+
+async function cerrarPromo(){
+  pararConfetti();
+  $('#promoOverlay').classList.remove('on');
+  if(promoEnsayo){ promoEnsayo = false; return; }
+  const t = temporada();
+  const prev = (lookDe(ME).promoVista || '').split(',').filter(Boolean);
+  if(prev.includes(String(t.n))) return;
+  LOOK[ME] = {...lookDe(ME), promoVista: [...prev, t.n].join(','), owner: ME};
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  catch(err){ console.error(err); }
+}
+let promoEnsayo = false;
+
 /* ---------- confetti ---------- */
-let confCtx = null, confPart = [], confRaf = null;
+let confCtx = null, confPart = [], confRaf = null, confSel = '#recapConfetti';
 const CONF_COL = ['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#ffd24a','#e8402a'];
 
-function arrancarConfetti(){
-  const c = $('#recapConfetti');
+function arrancarConfetti(sel){
+  confSel = sel || '#recapConfetti';
+  const c = $(confSel);
   if(!c) return;
   c.width = c.offsetWidth; c.height = c.offsetHeight;
   confCtx = c.getContext('2d');
@@ -3860,7 +4114,7 @@ function arrancarConfetti(){
   if(!confRaf) pintarConfetti();
 }
 function soplarConfetti(n){
-  const c = $('#recapConfetti');
+  const c = $(confSel);
   if(!c || !confCtx) return;
   for(let i=0;i<(n||55);i++) confPart.push({
     x: Math.random()*c.width, y: -20 - Math.random()*c.height*0.5,
@@ -3872,7 +4126,7 @@ function soplarConfetti(n){
   if(confPart.length > 420) confPart.splice(0, confPart.length-420);
 }
 function pintarConfetti(){
-  const c = $('#recapConfetti');
+  const c = $(confSel);
   if(!c || !confCtx){ confRaf = null; return; }
   confCtx.clearRect(0,0,c.width,c.height);
   confPart.forEach(p=>{
@@ -4206,6 +4460,8 @@ function renderBell(){
 }
 
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador();
+  if($('#lvOverlay').classList.contains('on')) cerrarSubida();
+  if($('#promoOverlay').classList.contains('on')) cerrarPromo();
   if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
   /* en el recap, las flechas pasan de lamina */
   if($('#recapOverlay').classList.contains('on')){
