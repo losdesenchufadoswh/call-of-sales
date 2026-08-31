@@ -82,6 +82,14 @@ service cloud.firestore {
       allow write: if soyAdmin() || (autenticado() && uid == miId());
     }
 
+    // Agenda de instaladores: nombre, telefono y zona de los tecnicos.
+    // Es del escuadron entero —un buen instalador le sirve a todos— asi que
+    // cualquiera la lee y la edita. Borrar tambien, que si alguien deja de
+    // trabajar hay que poder quitarlo sin esperar al admin.
+    match /instaladores/{docId} {
+      allow read, write: if autenticado();
+    }
+
     // Marca de la carga inicial de julio. Solo el admin la escribe.
     match /meta/{docId} {
       allow read:  if autenticado();

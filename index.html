@@ -642,6 +642,41 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .coschip.bloq{opacity:.38;cursor:not-allowed}
 .coschip .rq{font-size:9px;color:var(--dim);letter-spacing:.05em}
 .coschip img{width:16px;height:16px;object-fit:cover;display:block}
+/* ---- pokedex de instaladores ----
+   El marco es una imagen con el centro transparente. El hueco util va del 15%
+   al 85% de ancho y del 14% al 90% de alto, medido sobre el propio archivo. */
+.pokewrap{display:flex;justify-content:center}
+.pokemarco{position:relative;width:min(420px,92vw);aspect-ratio:1086/1448;
+  background:url('pokedex/marco.webp') center/100% 100% no-repeat}
+.pokehueco{position:absolute;left:15.5%;top:13.7%;right:14.5%;bottom:10.3%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.pokeadd{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(232,64,42,.16),rgba(8,9,11,.5));
+  border:2px solid var(--red);color:var(--txt);padding:20px 16px;width:100%;
+  box-shadow:0 0 26px rgba(232,64,42,.28),inset 0 0 22px rgba(232,64,42,.12);
+  transition:transform .14s,box-shadow .14s}
+.pokeadd:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(232,64,42,.45),inset 0 0 26px rgba(232,64,42,.2)}
+.pokeadd .mas{font-family:'Barlow Condensed';font-size:44px;font-weight:700;line-height:.8;color:var(--red)}
+.pokeadd .txt{font-family:'Barlow Condensed';font-size:15px;font-weight:700;letter-spacing:.16em;line-height:1.25}
+.pokecount{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.2em;color:var(--muted);
+  background:rgba(8,9,11,.72);padding:3px 12px;border:1px solid var(--line2)}
+.pibuscar{width:100%;background:#08090b;border:1px solid var(--line2);color:var(--txt);
+  padding:10px 12px;font-family:'Barlow';font-size:14px;outline:none}
+.pibuscar:focus{border-color:var(--red)}
+.pizona{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.2em;color:var(--red);
+  padding:14px 14px 6px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.pizona span{background:rgba(232,64,42,.18);color:var(--red);padding:0 7px;font-size:11px}
+.pili{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.pili .info{flex:1;min-width:0}
+.pili .info b{font-family:'Barlow Condensed';font-size:16px;letter-spacing:.05em}
+.pili .tel{font-family:'Barlow';font-size:14px;color:var(--txt);letter-spacing:.04em;margin-top:1px}
+.pili .nota{font-size:11.5px;color:var(--dim);margin-top:3px;line-height:1.35}
+.pili .callbtn{padding:9px 13px;font-size:15px;flex-shrink:0}
+.pili .acc{display:flex;gap:4px;flex-shrink:0}
+@media(max-width:520px){
+  .pili{flex-wrap:wrap}
+  .pili .acc{width:100%;justify-content:flex-end;margin-top:2px}
+}
 /* ---- recap de fin de mes ---- */
 .recapov{position:fixed;inset:0;z-index:95;display:none;flex-direction:column;
   background:radial-gradient(ellipse at 50% 8%,#15202b,#08090b 62%)}
@@ -1123,6 +1158,36 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   </div>
 </div>
 
+<!-- ============ POKEINSTALADOR ============ -->
+<div class="overlay" id="piOverlay">
+  <div class="modal" style="width:420px">
+    <div class="mh">
+      <span style="width:3px;height:14px;background:var(--red)"></span>
+      <h3 id="piTitulo">Nuevo pokeinstalador</h3>
+      <button class="close" onclick="cerrarInstalador()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="fld"><label>Nombre <i>*</i></label>
+        <input id="piNombre" placeholder="Nombre del técnico"
+               onkeydown="if(event.key==='Enter')document.getElementById('piTel').focus()"></div>
+      <div class="fld"><label>Teléfono <i>*</i></label>
+        <input id="piTel" type="tel" placeholder="787-000-0000"
+               onkeydown="if(event.key==='Enter')document.getElementById('piZona').focus()"></div>
+      <div class="fld"><label>Dónde instala</label>
+        <input id="piZona" list="piZonas" placeholder="Bayamón, Caguas, área metro…">
+        <datalist id="piZonas"></datalist>
+        <div class="hint" style="margin-top:4px;text-transform:none;letter-spacing:.02em">
+          La zona agrupa la lista. Si repites una que ya existe, se juntan.</div></div>
+      <div class="fld" style="margin-bottom:0"><label>Notas <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:.02em">— opcional</span></label>
+        <textarea id="piNota" rows="2" maxlength="200" placeholder="Horario, si cobra aparte, si es rápido…"></textarea></div>
+    </div>
+    <div class="mf"><div class="grow"></div>
+      <button class="btn-ghost" onclick="cerrarInstalador()">Cancelar</button>
+      <button class="btn-amber" id="piGuardar" onclick="guardarInstalador()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ RECAP DE FIN DE MES ============ -->
 <div class="recapov" id="recapOverlay">
   <canvas id="recapConfetti"></canvas>
@@ -1540,6 +1605,7 @@ function escucharVentas(){
   escucharMedallas();
   escucharLogros();
   escucharLook();
+  escucharInstaladores();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -1753,6 +1819,53 @@ async function publicarLogros(){
                       creado: Date.now(), visto: false});
     }));
   }catch(err){ console.error('no se pudieron guardar los logros:', err); }
+}
+
+/* ---------- POKEINSTALADORES ----------
+   La agenda de los tecnicos que instalan: nombre, telefono y por donde cubren.
+   La ve y la edita todo el escuadron: si Felix consigue un instalador bueno en
+   Bayamon, a Carlos le sirve igual. */
+let INSTALADORES = [];
+let unsubInst = null;
+
+function escucharInstaladores(){
+  if(unsubInst){ unsubInst(); unsubInst = null; }
+  unsubInst = db().collection('instaladores').onSnapshot(snap=>{
+    INSTALADORES = snap.docs.map(d=>({id:d.id, ...d.data()}))
+      .sort((a,b)=> (a.zona||'').localeCompare(b.zona||'') || (a.nm||'').localeCompare(b.nm||''));
+    if(tab === 'poke') render();
+  }, err => console.error('instaladores:', err));
+}
+
+async function guardarInstalador(){
+  const nm   = $('#piNombre').value.trim();
+  const tel  = $('#piTel').value.trim();
+  const zona = $('#piZona').value.trim();
+  const nota = $('#piNota').value.trim().slice(0,200);
+  if(!nm || !tel){ toast('FALTA NOMBRE O TELÉFONO'); return; }
+
+  const btn = $('#piGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
+  const datos = {nm, tel, zona, nota, actualizado: Date.now(), porQuien: ME};
+  try{
+    if(piEditando) await db().collection('instaladores').doc(piEditando).update(datos);
+    else await db().collection('instaladores').add({...datos, creado: Date.now()});
+    toast(piEditando ? 'INSTALADOR ACTUALIZADO' : `<b>${esc(nm)}</b> guardado`);
+    cerrarInstalador();
+  }catch(err){
+    console.error(err);
+    toast('No se pudo guardar: ' + (err.code||err.message));
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
+}
+
+async function borrarInstalador(id){
+  const i = INSTALADORES.find(x=>x.id===id);
+  if(!i) return;
+  if(!confirm(`¿Borrar a ${i.nm} de la lista?`)) return;
+  try{ await db().collection('instaladores').doc(id).delete(); toast('BORRADO'); }
+  catch(err){ toast('No se pudo borrar: ' + (err.code||err.message)); }
 }
 
 /* ---------- LOOK: LO QUE CADA UNO SE PUSO ----------
@@ -2169,6 +2282,8 @@ function logout(){
   if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
   if(unsubLogros){ unsubLogros(); unsubLogros = null; }
   if(unsubLook){ unsubLook(); unsubLook = null; }
+  if(unsubInst){ unsubInst(); unsubInst = null; }
+  INSTALADORES = [];
   logrosCargados = false;
   SALES = []; RANKING = {}; MEDALLAS_MES = []; LOGROS_MIOS = []; LOOK = {};
   medEnPantalla = null; logroEnPantalla = null;
@@ -2249,6 +2364,7 @@ const TABS = [
   {k:'ops',    l:'Mis cierres'},
   {k:'squad',  l:'Escuadrón'},
   {k:'pase',   l:'Pase'},
+  {k:'poke',   l:'Pokédex'},
   {k:'radio',  l:'Radio'},
   {k:'mando',  l:'Mando'}
 ];
@@ -2283,6 +2399,7 @@ function render(){
   else if(tab==='ops') viewOps();
   else if(tab==='squad') viewSquad();
   else if(tab==='pase') viewPase();
+  else if(tab==='poke') viewPoke();
   else if(tab==='perfil') viewPerfil();
   else if(tab==='radio') viewRadio();
   else if(tab==='mando' && isAdmin()) viewMando();
@@ -2775,6 +2892,81 @@ function verEmote(uid){
   $('#emoOverlay').classList.add('on');
 }
 function cerrarEmote(){ $('#emoOverlay').classList.remove('on'); }
+
+/* ==================== POKEDEX DE INSTALADORES ==================== */
+let piEditando = null;
+
+/* una linea de la lista; va aparte para no anidar tres templates seguidos */
+const filaInstalador = i => `
+  <div class="pili">
+    <div class="info">
+      <b>${esc(i.nm)}</b>
+      <div class="tel">${esc(i.tel)}</div>
+      ${i.nota ? `<div class="nota">${esc(i.nota)}</div>` : ''}
+    </div>
+    <a class="callbtn" href="tel:${(i.tel||'').replace(/[^0-9+]/g,'')}" title="Llamar">📞</a>
+    <div class="acc">
+      <button class="iconbtn" onclick="abrirInstalador('${i.id}')">EDITAR</button>
+      <button class="iconbtn del" onclick="borrarInstalador('${i.id}')">✕</button>
+    </div>
+  </div>`;
+
+function viewPoke(){
+  const q = ($('#piBuscar') && $('#piBuscar').value || '').toLowerCase();
+  const lista = INSTALADORES.filter(i =>
+    !q || (i.nm||'').toLowerCase().includes(q) || (i.zona||'').toLowerCase().includes(q) || (i.tel||'').includes(q));
+
+  /* agrupados por zona, que es como se busca: "¿quién me cubre Caguas?" */
+  const zonas = {};
+  lista.forEach(i => { const z = i.zona || 'SIN ZONA'; (zonas[z] = zonas[z] || []).push(i); });
+
+  $('#view').innerHTML = `
+  <div class="gridwrap">
+    <div class="pokewrap">
+      <div class="pokemarco">
+        <div class="pokehueco">
+          <button class="pokeadd" onclick="abrirInstalador()">
+            <span class="mas">+</span>
+            <span class="txt">AÑADIR<br>POKEINSTALADOR</span>
+          </button>
+          <div class="pokecount">${INSTALADORES.length} registrado${INSTALADORES.length===1?'':'s'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel cut" style="margin-top:14px">
+      <div class="ph"><span class="tick" style="background:var(--red)"></span>Instaladores
+        <span class="right">${lista.length} DE ${INSTALADORES.length}</span></div>
+      <div style="padding:12px 14px 0">
+        <input id="piBuscar" placeholder="Buscar por nombre, zona o teléfono…" value="${escAttr(q)}"
+               oninput="render()" class="pibuscar">
+      </div>
+      ${!INSTALADORES.length ? `<div class="hint" style="padding:18px 14px">
+          Todavía no hay ninguno. Toca <b>AÑADIR POKEINSTALADOR</b> y empieza la colección.</div>`
+        : !lista.length ? `<div class="hint" style="padding:18px 14px">Nadie cuadra con esa búsqueda.</div>`
+        : Object.keys(zonas).sort().map(z =>
+            `<div class="pizona">${esc(z)}<span>${zonas[z].length}</span></div>` +
+            zonas[z].map(filaInstalador).join('')
+          ).join('')}
+      <div class="vhint">La lista es del escuadrón: lo que apuntes aquí lo ve todo el mundo.</div>
+    </div>
+  </div>`;
+}
+
+function abrirInstalador(id){
+  piEditando = id || null;
+  const i = id ? INSTALADORES.find(x=>x.id===id) : null;
+  $('#piTitulo').textContent = i ? 'Editar pokeinstalador' : 'Nuevo pokeinstalador';
+  $('#piNombre').value = i ? i.nm   : '';
+  $('#piTel').value    = i ? i.tel  : '';
+  $('#piZona').value   = i ? (i.zona||'') : '';
+  $('#piNota').value   = i ? (i.nota||'') : '';
+  $('#piZonas').innerHTML = [...new Set(INSTALADORES.map(x=>x.zona).filter(Boolean))]
+    .sort().map(z=>`<option value="${escAttr(z)}">`).join('');
+  $('#piOverlay').classList.add('on');
+  setTimeout(()=>$('#piNombre').focus(), 50);
+}
+function cerrarInstalador(){ $('#piOverlay').classList.remove('on'); piEditando = null; }
 
 /* ==================== VISTA DEL PASE ==================== */
 /* el nivel de la ultima vez que se pinto, para cantar la subida */
@@ -3985,7 +4177,7 @@ function renderBell(){
     (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar();
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador();
   if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
   /* en el recap, las flechas pasan de lamina */
   if($('#recapOverlay').classList.contains('on')){
