@@ -595,6 +595,74 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .pasechip.tope .xpbar2 i{background:linear-gradient(90deg,var(--gold),#fff3c4,var(--gold));
   background-size:200% 100%;animation:brillo 2.4s linear infinite}
 @keyframes brillo{to{background-position:200% 0}}
+/* ---- pase: formato de track vertical ---- */
+.pasewrap{max-width:640px;margin:0 auto;padding:0 0 24px}
+.pcab{position:relative;min-height:150px;background-size:cover;background-position:center 22%;
+  display:flex;align-items:flex-end;padding:14px;overflow:hidden}
+.pcabvelo{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,11,.94),rgba(8,9,11,.55) 62%,rgba(8,9,11,.8))}
+.pcabtxt{position:relative;z-index:2}
+.pcabkick{font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.24em;color:var(--gold)}
+.pcabnom{font-family:'Barlow Condensed';font-size:34px;font-weight:700;letter-spacing:.06em;line-height:1;
+  margin:2px 0 8px;text-shadow:0 2px 14px rgba(0,0,0,.9)}
+.pcabbtn{background:rgba(255,210,74,.14);border:1px solid var(--gold);color:var(--gold);cursor:pointer;
+  padding:5px 12px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em}
+.pcabbtn:hover{background:var(--gold);color:#241a00}
+.pcabdias{position:absolute;top:12px;right:12px;z-index:2;background:rgba(8,9,11,.8);border:1px solid var(--line2);
+  padding:3px 10px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.12em;color:var(--muted)}
+/* barra grande, como la del pase de la foto */
+.pbar{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--panel-solid);
+  border-bottom:1px solid var(--line)}
+.pbnivel,.pbmeta{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed';font-size:21px;font-weight:700;background:#0a0d11;color:var(--amber);
+  border:2px solid var(--amber);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.pbmeta{color:var(--dim);border-color:var(--line2);font-size:17px}
+.pbnivel.tope,.pbmeta.tope{color:var(--gold);border-color:var(--gold)}
+.pbtrack{flex:1;position:relative;height:26px;background:#05070a;border:1px solid var(--line2);overflow:hidden}
+.pbtrack i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2));
+  transition:width .6s cubic-bezier(.2,.9,.3,1)}
+.pbtrack span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.paviso{padding:10px 14px;font-size:12.5px;line-height:1.5;color:var(--muted);
+  background:rgba(255,255,255,.03);border-bottom:1px solid var(--line)}
+.paviso.lock{color:var(--amber2);background:rgba(255,138,0,.09)}
+.paviso.ok{color:var(--green);background:rgba(74,208,122,.09)}
+.pmisiones{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);
+  border-bottom:1px solid var(--line)}
+.pm{background:var(--panel-solid);padding:8px 3px;text-align:center}
+.pm b{display:block;font-family:'Barlow Condensed';font-size:17px;font-weight:700;line-height:1}
+.pm small{font-size:7.5px;letter-spacing:.1em;color:var(--dim)}
+@media(max-width:420px){.pmisiones{grid-template-columns:repeat(3,1fr)}}
+/* el recorrido en filas */
+.ptrackv{border-bottom:1px solid var(--line)}
+.ptcab{display:flex;padding:7px 14px;background:#0d1116;border-bottom:1px solid var(--line);
+  font-family:'Barlow Condensed';font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.ptcab span:nth-child(1){width:56px}
+.ptcab span:nth-child(2){flex:1}
+.ptf{display:flex;gap:11px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05);
+  background:linear-gradient(90deg,rgba(255,255,255,.02),transparent)}
+.ptf.on{background:linear-gradient(90deg,rgba(255,138,0,.1),transparent 65%)}
+.ptf.leg.on{background:linear-gradient(90deg,rgba(255,210,74,.16),transparent 70%)}
+.ptlv{flex-shrink:0;width:46px;text-align:center}
+.ptlv b{display:block;font-family:'Barlow Condensed';font-size:23px;font-weight:700;line-height:1;color:var(--dim)}
+.ptf.on .ptlv b{color:var(--amber)}
+.ptf.leg.on .ptlv b{color:var(--gold)}
+.ptlv span{font-size:11px;opacity:.75}
+.ptprem{flex:1;display:flex;gap:8px;flex-wrap:wrap;min-width:0}
+.ptcard{width:104px;background:#10141a;border:1px solid var(--line);padding:7px 5px 8px;cursor:pointer;
+  text-align:center;color:var(--txt);transition:border-color .14s,transform .12s}
+.ptcard:not(.bloq):hover{border-color:var(--amber);transform:translateY(-2px)}
+.ptcard.bloq{opacity:.42;cursor:not-allowed}
+.ptcard.puesto{border-color:var(--lime);background:rgba(216,255,46,.07)}
+.ptcard .cara{position:relative;height:56px;display:flex;align-items:center;justify-content:center;
+  background:#080b0f;overflow:hidden}
+.ptcard .cara img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.ptcard.bloq .cara img{filter:grayscale(1) brightness(.55)}
+.ptcard .ico{font-size:26px;line-height:1}
+.ptcard .cand{position:absolute;top:2px;right:3px;font-size:11px}
+.ptcard .chk{position:absolute;top:2px;right:3px;font-size:11px;color:var(--lime)}
+.ptcard .nom{font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.06em;line-height:1.2;
+  margin-top:5px;min-height:25px;display:flex;align-items:center;justify-content:center}
+.ptcard .tip{font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
 /* ---- pase: recorrido de niveles ---- */
 .paseTop{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:15px}
 @media(max-width:640px){.paseTop{grid-template-columns:1fr}}
@@ -2042,6 +2110,9 @@ function escucharLook(){
     LOOK = {};
     snap.docs.forEach(d=>{ LOOK[d.id] = d.data(); });
     render();
+    /* con las ventas ya cargadas se sabe el nivel: si el mes nuevo dejo algo
+       fuera de alcance, se quita ahora */
+    if(!cargando) limpiarLookFueraDeAlcance();
   }, err => console.error('look:', err));
 }
 
@@ -2062,14 +2133,17 @@ async function ponerse(cat, k){
   }
 }
 
-/* si el mes nuevo te deja por debajo, no puedes seguir luciendo lo que ya no
-   tienes: se quita solo lo que quedo fuera de alcance */
+/* Al entrar el mes nuevo el pase vuelve a cero, asi que lo que llevabas puesto
+   deja de corresponderte y se quita solo. Igual con lo de temporadas viejas:
+   cada temporada trae su set y el anterior ya no esta en el catalogo. */
 async function limpiarLookFueraDeAlcance(){
   const mio = lookDe(ME);
   if(!Object.keys(mio).length) return;
   const lv = nivelDe(ME), quitar = {};
   Object.keys(catalogo()).forEach(cat=>{
-    if(mio[cat] && cosBy(cat, mio[cat]).lv > lv) quitar[cat] = '';
+    if(!mio[cat]) return;
+    const o = cosBy(cat, mio[cat]);
+    if(o.deOtraTemporada || o.lv > lv) quitar[cat] = '';
   });
   if(!Object.keys(quitar).length) return;
   LOOK[ME] = {...mio, ...quitar};
@@ -2279,7 +2353,10 @@ const ventasDe = uid => (uid === ME || isAdmin()) ? stats(uid).cierres : (RANKIN
 /* ---------- XP Y NIVEL DEL PASE ---------- */
 function xpDe(uid){
   const t = statsDe(uid);
-  const nLogros = logrosDe(uid).length;
+  /* solo los de este mes: los logros son historicos y si contaran todos,
+     el pase arrancaria el dia 1 con el XP de meses viejos ya puestos */
+  const mesAhora = mesActual().anio + '-' + mesActual().mes;
+  const nLogros = logrosDe(uid).filter(l => mesDelPeriodo(l.periodo) === mesAhora).length;
   const nMedallas = medallasDeUid(uid).length;
   const det = {
     /* los puntos si exigen instalacion, que son la produccion de verdad; el
@@ -3231,88 +3308,96 @@ function viewPase(){
   const faltanPts = Math.max(0, META_PTS - t.pts);
 
   const T = temporada(), frenado = frenadoPorMeta(ME);
+
+  /* una fila por nivel que da algo, como el track de un pase de verdad */
+  const filas = [];
+  for(let lv = 1; lv <= PASE_NIVELES; lv++){
+    const pr = premiosDeNivel(lv);
+    if(pr.length) filas.push({lv, pr, tomado: lv <= p.lv});
+  }
+  const iProx = filas.findIndex(f => !f.tomado);
+  const cogidas = filas.filter(f=>f.tomado).length;
+
   $('#view').innerHTML = `
-  <div class="gridwrap">
-    <div class="notice"><b>TEMPORADA ${T.n} · ${T.nombre}</b> — pase de ${monthName}, 50 niveles,
-      todo cosmético: los puntos son tu producción y el pase no los toca.<br>
-      Del <b>1 al 49</b> se sube con actividad: cada cierre, cada voice, venir todos los días,
-      los logros y las medallas. <b>El 50 es otra cosa</b>: solo lo abre cumplir los
-      <b>${META_PTS} puntos</b> del mes. Ahí está lo legendario.</div>
+  <div class="pasewrap">
 
-    ${frenado ? `<div class="notice" style="border-color:var(--amber);color:var(--amber2)">
-      Tienes XP de sobra para el 50, pero te faltan <b>${META_PTS - t.pts} puntos</b> para la meta.
-      Hasta que no los cierres, el pase se queda en el 49.</div>` : ''}
-
-    <div class="panel cut">
-      <div class="ph"><span class="tick"></span>Tu pase
-        <span class="right">${p.tope ? 'COMPLETO' : `${d.total} / ${XP_TOTAL} XP`}</span></div>
-      <div class="paseTop">
-        <div class="paseLv ${p.tope?'tope':''}"><b>${p.lv}</b><small>DE ${PASE_NIVELES}</small></div>
-        <div class="paseProg">
-          <div class="lbl">${p.tope ? 'Pase completo' : `Nivel ${p.lv} → ${p.lv+1}`}
-            <b>${p.tope ? '¡al tope!' : `${p.dentro}/${XP_NIVEL} XP`}</b></div>
-          <div class="paseBar"><i style="width:${p.pct}%"></i></div>
-          <div class="hint" style="margin-top:7px">${p.tope
-            ? 'Ya tienes todo lo del mes. El pase vuelve a cero el mes que viene.'
-            : faltanPts > 0
-              ? `Con los <b>${faltanPts}</b> puntos que te faltan para la meta llegas al 50 seguro. También suben los cierres, el voice y venir cada día.`
-              : 'Ya pasaste la meta: lo que queda cae solo.'}</div>
-          <div class="paseDet">
-            <div><b style="color:var(--lime)">${d.puntos}</b><small>PUNTOS</small></div>
-            <div><b>${d.cierres}</b><small>CIERRES</small></div>
-            <div><b style="color:var(--cyan)">${d.voice}</b><small>VOICE</small></div>
-            <div><b style="color:var(--amber)">${d.dias}</b><small>DÍAS</small></div>
-            <div><b style="color:var(--lime)">${d.logros}</b><small>LOGROS</small></div>
-            <div><b style="color:#ff7ad9">${d.medallas}</b><small>MEDALLAS</small></div>
-          </div>
-        </div>
+    <!-- cabecera con el arte de la temporada -->
+    <div class="pcab" ${T.poster?`style="background-image:url('${T.poster}')"`:''}>
+      <div class="pcabvelo"></div>
+      <div class="pcabtxt">
+        <div class="pcabkick">PASE DE ${monthName} · TEMPORADA ${T.n}</div>
+        <h2 class="pcabnom">${T.nombre}</h2>
+        <button class="pcabbtn" onclick="abrirPromo(temporada(), true)">VER EL ANUNCIO</button>
       </div>
+      <div class="pcabdias">Quedan <b>${Math.max(0, daysInMonth - dayNow)}d</b></div>
     </div>
 
-    <div class="panel cut">
-      <div class="ph"><span class="tick" style="background:var(--lime)"></span>Recorrido
-        <span class="right">ARRASTRA PARA VER →</span></div>
-      <div class="pasetrack"><div class="ptrack">
-        ${Array.from({length:PASE_NIVELES},(_,i)=>{
-          const lv = i+1, pr = premiosDeNivel(lv), on = lv <= p.lv;
-          const leg = pr.some(x=>x.legendario) || lv===PASE_NIVELES;
-          const ico = pr.length
-            ? (pr[0].img ? `<img src="${pr[0].img}" alt="">`
-               : pr[0].cat==='emote' ? pr[0].k
-               : {fondo:'🖼️', titulo:'🎖️', marco:'⬡', color:'🎨'}[pr[0].cat] || '★')
-            : '';
-          return `<div class="pniv ${on?'on':''} ${pr.length?'hito':''} ${leg?'legend':''}">
-            ${pr.length?'<div class="mk"></div>':''}
-            <div class="n">${lv}</div>
-            <div class="ic">${ico}</div>
-            <div class="rw">${pr.map(x=>x.n).join('<br>')}</div>
-          </div>`;
-        }).join('')}
-      </div></div>
+    <!-- barra grande de progreso -->
+    <div class="pbar">
+      <div class="pbnivel ${p.tope?'tope':''}">${p.lv}</div>
+      <div class="pbtrack">
+        <i style="width:${p.pct}%"></i>
+        <span>${p.tope ? 'PASE COMPLETO' : `${p.dentro} / ${XP_NIVEL} XP`}</span>
+      </div>
+      <div class="pbmeta ${p.tope?'tope':''}">${PASE_NIVELES}</div>
     </div>
 
-    <div class="panel cut">
-      <div class="ph"><span class="tick" style="background:#ff7ad9"></span>Ponte lo que ganaste
-        <span class="right">SE VE EN TU PERFIL Y EN EL RANKING</span></div>
-      <div class="cosgrid">
-        ${Object.keys(catalogo()).map(cat=>`
-          <div class="cosgrp">
-            <div class="cgl">${CAT_LABEL[cat]}</div>
-            <div class="coschips">
-              ${catalogo()[cat].map(o=>{
-                const bloq = o.lv > p.lv, puesto = (mio[cat]||'') === o.k;
-                return `<button class="coschip ${puesto?'on':''} ${bloq?'bloq':''}"
-                  ${bloq?`disabled title="Necesitas el nivel ${o.lv}"`:''}
-                  onclick="ponerse('${cat}','${o.k}')">
-                  ${o.img?`<img src="${o.img}" alt="">`:''}${o.n}
-                  ${o.lv?`<span class="rq">LV${o.lv}</span>`:''}
-                </button>`;
-              }).join('')}
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="vhint">Lo que te pongas se ve en tu perfil y al lado de tu nombre en el escuadrón.
-        El pase se reinicia cada mes, así que si bajas de nivel se te quita solo lo que ya no alcanza.</div>
+    ${frenado
+      ? `<div class="paviso lock">🔒 El <b>${PASE_NIVELES}</b> lo abre la meta: te faltan
+           <b>${META_PTS - t.pts} puntos</b>. Todo lo demás ya lo tienes.</div>`
+      : p.tope
+        ? `<div class="paviso ok">✓ Cerraste el pase de ${monthName}. Todo desbloqueado.</div>`
+        : `<div class="paviso">Del 1 al 49 se sube vendiendo, registrando y apareciendo.
+           El <b>${PASE_NIVELES}</b> solo lo abre cumplir los <b>${META_PTS} puntos</b>
+           ${faltanPts?`— te faltan <b>${faltanPts}</b>`:'— ya los tienes'}.</div>`}
+
+    <!-- de donde sale el XP -->
+    <div class="pmisiones">
+      ${[['puntos','PUNTOS','var(--lime)'],['cierres','CIERRES',''],['voice','VOICE','var(--cyan)'],
+         ['dias','DÍAS','var(--amber)'],['logros','LOGROS','var(--lime)'],['medallas','MEDALLAS','#ff7ad9']]
+        .map(([k,l,c])=>`<div class="pm"><b${c?` style="color:${c}"`:''}>${d[k]}</b><small>${l}</small></div>`).join('')}
+    </div>
+
+    <!-- el recorrido, fila por fila -->
+    <div class="ptrackv">
+      <div class="ptcab"><span>NIVEL</span><span>RECOMPENSA</span><span>${cogidas}/${filas.length}</span></div>
+      ${filas.map(f => filaPase(f, mio)).join('')}
+    </div>
+
+    ${vitrinaHTML(ME, true)}
+  </div>`;
+
+  /* deja el track a la altura de lo siguiente por conseguir */
+  if(iProx >= 0){
+    const el = $('#ptf-' + filas[iProx].lv);
+    if(el) setTimeout(()=>el.scrollIntoView({block:'center'}), 80);
+  }
+}
+
+/* una fila del recorrido: el nivel a la izquierda y sus recompensas al lado */
+function filaPase(f, mio){
+  const leg = f.pr.some(x=>x.legendario) || f.lv === PASE_NIVELES;
+  return `<div class="ptf ${f.tomado?'on':''} ${leg?'leg':''}" id="ptf-${f.lv}">
+    <div class="ptlv">
+      <b>${f.lv}</b>
+      <span>${f.tomado ? '✓' : '🔒'}</span>
+    </div>
+    <div class="ptprem">
+      ${f.pr.map(x=>{
+        /* solo cuenta como puesto si de verdad lo tienes: si no, la ficha
+           bloqueada salia marcada con el check de lo que llevabas del mes viejo */
+        const puesto = f.tomado && (mio[x.cat]||'') === x.k;
+        return `<button class="ptcard ${f.tomado?'':'bloq'} ${puesto?'puesto':''}"
+          ${f.tomado ? `onclick="ponerse('${x.cat}','${x.k}')"` : `disabled title="Necesitas el nivel ${f.lv}"`}>
+          <div class="cara">${x.img
+            ? `<img src="${x.img}" alt="" loading="lazy">`
+            : `<span class="ico">${x.cat==='titulo'?'🎖️':x.cat==='color'?'🎨':x.cat==='marco'?'⬡':(x.k||'★')}</span>`}
+            ${f.tomado ? '' : '<span class="cand">🔒</span>'}
+            ${puesto ? '<span class="chk">✓</span>' : ''}</div>
+          <div class="nom">${x.n}</div>
+          <div class="tip">${CAT_LABEL[x.cat]}</div>
+        </button>`;
+      }).join('')}
     </div>
   </div>`;
 }
