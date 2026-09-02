@@ -946,6 +946,15 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .cfmini .si:hover{background:var(--green);color:#04140a}
 .cfmini .no{color:var(--red);border:1px solid rgba(232,64,42,.45)}
 .cfmini .no:hover{background:var(--red);color:#fff}
+/* reagendar lo que no entro */
+.iconbtn.reag{border-color:rgba(57,208,255,.5);color:var(--cyan)}
+.iconbtn.reag:hover{background:var(--cyan);color:#04141a;border-color:var(--cyan)}
+.reagmini{background:none;border:1px solid rgba(57,208,255,.5);color:var(--cyan);cursor:pointer;
+  padding:8px 13px;font-family:'Barlow Condensed';font-weight:700;font-size:13px;letter-spacing:.1em;
+  white-space:nowrap}
+.reagmini:hover{background:var(--cyan);color:#04141a}
+.rgestado{font-size:13px;color:var(--muted);line-height:1.5}
+.rgestado span{color:var(--red);font-weight:600}
 /* barra para saltar entre meses en Mis cierres */
 .mesesbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .mesesbar .ml{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.2em;color:var(--dim);margin-right:2px}
@@ -1371,6 +1380,32 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
     <button class="rbtn" id="recapPrev" onclick="irSlide(recapIdx-1)">◂ ATRÁS</button>
     <div class="rpuntos" id="recapPuntos"></div>
     <button class="rbtn on" id="recapNext" onclick="siguienteSlide()">SIGUIENTE ▸</button>
+  </div>
+</div>
+
+<!-- ============ REAGENDAR ============ -->
+<div class="overlay" id="rgOverlay">
+  <div class="modal" style="width:400px">
+    <div class="mh">
+      <span style="width:3px;height:14px;background:var(--cyan)"></span>
+      <div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;letter-spacing:.1em" id="rgCliente"></div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:2px" id="rgMeta"></div>
+      </div>
+      <button class="close" onclick="cerrarReagenda()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="rgestado"><span id="rgEstado"></span> — ponle fecha nueva y vuelve a la cola</div>
+      <div class="fld" style="margin-top:12px;margin-bottom:0">
+        <label>Nueva fecha de instalación <i>*</i></label>
+        <input id="rgFecha" type="date" onchange="pintarRgAviso()">
+      </div>
+      <div class="mesaviso" id="rgAviso" style="margin-top:10px"></div>
+    </div>
+    <div class="mf"><div class="grow"></div>
+      <button class="btn-ghost" onclick="cerrarReagenda()">Cancelar</button>
+      <button class="btn-amber" id="rgGuardar" onclick="guardarReagenda()">Reagendar</button>
+    </div>
   </div>
 </div>
 
@@ -3105,7 +3140,9 @@ function viewOps(){
                  : s.inst?.mode==='fecha' ? '<div class="estado" style="color:var(--green)">✓ INSTALADO</div>' : ''}</td>
               <td class="c-src" data-lbl="ORIGEN"><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]||'—'}</span></td>
               <td class="c-acc" style="text-align:right">
-                ${opsMes ? '<span class="hint">solo lectura</span>' : `
+                ${est==='no' || (est==='espera' && porConfirmar(s))
+                  ? `<button class="iconbtn reag" onclick="abrirReagenda('${s.id}')">↻ REAGENDAR</button>` : ''}
+                ${opsMes ? (est==='ok'||est==='espera'&&!porConfirmar(s) ? '<span class="hint">solo lectura</span>' : '') : `
                   <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
                   <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>`}
               </td>
@@ -3203,6 +3240,70 @@ function verEmote(uid){
   $('#emoOverlay').classList.add('on');
 }
 function cerrarEmote(){ $('#emoOverlay').classList.remove('on'); }
+
+/* ==================== REAGENDAR ====================
+   Una cita que no entro no esta perdida: se le pone fecha nueva y vuelve a
+   quedar pendiente. Si la fecha nueva cae en otro mes, la venta se muda alli,
+   porque va a contar el mes en que el cliente quede puesto. */
+let reagId = null;
+
+function abrirReagenda(id){
+  const s = (opsMes ? SALES_HIST : SALES).find(x => x.id === id);
+  if(!s) return;
+  reagId = id;
+  const est = estadoInst(s);
+  $('#rgCliente').textContent = s.nm;
+  $('#rgMeta').innerHTML = `${planLabel(s.plan)} · <b>${ptsOf(s)} pt${ptsOf(s)===1?'':'s'}</b>`
+    + (s.inst && s.inst.d ? ` · cita anterior <b>${fmtDate(s.inst.d)}</b>` : '');
+  $('#rgEstado').textContent = est === 'no' ? 'No se instaló' : 'Sigue sin instalar';
+  $('#rgFecha').value = dOff(3);
+  $('#rgFecha').min = HOY_REAL;
+  pintarRgAviso();
+  $('#rgOverlay').classList.add('on');
+}
+function cerrarReagenda(){ $('#rgOverlay').classList.remove('on'); reagId = null; }
+
+/* dice a que mes se va a mudar, antes de tocar nada */
+function pintarRgAviso(){
+  const f = $('#rgFecha').value;
+  const s = reagId ? (opsMes ? SALES_HIST : SALES).find(x=>x.id===reagId) : null;
+  if(!s || !f) return;
+  const destino = mesDeLaVenta({mode:'fecha', d:f}, mesActual());
+  const mueve = destino.mes !== s.mes || destino.anio !== s.anio;
+  $('#rgAviso').innerHTML = mueve
+    ? `Pasa a contar en <b>${MESES[Number(destino.mes)-1]} ${destino.anio}</b>,
+       que es cuando se instalaría. Sale de ${MESES[Number(s.mes)-1]}.`
+    : `Se queda en <b>${MESES[Number(s.mes)-1]}</b> y vuelve a estar pendiente.`;
+}
+
+async function guardarReagenda(){
+  const f = $('#rgFecha').value;
+  if(!f){ toast('PON LA FECHA NUEVA'); return; }
+  const s = (opsMes ? SALES_HIST : SALES).find(x => x.id === reagId);
+  if(!s) return;
+
+  const destino = mesDeLaVenta({mode:'fecha', d:f}, mesActual());
+  const btn = $('#rgGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
+  try{
+    await db().collection('ventas').doc(reagId).update({
+      inst: {mode:'fecha', d:f},     // fecha nueva y vuelta a pendiente: se cae el `st`
+      anio: destino.anio, mes: destino.mes,
+      reagendado: Date.now()
+    });
+    const mueve = destino.mes !== s.mes || destino.anio !== s.anio;
+    toast(mueve
+      ? `<b>${esc(s.nm)}</b> reagendado para ${fmtDate(f)} · ahora cuenta en <b>${MESES[Number(destino.mes)-1]}</b>`
+      : `<b>${esc(s.nm)}</b> reagendado para ${fmtDate(f)}`);
+    cerrarReagenda();
+    if(opsMes) verMesDeCierres(opsMes);   // el historico no se refresca solo
+  }catch(err){
+    console.error(err);
+    toast('No se pudo reagendar: ' + (err.code||err.message));
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Reagendar'; }
+  }
+}
 
 /* ---------- MIRAR UN MES YA CERRADO ----------
    El listener solo trae el mes en curso, asi que los viejos se piden aparte.
@@ -4399,7 +4500,8 @@ async function responderInst(id, st){
     fila.classList.add(st==='ok'?'hecho':'caido');
     fila.querySelector('.acc').innerHTML = st==='ok'
       ? '<span class="marca ok">✓ INSTALADO</span>'
-      : '<span class="marca no">✕ NO SE INSTALÓ</span>';
+      /* si no entro, lo util es ponerle fecha nueva ahi mismo */
+      : `<button class="reagmini" onclick="cerrarConfirmar();abrirReagenda('${id}')">↻ REAGENDAR</button>`;
   }
   try{
     await db().collection('ventas').doc(id).update({'inst.st': st, 'inst.resp': Date.now()});
@@ -4657,7 +4759,7 @@ function renderBell(){
     (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador();
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda();
   if($('#lvOverlay').classList.contains('on')) cerrarSubida();
   if($('#promoOverlay').classList.contains('on')) cerrarPromo();
   if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
