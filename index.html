@@ -946,6 +946,22 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .cfmini .si:hover{background:var(--green);color:#04140a}
 .cfmini .no{color:var(--red);border:1px solid rgba(232,64,42,.45)}
 .cfmini .no:hover{background:var(--red);color:#fff}
+/* barra para saltar entre meses en Mis cierres */
+.mesesbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.mesesbar .ml{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.2em;color:var(--dim);margin-right:2px}
+.mesbtn{background:none;border:1px solid var(--line);color:var(--muted);cursor:pointer;padding:5px 11px;
+  font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.1em}
+.mesbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+.mesbtn.on{background:var(--cyan);border-color:var(--cyan);color:#04141a;font-weight:700}
+.mesaviso{margin-top:8px;padding:9px 11px;font-size:12.5px;line-height:1.45;
+  color:var(--amber2);background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.45)}
+/* postpago o prepago, al marcar celular */
+.celtipo{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 12px;
+  background:#0a0d11;border:1px solid var(--line);border-top:0;margin-bottom:8px}
+.tipobtn{--tc:var(--lime);background:none;border:1px solid var(--line2);color:var(--muted);cursor:pointer;
+  padding:6px 14px;font-family:'Barlow Condensed';font-size:12.5px;font-weight:700;letter-spacing:.12em}
+.tipobtn:hover{border-color:var(--tc);color:var(--tc)}
+.tipobtn.on{background:var(--tc);border-color:var(--tc);color:#0a0d11}
 .notaic{display:inline-block;margin-left:6px;color:var(--amber);cursor:pointer;font-size:13px;opacity:.75}
 .notaic:hover{opacity:1}
 /* ---- cosmeticos puestos ---- */
@@ -1180,6 +1196,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
       <div id="fDateWrap" class="off" style="margin-top:8px">
         <input id="fDate" type="date" onchange="setInstDate(this.value)">
       </div>
+      <div id="fMesAviso" class="mesaviso" style="display:none"></div>
 
       <div class="fld" style="margin:14px 0 6px"><label>¿Qué le contó la venta?</label>
         <div class="hint" style="margin-top:2px;text-transform:none;letter-spacing:.02em">Se marca solo según el plan. Destilda lo que el cliente <b style="color:var(--amber)">ya tenía</b>.</div>
@@ -1452,6 +1469,13 @@ const PRODS = [
   {k:'tv',      label:'TV',             pts:1, cls:'tv',    icon:'📺'},
   {k:'voice',   label:'Voice de casa',  pts:0, cls:'voice', icon:'☎️'}
 ];
+/* las lineas de celular son de dos clases y la compañia las paga distinto */
+const CEL_TIPOS = [
+  {k:'post', l:'POSTPAGO', color:'#d8ff2e'},
+  {k:'pre',  l:'PREPAGO',  color:'#39d0ff'}
+];
+const celTipoDe = s => CEL_TIPOS.find(t=>t.k===(s.p && s.p.celTipo)) || null;
+
 const SRC = {redes:'Redes', referido:'Referido', canva:'Canva', base:'Base de datos', evento:'Evento'};
 const SRCCOLOR = {redes:'#39d0ff', referido:'#d8ff2e', canva:'#ff7ad9', base:'#ff8a00', evento:'#4ad07a'};
 
@@ -1804,6 +1828,16 @@ let unsubVentas = null;      // corta el listener al salir o cambiar de mes
 let cargando = false;
 
 function mesActual(){ return {anio: String(today.getFullYear()), mes: String(today.getMonth()+1).padStart(2,'0')}; }
+
+/* A que mes pertenece una venta. Manda la fecha de instalacion: si la cita cae
+   en otro mes, la venta cuenta alla, porque es cuando el cliente queda puesto.
+   El self install cuenta en el mes en que se cerro, que se instala enseguida. */
+function mesDeLaVenta(inst, siNoHay){
+  const base = siNoHay || mesActual();
+  if(!inst || inst.mode !== 'fecha' || !inst.d) return base;
+  const [a, m] = inst.d.split('-');
+  return (a && m) ? {anio:a, mes:m} : base;
+}
 
 /* escucha en vivo los cierres del mes: si alguien registra algo, entra solo */
 function escucharVentas(){
@@ -2519,7 +2553,8 @@ function entrar(){
   $('#app').style.display='flex';
   pintaFecha();
   $('#topName').textContent = me().nm;
-  tab = 'lobby'; opsScope = 'me'; alertShown = false; confirmShown = false; recapShown = false;
+  tab = 'lobby'; opsScope = 'me'; opsMes = null; SALES_HIST = [];
+  alertShown = false; confirmShown = false; recapShown = false;
   perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
   SALES = [];
   render();
@@ -2874,7 +2909,8 @@ function exportarPDF(scope){
   const filas = lista.map((s,i)=>{
     const est = estadoInst(s);
     const serv = [
-      lineasCel(s) ? 'Celular'+(lineasCel(s)>1?' ×'+lineasCel(s):'') : null,
+      lineasCel(s) ? 'Celular'+(lineasCel(s)>1?' ×'+lineasCel(s):'')
+                     +(celTipoDe(s)?' ('+celTipoDe(s).l.toLowerCase()+')':'') : null,
       s.p.internet ? 'Internet' : null,
       s.p.tv ? 'TV' : null,
       s.p.voice ? 'Voice' : null
@@ -2969,7 +3005,11 @@ function exportarPDF(scope){
 function prodPills(s){
   const n = lineasCel(s);
   return PRODS.filter(p=>s.p[p.k]).map(p=>{
-    const txt = p.k==='celular' && n>1 ? `${p.label} ×${n}` : p.label;   // 3 lineas: "CELULAR ×3"
+    /* 3 lineas: "CELULAR ×3", y si es prepago se dice */
+    const t = p.k==='celular' ? celTipoDe(s) : null;
+    const txt = p.k==='celular'
+      ? p.label + (n>1?` ×${n}`:'') + (t?` · ${t.l}`:'')
+      : p.label;
     return `<span class="pill ${p.cls}">${txt}</span>`;
   }).join('');
 }
@@ -2980,11 +3020,14 @@ function setScope(v){ opsScope = v; render(); }
 function viewOps(){
   const admin = isAdmin();
   if(!admin) opsScope = 'me';
+  /* si estas mirando un mes cerrado, la lista sale del historico */
+  const fuente = opsMes ? SALES_HIST : SALES;
+  const deQuien = uid => fuente.filter(s => s.owner === uid);
   /* Firestore devuelve en orden arbitrario, asi que hay que ordenar a mano:
      lo mas reciente primero, por fecha del cierre y luego por hora de registro */
-  const lista = (opsScope==='me'  ? salesOf(ME)
-              : opsScope==='all' ? SALES.slice()
-              : salesOf(opsScope))
+  const lista = (opsScope==='me'  ? deQuien(ME)
+              : opsScope==='all' ? fuente.slice()
+              : deQuien(opsScope))
     .slice().sort((a,b)=>
       (b.d||'').localeCompare(a.d||'') || (b.creado||0) - (a.creado||0));
   const pts = lista.reduce((a,s)=>a+ptsOf(s),0);
@@ -2996,11 +3039,28 @@ function viewOps(){
 
   $('#view').innerHTML = `
   <div class="gridwrap">
-    ${admin
-      ? `<div class="notice"><b>ACCESO TOTAL</b> — eres admin: ves y editas los cierres de cualquier operador, con clientes y teléfonos.</div>`
-      : `<div class="notice">Solo <b>tú</b> ves esta lista. Nadie más ve tus clientes ni tus teléfonos — el escuadrón solo ve puntos.</div>`}
+    <div class="mesesbar">
+      <span class="ml">MES</span>
+      <button class="mesbtn ${!opsMes?'on':''}" onclick="verMesDeCierres(null)">${monthName} · AHORA</button>
+      ${(()=>{ const out=[];
+        for(let i=1;i<=5;i++){
+          const dd = new Date(today.getFullYear(), today.getMonth()-i, 1);
+          const cl = `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}`;
+          out.push(`<button class="mesbtn ${opsMes===cl?'on':''}" onclick="verMesDeCierres('${cl}')">${MESES[dd.getMonth()]}</button>`);
+        }
+        return out.join(''); })()}
+    </div>
+
+    ${opsMes
+      ? `<div class="notice" style="border-color:var(--cyan);color:var(--cyan)">
+          Estás viendo <b>${MESES[Number(opsMes.split('-')[1])-1]} ${opsMes.split('-')[0]}</b>, un mes ya cerrado.
+          Es solo para revisar: aquí no se edita ni se borra.${cargandoHist?' Cargando…':''}</div>`
+      : admin
+        ? `<div class="notice"><b>ACCESO TOTAL</b> — eres admin: ves y editas los cierres de cualquier operador, con clientes y teléfonos.</div>`
+        : `<div class="notice">Solo <b>tú</b> ves esta lista. Nadie más ve tus clientes ni tus teléfonos — el escuadrón solo ve puntos.</div>`}
     <div class="panel cut">
-      <div class="ph"><span class="tick"></span>${titulo} · ${monthName}
+      <div class="ph"><span class="tick"></span>${titulo} · ${
+        opsMes ? MESES[Number(opsMes.split('-')[1])-1] : monthName}
         <span class="right">${lista.length} REGISTROS · ${pts} PTS · ${bonos} BONOS</span>
         ${admin ? `<select onchange="setScope(this.value)"
             style="margin-left:14px;background:#08090b;border:1px solid var(--line2);color:var(--txt);padding:6px 9px;outline:none;font-family:'Barlow Condensed';letter-spacing:.1em">
@@ -3045,8 +3105,9 @@ function viewOps(){
                  : s.inst?.mode==='fecha' ? '<div class="estado" style="color:var(--green)">✓ INSTALADO</div>' : ''}</td>
               <td class="c-src" data-lbl="ORIGEN"><span class="src-tag" style="color:${SRCCOLOR[s.src]}">${SRC[s.src]||'—'}</span></td>
               <td class="c-acc" style="text-align:right">
-                <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
-                <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>
+                ${opsMes ? '<span class="hint">solo lectura</span>' : `
+                  <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
+                  <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>`}
               </td>
             </tr>`; }).join('')}
         </tbody>
@@ -3142,6 +3203,29 @@ function verEmote(uid){
   $('#emoOverlay').classList.add('on');
 }
 function cerrarEmote(){ $('#emoOverlay').classList.remove('on'); }
+
+/* ---------- MIRAR UN MES YA CERRADO ----------
+   El listener solo trae el mes en curso, asi que los viejos se piden aparte.
+   Es de consulta: se ven pero no se tocan. */
+let opsMes = null, SALES_HIST = [], cargandoHist = false;
+
+async function verMesDeCierres(clave){
+  if(!clave){ opsMes = null; SALES_HIST = []; render(); return; }
+  opsMes = clave; cargandoHist = true; SALES_HIST = []; render();
+  const [anio, mes] = clave.split('-');
+  try{
+    let q = db().collection('ventas').where('anio','==',anio).where('mes','==',mes);
+    if(!isAdmin()) q = q.where('owner','==',ME);   // el vendedor, solo lo suyo
+    const snap = await q.get();
+    SALES_HIST = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(err){
+    console.error('historico:', err);
+    toast('No se pudo cargar: ' + (err.code||err.message));
+    opsMes = null;
+  }finally{
+    cargandoHist = false; render();
+  }
+}
 
 /* ==================== POKEDEX DE INSTALADORES ==================== */
 let piEditando = null;
@@ -3832,6 +3916,16 @@ function renderInst(){
   $('#instFecha').className = 'pl' + (dinst.mode==='fecha' ? ' on':'');
   $('#fDateWrap').className = dinst.mode==='fecha' ? '' : 'off';
   $('#fDate').value = dinst.d || '';
+
+  /* si la cita cae en otro mes, decirlo antes de guardar y no despues */
+  const hoyMes = mesActual(), m = mesDeLaVenta(dinst, hoyMes);
+  const otro = m.mes !== hoyMes.mes || m.anio !== hoyMes.anio;
+  const av = $('#fMesAviso');
+  if(av){
+    av.style.display = otro ? '' : 'none';
+    if(otro) av.innerHTML = `Esta venta va a contar para <b>${MESES[Number(m.mes)-1]||m.mes}</b>,
+      que es cuando se instala. No aparecerá en ${monthName}.`;
+  }
 }
 function pickInst(mode){
   dinst.mode = mode;
@@ -3839,7 +3933,7 @@ function pickInst(mode){
   else if(!dinst.d) dinst.d = dOff(3);     // por defecto, 3 días después de hoy
   renderInst();
 }
-function setInstDate(v){ dinst.d = v; }
+function setInstDate(v){ dinst.d = v; renderInst(); }
 function closeModal(){ $('#overlay').classList.remove('on'); }
 
 function renderChecks(){
@@ -3852,7 +3946,7 @@ function renderChecks(){
       <div class="lbl">${p.icon} ${p.label}</div>
       <div class="pt">${p.pts ? (p.k==='celular' && cel>1 ? '+'+cel : '+1') : 'BONO'}</div>
     </div>`;
-    /* si marcaste celular, pregunta cuantas lineas: cada una suma un punto */
+    /* si marcaste celular, pregunta cuantas lineas y de que tipo */
     if(p.k!=='celular' || !on) return fila;
     return fila + `
     <div class="lineasbox">
@@ -3862,6 +3956,12 @@ function renderChecks(){
              onchange="setLineas(this.value)" onclick="event.stopPropagation()">
       <button type="button" class="stepbtn" onclick="setLineas(${cel+1})">+</button>
       <span class="lbl2">${cel === 1 ? '1 punto' : cel + ' puntos'}</span>
+    </div>
+    <div class="celtipo">
+      <span class="lbl2">¿Postpago o prepago?</span>
+      ${CEL_TIPOS.map(t=>`
+        <button type="button" class="tipobtn ${draft.celTipo===t.k?'on':''}"
+                style="--tc:${t.color}" onclick="event.stopPropagation();setCelTipo('${t.k}')">${t.l}</button>`).join('')}
     </div>`;
   }).join('');
   const pts = cel + (draft.internet?1:0) + (draft.tv?1:0);
@@ -3869,10 +3969,15 @@ function renderChecks(){
   $('#pvBonus').textContent = draft.voice ? '+1 BONO VOICE' : 'SIN BONO';
 }
 function toggleProd(k){
-  if(k==='celular'){ draft.celular = Number(draft.celular)>0 ? 0 : 1; }  // al marcar arranca en 1 linea
+  if(k==='celular'){
+    draft.celular = Number(draft.celular)>0 ? 0 : 1;   // al marcar arranca en 1 linea
+    if(!draft.celular) draft.celTipo = null;           // sin celular no hay tipo que guardar
+    else if(!draft.celTipo) draft.celTipo = 'post';    // postpago es lo normal
+  }
   else draft[k] = draft[k]?0:1;
   renderChecks();
 }
+function setCelTipo(k){ draft.celTipo = k; renderChecks(); }
 function setLineas(n){
   const v = Math.max(1, Math.min(20, parseInt(n)||1));
   draft.celular = v;
@@ -3887,7 +3992,12 @@ async function saveSale(){
   if(!dinst.mode){ toast('SELF INSTALL O FECHA DE INSTALACIÓN'); return; }
   if(dinst.mode==='fecha' && !dinst.d){ toast('FALTA LA FECHA DE INSTALACIÓN'); return; }
 
-  const {anio, mes} = mesActual();
+  /* La venta cuenta en el mes en que se instala, no en el que se cerro: si hoy
+     cierras con cita para el mes que viene, esa venta es del mes que viene. */
+  const mesCierre = mesActual();
+  const {anio, mes} = mesDeLaVenta(dinst, mesCierre);
+  const seVaAlSiguiente = mes !== mesCierre.mes || anio !== mesCierre.anio;
+
   const payload = {
     nm, tel, p:{...draft}, plan:{...dplan}, inst:{...dinst}, src:$('#fSrc').value,
     nota: $('#fNota').value.trim().slice(0,300),
@@ -3900,13 +4010,18 @@ async function saveSale(){
   const btn = $('#saveBtn');
   if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
   try{
+    const nombreMes = MESES[Number(mes)-1] || mes;
     if(editing){
       await db().collection('ventas').doc(editing).update(payload);
-      toast('CIERRE ACTUALIZADO');
+      toast(seVaAlSiguiente
+        ? `ACTUALIZADO · cuenta para <b>${nombreMes}</b>, que es cuando se instala`
+        : 'CIERRE ACTUALIZADO');
     }else{
       await db().collection('ventas').add(payload);
       const pts=(Number(draft.celular)||0)+(draft.internet?1:0)+(draft.tv?1:0);
-      toast('CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
+      toast(seVaAlSiguiente
+        ? `CIERRE GUARDADO · va para <b>${nombreMes}</b> (${pts} pts), que es cuando se instala`
+        : 'CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
     }
     closeModal();   // el listener refresca la pantalla solo
   }catch(err){
