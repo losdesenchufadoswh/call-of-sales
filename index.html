@@ -962,6 +962,7 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
   font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.1em}
 .mesbtn:hover{border-color:var(--cyan);color:var(--cyan)}
 .mesbtn.on{background:var(--cyan);border-color:var(--cyan);color:#04141a;font-weight:700}
+.prewarn{width:100%;font-size:11.5px;color:var(--cyan);letter-spacing:.02em;margin-top:2px}
 .mesaviso{margin-top:8px;padding:9px 11px;font-size:12.5px;line-height:1.45;
   color:var(--amber2);background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.45)}
 /* postpago o prepago, al marcar celular */
@@ -2255,12 +2256,13 @@ async function cargarRecap(clave){
   const mias = vs.docs.map(d=>({id:d.id, ...d.data()}));
 
   /* los mismos totales de siempre, pero sobre las ventas de aquel mes */
-  const t = {pts:0, cierres:0, internet:0, celular:0, tv:0, voice:0, dias:{}, espera:0, caidos:0};
+  const t = {pts:0, cierres:0, internet:0, celular:0, celPre:0, tv:0, voice:0, dias:{}, espera:0, caidos:0};
   mias.forEach(s=>{
     const est = estadoInst(s);
     if(est === 'espera'){ t.espera++; return; }
     if(est === 'no'){ t.caidos++; return; }
-    t.cierres++; t.pts += ptsOf(s); t.celular += lineasCel(s);
+    t.cierres++; t.pts += ptsOf(s);
+    t.celular += lineasQueSuman(s); t.celPre += lineasDeBono(s);
     ['internet','tv','voice'].forEach(k=>{ if(s.p && s.p[k]) t[k]++; });
     if(s.d) t.dias[s.d] = (t.dias[s.d]||0) + ptsOf(s);
   });
@@ -2338,12 +2340,17 @@ const isAdmin = () => me().rol === 'admin';
 /* celular guarda CUANTAS lineas van en ese cierre: 3 lineas son 3 puntos.
    Los cierres viejos traen 1 (o true), que sigue valiendo una linea. */
 const lineasCel = s => { const v = s.p && s.p.celular; return v === true ? 1 : (Number(v) || 0); };
-const ptsOf = s => lineasCel(s) + (s.p.internet?1:0) + (s.p.tv?1:0);
+/* El prepago no suma: es bono, como el voice de casa. Los cierres viejos no
+   traen tipo y se dan por postpago, que es como contaban hasta ahora. */
+const esPrepago = s => (s.p && s.p.celTipo) === 'pre';
+const lineasQueSuman = s => esPrepago(s) ? 0 : lineasCel(s);
+const lineasDeBono   = s => esPrepago(s) ? lineasCel(s) : 0;
+const ptsOf = s => lineasQueSuman(s) + (s.p.internet?1:0) + (s.p.tv?1:0);
 const salesOf = uid => SALES.filter(s => s.owner === uid);
 
 function stats(uid){
   const SALES = salesOf(uid || ME);   // sombra a propósito: el resto del cuerpo no cambia
-  const t = {pts:0,bonus:0,celular:0,internet:0,tv:0,voice:0,
+  const t = {pts:0,bonus:0,celular:0,celPre:0,internet:0,tv:0,voice:0,
              src:Object.keys(SRC).reduce((o,k)=>(o[k]=0,o),{}),
              plans:{'1play':0,'2play':0,'3play':0,celular:0},
              speeds:{'40':0,'100':0,'300':0,'500':0,'1gb':0,'double':0},
@@ -2366,7 +2373,8 @@ function stats(uid){
     }
     t.cierres++;
     t.pts += pt;
-    t.celular += lineasCel(s);                                   // suma lineas, no cierres
+    t.celular += lineasQueSuman(s);         // postpago: suma lineas, no cierres
+    t.celPre  += lineasDeBono(s);           // prepago: va aparte, no suma
     ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) t[k]++; });
     if(s.p.voice) t.bonus++;
     t.src[s.src] = (t.src[s.src]||0)+1;
@@ -2826,6 +2834,8 @@ function viewLobby(){
           <div class="tile"><div class="t1">${x[1]}</div><div class="t2">${t[x[0]]}</div><div class="t3">${t[x[0]]} PT</div></div>`).join('')}
         <div class="tile bonus"><span class="tag">BONO</span><div class="t1">VOICE CASA</div>
           <div class="t2">${t.voice}</div><div class="t3">NO SUMA PUNTOS</div></div>
+        ${t.celPre ? `<div class="tile bonus"><span class="tag">BONO</span><div class="t1">PREPAGO</div>
+          <div class="t2">${t.celPre}</div><div class="t3">NO SUMA PUNTOS</div></div>` : ''}
       </div>
 
       ${(()=>{
@@ -2931,12 +2941,14 @@ function exportarPDF(scope){
   if(!lista.length){ toast('No hay cierres de '+monthName+' para exportar'); return; }
 
   const titular = quien === 'all' ? 'ESCUADRÓN COMPLETO' : opBy(quien).nm;
-  const tot = {pts:0, internet:0, celular:0, tv:0, voice:0, espera:0, esperaPts:0, caidos:0};
+  const tot = {pts:0, internet:0, celular:0, celPre:0, tv:0, voice:0, espera:0, esperaPts:0, caidos:0};
   lista.forEach(s=>{
     const est = estadoInst(s);
     if(est === 'espera'){ tot.espera++; tot.esperaPts += ptsOf(s); return; }
     if(est === 'no'){ tot.caidos++; return; }
-    tot.pts += ptsOf(s); tot.celular += lineasCel(s);
+    tot.pts += ptsOf(s);
+    tot.celular += lineasQueSuman(s);
+    tot.celPre  += lineasDeBono(s);
     ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) tot[k]++; });
   });
   const cuota = tot.internet + tot.celular;
@@ -3006,9 +3018,10 @@ function exportarPDF(scope){
   <div class="tot">
     <div>PUNTOS<b>${tot.pts}</b></div>
     <div>INTERNET<b>${tot.internet}</b></div>
-    <div>LÍNEAS CELULAR<b>${tot.celular}</b></div>
+    <div>CELULAR POSTPAGO<b>${tot.celular}</b></div>
     <div>TV<b>${tot.tv}</b></div>
     <div>VOICE (bono)<b>${tot.voice}</b></div>
+    ${tot.celPre ? `<div>PREPAGO (bono)<b>${tot.celPre}</b></div>` : ''}
     <div>CUOTA DE BONO<b>${cuota} / ${INT_100} → ${bonoPct(cuota)}%</b></div>
     ${tot.espera ? `<div>SIN INSTALAR<b>${tot.espera} · ${tot.esperaPts} pts en el aire</b></div>` : ''}
     ${tot.caidos ? `<div>NO ENTRARON<b>${tot.caidos}</b></div>` : ''}
@@ -3027,7 +3040,7 @@ function exportarPDF(scope){
     </tr></tfoot>
   </table>
 
-  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular, cada internet y cada TV suman 1 punto; el voice de casa es bono y no suma.</div>
+  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular postpago, cada internet y cada TV suman 1 punto; el voice de casa y las líneas prepago son bono y no suman.</div>
   <script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>
 </body></html>`;
 
@@ -3039,13 +3052,16 @@ function exportarPDF(scope){
 
 function prodPills(s){
   const n = lineasCel(s);
+  const pre = esPrepago(s);
   return PRODS.filter(p=>s.p[p.k]).map(p=>{
     /* 3 lineas: "CELULAR ×3", y si es prepago se dice */
     const t = p.k==='celular' ? celTipoDe(s) : null;
     const txt = p.k==='celular'
       ? p.label + (n>1?` ×${n}`:'') + (t?` · ${t.l}`:'')
       : p.label;
-    return `<span class="pill ${p.cls}">${txt}</span>`;
+    /* el prepago se pinta como bono, igual que el voice */
+    const cls = (p.k==='celular' && pre) ? 'voice' : p.cls;
+    return `<span class="pill ${cls}">${txt}</span>`;
   }).join('');
 }
 
@@ -3161,7 +3177,7 @@ function viewSquad(){
   const COLORS=['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#e8402a','#8b9199'];
   $('#view').innerHTML = `
   <div class="gridwrap">
-    <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular, cada internet y cada TV suman 1; el voice de casa va aparte y no suma. Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + líneas de celular</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
+    <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular <b>postpago</b>, cada internet y cada TV suman 1. El voice de casa y las líneas <b>prepago</b> van aparte y no suman. Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + celular postpago</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
         <span class="right">${sal.quedan
@@ -4045,7 +4061,9 @@ function renderChecks(){
     <div class="chk ${on?'on':''} ${p.pts?'':'bonus'}" onclick="toggleProd('${p.k}')">
       <div class="box">${on?'✓':''}</div>
       <div class="lbl">${p.icon} ${p.label}</div>
-      <div class="pt">${p.pts ? (p.k==='celular' && cel>1 ? '+'+cel : '+1') : 'BONO'}</div>
+      <div class="pt">${
+        p.k==='celular' ? (draft.celTipo==='pre' ? 'BONO' : (cel>1 ? '+'+cel : '+1'))
+        : p.pts ? '+1' : 'BONO'}</div>
     </div>`;
     /* si marcaste celular, pregunta cuantas lineas y de que tipo */
     if(p.k!=='celular' || !on) return fila;
@@ -4056,18 +4074,25 @@ function renderChecks(){
       <input id="fLineas" class="lineasnum" type="number" min="1" max="20" value="${cel}"
              onchange="setLineas(this.value)" onclick="event.stopPropagation()">
       <button type="button" class="stepbtn" onclick="setLineas(${cel+1})">+</button>
-      <span class="lbl2">${cel === 1 ? '1 punto' : cel + ' puntos'}</span>
+      <span class="lbl2">${draft.celTipo==='pre' ? 'no suman puntos'
+        : (cel === 1 ? '1 punto' : cel + ' puntos')}</span>
     </div>
     <div class="celtipo">
       <span class="lbl2">¿Postpago o prepago?</span>
       ${CEL_TIPOS.map(t=>`
         <button type="button" class="tipobtn ${draft.celTipo===t.k?'on':''}"
                 style="--tc:${t.color}" onclick="event.stopPropagation();setCelTipo('${t.k}')">${t.l}</button>`).join('')}
+      ${draft.celTipo==='pre'
+        ? '<span class="prewarn">El prepago va de bono: no suma puntos ni cuenta para la cuota.</span>' : ''}
     </div>`;
   }).join('');
-  const pts = cel + (draft.internet?1:0) + (draft.tv?1:0);
+  const prepago = draft.celTipo === 'pre';
+  const pts = (prepago ? 0 : cel) + (draft.internet?1:0) + (draft.tv?1:0);
   $('#pvPts').textContent = pts;
-  $('#pvBonus').textContent = draft.voice ? '+1 BONO VOICE' : 'SIN BONO';
+  const bonos = [];
+  if(draft.voice) bonos.push('+1 VOICE');
+  if(prepago && cel) bonos.push(`+${cel} PREPAGO`);
+  $('#pvBonus').textContent = bonos.length ? bonos.join(' · ') : 'SIN BONO';
 }
 function toggleProd(k){
   if(k==='celular'){
@@ -4119,10 +4144,13 @@ async function saveSale(){
         : 'CIERRE ACTUALIZADO');
     }else{
       await db().collection('ventas').add(payload);
-      const pts=(Number(draft.celular)||0)+(draft.internet?1:0)+(draft.tv?1:0);
+      const cel = Number(draft.celular)||0;
+      const pts=(draft.celTipo==='pre'?0:cel)+(draft.internet?1:0)+(draft.tv?1:0);
       toast(seVaAlSiguiente
         ? `CIERRE GUARDADO · va para <b>${nombreMes}</b> (${pts} pts), que es cuando se instala`
-        : 'CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'+(draft.voice?' <b>+1 BONO</b>':''));
+        : 'CIERRE CONFIRMADO <b>+'+pts+' PTS</b>'
+          + (draft.voice?' <b>+1 VOICE</b>':'')
+          + (draft.celTipo==='pre'&&cel?` <b>+${cel} PREPAGO</b> (bono)`:''));
     }
     closeModal();   // el listener refresca la pantalla solo
   }catch(err){
