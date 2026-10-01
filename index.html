@@ -305,10 +305,17 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .lbbar i{display:block;height:100%;background:var(--amber)}
 
 /* ---------- MODAL ---------- */
-.overlay{position:fixed;inset:0;z-index:60;background:rgba(3,4,5,.82);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(3,4,5,.82);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;
+  padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .overlay.on{display:flex}
-.modal{width:520px;max-height:92vh;overflow:auto;background:#0d0f12;border:1px solid var(--line2);box-shadow:0 40px 90px rgba(0,0,0,.85)}
-.mh{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);}
+/* 100dvh es lo que de verdad se ve: en el iPhone 92vh contaba tambien la barra
+   del navegador y el modal se salia por abajo. La cabecera con la X va pegada
+   arriba, asi no se pierde al bajar por un modal largo. */
+.modal{width:520px;max-height:92vh;max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow:auto;overscroll-behavior:contain;background:#0d0f12;border:1px solid var(--line2);box-shadow:0 40px 90px rgba(0,0,0,.85)}
+.mh{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:5;background:#0d0f12}
+.mh .close{min-width:40px;min-height:40px}
 .mh h3{font-family:'Barlow Condensed';font-size:18px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
 .mh .close{margin-left:auto;background:none;border:0;color:var(--dim);font-size:20px;cursor:pointer}
 .mb{padding:18px}
@@ -2581,7 +2588,10 @@ async function borrarInstalador(id){
 /* ---------- LOOK: LO QUE CADA UNO SE PUSO ----------
    Vive en `look`, un doc por operador. Son cinco textos, nada mas. Se lee de
    todo el escuadron para que los cosmeticos se vean tambien en el leaderboard. */
-let LOOK = {};               // uid -> {fondo, titulo, emote, marco, color}
+let LOOK = {};
+/* hasta que no llega lo guardado no se escribe nada en look: si no, un array a
+   medio cargar pisaria el inventario o los stickers que ya tenias */
+let lookCargado = false;               // uid -> {fondo, titulo, emote, marco, color}
 let unsubLook = null;
 const lookDe = uid => LOOK[uid] || {};
 
@@ -2590,6 +2600,7 @@ function escucharLook(){
   unsubLook = db().collection('look').onSnapshot(snap=>{
     LOOK = {};
     snap.docs.forEach(d=>{ LOOK[d.id] = d.data(); });
+    lookCargado = true;
     render();
     /* con las ventas ya cargadas se sabe el nivel: si el mes nuevo dejo algo
        fuera de alcance, se quita ahora */
@@ -2606,7 +2617,7 @@ async function ponerse(cat, k){
   LOOK[ME] = {...antes, [cat]:k, owner:ME};      // se ve al instante
   render();
   try{
-    await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()});
+    await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()}, {merge:true});
   }catch(err){
     console.error(err);
     LOOK[ME] = antes; render();
@@ -2625,11 +2636,12 @@ async function limpiarLookFueraDeAlcance(){
     if(!mio[cat]) return;
     const o = cosBy(cat, mio[cat]);
     if(cat === 'emote' && stickersDe(ME).includes(mio[cat])) return;   // los stickers ganados no caducan
+    if(enInventario(ME, cat, mio[cat])) return;                        // ni nada de lo que ya sacaste
     if(o.deOtraTemporada || o.lv > lv) quitar[cat] = '';
   });
   if(!Object.keys(quitar).length) return;
   LOOK[ME] = {...mio, ...quitar};
-  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()}); }
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado:Date.now()}, {merge:true}); }
   catch(err){ console.error(err); }
 }
 
@@ -2905,15 +2917,42 @@ const STICKERS = Object.entries(SETS).flatMap(([n, s]) =>
     tnombre: (TEMPORADAS.find(t => t.n === Number(n)) || {}).nombre || ''})));
 const stickersDe = uid => (lookDe(uid).stickers || []);
 
-const tieneDesbloqueado = (uid,cat,k) =>
-  (cat === 'emote' && stickersDe(uid).includes(k)) || cosBy(cat,k).lv <= nivelDe(uid);
+/* ---------- INVENTARIO ----------
+   Todo lo que alguna vez sacaste del pase se queda tuyo: el pase vuelve a cero
+   cada mes, pero lo ganado no. Se guarda en `look.inventario` como "cat:clave"
+   ("titulo:REAPER", "fondo:nuketown") y vale en cualquier temporada. */
+const inventarioDe = uid => (lookDe(uid).inventario || []);
+const enInventario = (uid, cat, k) => inventarioDe(uid).includes(cat + ':' + k);
+
+const tieneDesbloqueado = (uid,cat,k) => !k
+  || (cat === 'emote' && stickersDe(uid).includes(k))
+  || enInventario(uid, cat, k)
+  || cosBy(cat,k).lv <= nivelDe(uid);
+
+/* mete en el inventario lo que tu nivel de este mes ya abrio y aun no estaba.
+   Solo añade: nunca quita, asi un mes flojo no te borra nada */
+let guardandoInv = false;
+async function guardarInventario(lv){
+  if(guardandoInv || !lv || !lookCargado) return;
+  const ya = new Set(inventarioDe(ME)), cat = catalogo(), nuevos = [];
+  Object.keys(cat).forEach(c => cat[c].forEach(o => {
+    if(o.k && o.lv <= lv && !ya.has(c + ':' + o.k)) nuevos.push(c + ':' + o.k);
+  }));
+  if(!nuevos.length) return;
+  guardandoInv = true;
+  LOOK[ME] = {...lookDe(ME), inventario: [...ya, ...nuevos], owner: ME};
+  try{ await db().collection('look').doc(ME).set({inventario: LOOK[ME].inventario, owner: ME}, {merge:true}); }
+  catch(err){ console.error('no se pudo guardar el inventario:', err); }
+  finally{ guardandoInv = false; }
+}
 
 /* al llegar al 50, el sticker de la temporada entra en tu coleccion */
 async function guardarStickerGanado(){
+  if(!lookCargado) return;
   const st = (catalogo().emote || []).find(o => o.legendario);
   if(!st || stickersDe(ME).includes(st.k)) return;
   LOOK[ME] = {...lookDe(ME), stickers: [...stickersDe(ME), st.k], owner: ME};
-  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}, {merge:true}); }
   catch(err){ console.error('no se pudo guardar el sticker:', err); }
 }
 function ranked(){
@@ -3057,6 +3096,7 @@ function logout(){
   if(unsubMedallas){ unsubMedallas(); unsubMedallas = null; }
   if(unsubLogros){ unsubLogros(); unsubLogros = null; }
   if(unsubLook){ unsubLook(); unsubLook = null; }
+  lookCargado = false;
   if(unsubInst){ unsubInst(); unsubInst = null; }
   if(unsubCofre){ unsubCofre(); unsubCofre = null; }
   INSTALADORES = []; COFRE = null;
@@ -3862,7 +3902,7 @@ async function ponerMarcoFoto(k){
   if(k && !((COFRE && COFRE.marcos) || {})[k]){ toast('Ese marco todavía no lo tienes'); return; }
   LOOK[ME] = {...lookDe(ME), marcoFoto: k, owner: ME};
   render(); pintarCofres();
-  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}, {merge:true}); }
   catch(err){ toast('No se pudo guardar: ' + (err.code||err.message)); }
   if(k) toast(`Marco <b>${marcoFotoBy(k).n}</b> puesto`);
 }
@@ -4087,6 +4127,7 @@ function renderPaseChip(){
   }
   nivelVisto = p.lv;
   if(p.tope) guardarStickerGanado();
+  if(!cargando) guardarInventario(p.lv);
   el.className = 'pasechip' + (p.tope ? ' tope' : '');
   el.innerHTML = `
     <div class="lvn">${p.lv}</div>
@@ -4194,9 +4235,15 @@ function lookHTML(){
         ${!opciones.length ? '<span class="lkvacio">aún nada — sube de nivel</span>' : ''}
       </div>
     </div>`;
-  const tengo = c => cat[c].filter(o => o.k && o.lv <= lv);
+  /* lo de este mes mas todo lo del inventario, venga de la temporada que venga */
+  const tengo = c => {
+    const out = cat[c].filter(o => o.k && o.lv <= lv);
+    inventarioDe(ME).filter(x => x.startsWith(c + ':')).map(x => x.slice(c.length + 1))
+      .forEach(k => { if(!out.some(o => o.k === k)){ const o = cosBy(c, k); if(o && o.k === k) out.push(o); } });
+    return out;
+  };
   const emotes = [...tengo('emote'),
-    ...STICKERS.filter(s => stickersDe(ME).includes(s.k) && !cat.emote.some(o=>o.k===s.k))];
+    ...STICKERS.filter(s => stickersDe(ME).includes(s.k) && !tengo('emote').some(o=>o.k===s.k))];
   const marcosFoto = MARCOS_FOTO.filter(m => ((COFRE && COFRE.marcos) || {})[m.k]);
   return `
   <div class="panel cut" id="tuLook" style="margin:14px 0 0">
@@ -4868,7 +4915,7 @@ async function marcarRecapVisto(clave){
   if(prev.includes(clave)) return;
   const val = [...prev, clave].slice(-12).join(',');   // guarda el ultimo año
   LOOK[ME] = {...lookDe(ME), recapVisto: val, owner: ME};
-  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}, {merge:true}); }
   catch(err){ console.error('no se pudo marcar el recap:', err); }
 }
 
@@ -5102,7 +5149,7 @@ async function cerrarPromo(){
   const prev = (lookDe(ME).promoVista || '').split(',').filter(Boolean);
   if(prev.includes(String(t.n))) return;
   LOOK[ME] = {...lookDe(ME), promoVista: [...prev, t.n].join(','), owner: ME};
-  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}, {merge:true}); }
   catch(err){ console.error(err); }
 }
 let promoEnsayo = false;
