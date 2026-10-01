@@ -218,6 +218,9 @@ main::-webkit-scrollbar-thumb{background:#22262b}
 }
 .tile:before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
 .tile.bonus:before{background:var(--cyan)}
+.tile.tope:before{background:var(--red)}
+.tile.tope .t3{color:var(--red)}
+.tile .t2 small{font-size:.5em;color:var(--dim);margin-left:2px}
 .tile .t1{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.22em;color:var(--muted)}
 .tile .t2{font-family:'Barlow Condensed';font-size:38px;font-weight:700;line-height:1;margin:3px 0 2px}
 .tile .t3{font-size:11px;color:var(--dim);letter-spacing:.06em}
@@ -665,6 +668,107 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .ptcard .tip{font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
 .promonuevo{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
 .promonuevo b{color:var(--amber2);font-weight:600}
+/* ---- cofres: chip y panel ---- */
+.cofrechip{position:relative;background:none;border:1px solid var(--line);color:var(--txt);cursor:pointer;
+  padding:4px 9px;font-size:16px;line-height:1}
+.cofrechip:hover{border-color:var(--amber)}
+.cofrechip.hay{border-color:var(--amber);animation:cofLate 2.4s ease-in-out infinite}
+@keyframes cofLate{50%{box-shadow:0 0 14px rgba(255,138,0,.55)}}
+.cofrechip .dot{position:absolute;top:-6px;right:-6px;background:var(--amber);color:#120a00;border-radius:9px;
+  font-family:'Barlow Condensed';font-weight:700;font-size:10.5px;min-width:17px;height:17px;padding:0 4px;
+  display:flex;align-items:center;justify-content:center}
+.cfmodal{width:min(560px,94vw)}
+.cfhead{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.cfcare{width:96px;flex-shrink:0;filter:drop-shadow(0 6px 16px rgba(0,0,0,.6))}
+.cfcare.late{animation:cofFlota 3s ease-in-out infinite}
+@keyframes cofFlota{50%{transform:translateY(-6px)}}
+.cfn{font-family:'Barlow Condensed';font-size:17px;letter-spacing:.08em;margin-bottom:9px;color:var(--muted)}
+.cfn b{font-size:30px;color:var(--amber);margin-right:4px}
+.cfsec{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.22em;color:var(--dim);padding:14px 18px 7px}
+.cflogin{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:0 18px}
+.cfd{text-align:center;border:1px solid var(--line);padding:6px 2px;background:#0f1216}
+.cfd small{display:block;font-family:'Barlow Condensed';font-size:9px;letter-spacing:.1em;color:var(--dim)}
+.cfd span{font-size:15px}
+.cfd.ok{border-color:rgba(74,208,122,.5);background:rgba(74,208,122,.08)} .cfd.ok span{color:var(--green)}
+.cfd.hoy{border-color:var(--amber);box-shadow:0 0 12px rgba(255,138,0,.3)}
+.cfventas{padding:0 18px;font-size:12.5px;color:var(--muted)}
+.cfbar{height:8px;background:#000;border:1px solid var(--line);overflow:hidden;margin-bottom:6px}
+.cfbar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--amber2))}
+.cfmarcos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px;padding:0 18px 6px}
+.cfm{position:relative;background:#0f1216;border:1px solid var(--line);padding:7px 5px 9px;cursor:pointer;
+  color:var(--txt);text-align:center}
+.cfm:not(.bloq):hover{border-color:var(--amber)}
+.cfm.bloq{opacity:.45;cursor:not-allowed} .cfm.bloq img{filter:grayscale(1) brightness(.45)}
+.cfm.on{border-color:var(--lime);background:rgba(216,255,46,.06)}
+.cfm.leg:not(.bloq){border-color:rgba(255,210,74,.6)}
+.cfm img{width:100%;aspect-ratio:1;object-fit:contain;display:block}
+.cfx{position:absolute;top:5px;right:5px;background:var(--amber);color:#120a00;font-family:'Barlow Condensed';
+  font-weight:700;font-size:11px;padding:0 5px}
+.cfmn{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.08em;font-weight:700;margin-top:4px}
+.cfmr{font-size:8.5px;letter-spacing:.14em;color:var(--dim)}
+.cfm.leg .cfmr{color:var(--gold)}
+.cfme{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.1em;color:var(--amber);margin-top:4px}
+/* ---- el care package cayendo ---- */
+.dropov{z-index:97;flex-direction:column;background:radial-gradient(ellipse at 50% 0%,#1b2433,#05070a 72%)}
+.dropcielo{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(100deg,transparent 0 60px,rgba(255,255,255,.025) 60px 61px)}
+.dropescena{position:relative;width:min(300px,72vw);height:min(360px,56vh);cursor:pointer}
+.dropcaja{position:absolute;left:0;right:0;bottom:24px;transform-origin:50% 0}
+.dropcaja img{width:100%;display:block;filter:drop-shadow(0 12px 22px rgba(0,0,0,.7))}
+.dropsombra{position:absolute;left:18%;right:18%;bottom:14px;height:18px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.65),transparent 70%);opacity:0}
+.dropflash{position:absolute;inset:-40%;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(255,220,150,.95),rgba(255,138,0,.4) 30%,transparent 60%)}
+.droprays{position:absolute;left:50%;top:55%;width:700px;height:700px;margin:-350px 0 0 -350px;pointer-events:none;opacity:0;
+  background:repeating-conic-gradient(from 0deg,rgba(255,170,60,.9) 0deg 4deg,transparent 4deg 18deg);
+  -webkit-mask-image:radial-gradient(circle,#000 10%,transparent 60%);mask-image:radial-gradient(circle,#000 10%,transparent 60%)}
+/* cae balanceandose bajo el paracaidas */
+.dropov.cayendo .dropcaja{animation:cofCae 2.3s cubic-bezier(.3,.05,.5,1) both}
+@keyframes cofCae{
+  0%{transform:translateY(-120vh) rotate(-8deg)} 30%{transform:translateY(-70vh) rotate(7deg)}
+  55%{transform:translateY(-32vh) rotate(-6deg)} 80%{transform:translateY(-8vh) rotate(4deg)}
+  92%{transform:translateY(4px) rotate(-1deg)} 100%{transform:none}}
+.dropov.cayendo .dropsombra{animation:cofSombra 2.3s ease-in both}
+@keyframes cofSombra{from{opacity:0;transform:scaleX(.3)}to{opacity:1;transform:none}}
+/* en el suelo, esperando: late y brilla */
+.dropov.listo .dropsombra,.dropov.abriendo .dropsombra{opacity:1}
+.dropov.listo .dropcaja{animation:cofLatir 1.4s ease-in-out infinite}
+@keyframes cofLatir{50%{transform:scale(1.04);filter:drop-shadow(0 0 26px rgba(255,138,0,.75))}}
+.dropov.listo .droprays{opacity:.25;animation:lgSpin 14s linear infinite}
+/* al abrir: tiembla, destello, y se va */
+.dropov.abriendo .dropcaja{animation:cofTiembla .9s ease-in both}
+@keyframes cofTiembla{
+  0%,100%{transform:none} 10%{transform:translateX(-6px) rotate(-3deg)} 20%{transform:translateX(6px) rotate(3deg)}
+  30%{transform:translateX(-8px) rotate(-4deg)} 40%{transform:translateX(8px) rotate(4deg)}
+  70%{transform:scale(1.15);opacity:1} 100%{transform:scale(1.5);opacity:0}}
+.dropov.abriendo .dropflash{animation:cofFlash .9s ease-out both}
+@keyframes cofFlash{0%,55%{opacity:0;transform:scale(.4)} 75%{opacity:1} 100%{opacity:0;transform:scale(1.3)}}
+.dropov.abierto .dropescena{display:none}
+.dropov.legend .droprays{opacity:.45;animation:lgSpin 8s linear infinite;
+  background:repeating-conic-gradient(from 0deg,rgba(255,210,74,1) 0deg 5deg,transparent 5deg 16deg)}
+.drophint{position:relative;margin-top:14px;font-family:'Barlow Condensed';font-size:14px;letter-spacing:.3em;
+  color:var(--amber);min-height:20px;animation:lgFade 1.2s ease-in-out infinite alternate}
+.dropres{position:relative;z-index:3;text-align:center;padding:0 18px}
+.dkick{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.34em;color:var(--amber)}
+.dropov.legend .dkick{color:var(--gold);font-size:16px}
+.dimg{width:min(280px,70vw);display:block;margin:10px auto 0;animation:lgPop .65s cubic-bezier(.18,1.5,.35,1) both}
+.dropov.legend .dimg{animation:lgPop .65s cubic-bezier(.18,1.5,.35,1) both, legBrilla 1.8s ease-in-out .65s infinite}
+.dnom{font-family:'Barlow Condensed';font-size:28px;font-weight:700;letter-spacing:.12em;margin-top:8px}
+.dropov.legend .dnom{color:var(--gold);text-shadow:0 0 22px rgba(255,210,74,.7)}
+.dsub{font-size:13px;color:var(--muted);margin-top:4px}
+.dacc{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+/* el legendario brilla siempre, tambien puesto en el perfil */
+@keyframes legBrilla{0%,100%{filter:drop-shadow(0 0 10px rgba(255,210,74,.55))}50%{filter:drop-shadow(0 0 30px rgba(255,210,74,1)) brightness(1.15)}}
+/* el marco encima de la foto del perfil: el hueco del arte va del 20 al 80% */
+/* con marco, el emblema se abre arriba y abajo para que el arte no pise el nombre ni el panel de encima */
+.emblem.conmarco{padding-top:58px}
+.emblem.conmarco .cs{margin-top:84px}
+.marcofoto{position:absolute;width:330px;left:50%;top:calc(58px + 106px);transform:translate(-50%,-50%) translateY(14px);
+  pointer-events:none;z-index:4}
+.marcofoto.leg{animation:legBrilla 2.2s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){
+  .dropov .dropcaja,.dropov .droprays,.marcofoto.leg,.cofrechip.hay{animation:none!important}
+}
 /* ---- toque de Halloween: solo en octubre, sin mover nada de sitio ---- */
 body.halloween{background-image:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(122,52,170,.10),transparent 70%)}
 body.halloween .topbar{border-bottom-color:transparent;
@@ -693,6 +797,21 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
   font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;
   display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
 .smsbtn:hover{background:var(--cyan);color:#04141a}
+.cambiarlook{margin-top:12px;background:none;border:1px solid var(--lime);color:var(--lime);cursor:pointer;
+  padding:7px 16px;font-family:'Barlow Condensed';font-size:12.5px;letter-spacing:.14em}
+.cambiarlook:hover{background:var(--lime);color:#0b0d06}
+/* ---- tu look: equipar lo que ya tienes ---- */
+.lkrow{display:flex;gap:10px;align-items:flex-start;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.lkl{width:104px;flex-shrink:0;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em;
+  color:var(--dim);text-transform:uppercase;padding-top:6px}
+.lkchips{flex:1;display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.lkchip{display:flex;align-items:center;gap:5px;background:#0f1216;border:1px solid var(--line);color:var(--muted);
+  cursor:pointer;padding:5px 10px;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.07em}
+.lkchip:hover{border-color:var(--line2);color:var(--txt)}
+.lkchip.on{border-color:var(--lime);color:var(--lime);background:rgba(216,255,46,.07)}
+.lkchip img{width:18px;height:18px;object-fit:contain}
+.lkvacio{font-size:11.5px;color:var(--dim);padding-top:5px}
+@media(max-width:480px){ .lkrow{flex-direction:column;gap:5px} .lkl{width:auto;padding-top:0} }
 /* ---- coleccion de stickers ---- */
 .stkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding:14px}
 .stk{background:#0f1216;border:1px solid var(--line);padding:9px 7px 10px;cursor:pointer;color:var(--txt);
@@ -1208,6 +1327,7 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
       <div class="chip" onclick="openFecha()" style="cursor:pointer" title="Cambiar la fecha del sistema">OPERACIÓN <b id="topMonth">JULIO</b><span id="topDia" style="color:var(--dim);margin-left:5px"></span></div>
       <div class="chip">ESCUADRÓN <b id="topSquad">5</b></div>
       <span id="bellWrap"></span>
+      <button class="cofrechip" id="cofreChip" onclick="abrirCofres()" title="Cofres">🎁</button>
       <button class="pasechip" id="pasechip" onclick="setTab('pase')" title="Ver el pase"></button>
       <button class="namebtn chip" style="gap:9px" onclick="verPerfil(ME)" title="Ver perfil">
         <div class="rankbadge" id="topRank">3</div>
@@ -1352,6 +1472,31 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
     <button class="btn-amber lgbtn" id="logroBtn" onclick="cerrarLogro()">SEGUIR</button>
     <button class="lgtodos" id="logroTodos" onclick="cerrarTodosLosLogros()">Ver todos en la vitrina</button>
   </div>
+</div>
+
+<!-- ============ COFRES ============ -->
+<div class="overlay" id="cofreOverlay" onclick="cerrarCofres()">
+  <div class="modal cfmodal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <span style="width:3px;height:14px;background:var(--amber)"></span>
+      <h3>Care packages</h3>
+      <button class="close" onclick="cerrarCofres()">✕</button>
+    </div>
+    <div id="cofreCuerpo"></div>
+  </div>
+</div>
+
+<!-- ============ EL CARE PACKAGE CAYENDO ============ -->
+<div class="overlay dropov" id="dropOverlay">
+  <div class="dropcielo"></div>
+  <div class="dropescena" onclick="abrirCaja()">
+    <div class="dropcaja"><img src="cofre/care.webp" alt=""></div>
+    <div class="dropsombra"></div>
+    <div class="dropflash"></div>
+    <div class="droprays"></div>
+  </div>
+  <div class="drophint" id="dropHint"></div>
+  <div class="dropres" id="dropRes"></div>
 </div>
 
 <!-- ============ SUBISTE DE NIVEL ============ -->
@@ -1578,11 +1723,29 @@ const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0
 const HOY_REAL = isoLocal(new Date());
 let today = new Date();
 let dayNow, daysInMonth, monthName, TODAY_ISO;
+
+/* ---------- METRICA DEL MES ----------
+   La compañia cambia las reglas de vez en cuando, asi que van por mes: cada mes
+   se mide con las que tenia, y los meses viejos no se mueven al cambiar.
+   - meta: puntos de la cuota.
+   - int50 / int100: internet + celular postpago para el 50% y el 100% del bono.
+   - capTv / capCel: tope del mes de TV y de lineas de celular que cuentan.
+     Lo que pase del tope se registra y se ve, pero no suma. */
+const REGLAS = [
+  {desde:'0000-00', meta:45, int50:13, int100:18, capTv:Infinity, capCel:Infinity},
+  {desde:'2026-10', meta:50, int50:18, int100:22, capTv:30,       capCel:3}
+];
+const reglasDe = clave => REGLAS.filter(r => r.desde <= clave).slice(-1)[0] || REGLAS[0];
+/* las del mes que se esta mirando; las pone recalcFecha */
+let META_PTS, INT_50, INT_100, CAP_TV, CAP_CEL;
+
 function recalcFecha(){
   dayNow      = today.getDate();
   daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
   monthName   = MESES[today.getMonth()];
   TODAY_ISO   = isoLocal(today);
+  const r = reglasDe(TODAY_ISO.slice(0,7));
+  META_PTS = r.meta; INT_50 = r.int50; INT_100 = r.int100; CAP_TV = r.capTv; CAP_CEL = r.capCel;
 }
 recalcFecha();
 
@@ -1611,14 +1774,9 @@ const porConfirmar = s => estadoInst(s) === 'espera' && s.inst && s.inst.d && s.
 /* OJO: la foto de EL_FE está confirmada. Las otras 4 las asigné al azar —
    cambia el 'av' de cada uno si le toca otra. Archivos en avatars/ */
 /* pts/bonus/ventas se calculan de SALES, no se guardan aquí */
-/* ---------- METRICA DEL MES ----------
-   45 puntos es la cuota. Aparte esta el bono, que se mide con internet y
-   celulares juntos: 13 paga el 50% y 18 paga el 100%. Cada linea de celular
-   cuenta una, asi que 14 internet + 4 lineas ya son 18. */
-const META_PTS = 45;
-const INT_50 = 13, INT_100 = 18;
-/* cuantas cuentan para el bono: internet + lineas de celular */
-const cuotaBono = t => t.internet + t.celular;
+/* cuantas cuentan para el bono: internet + celular postpago, con el tope de
+   celulares del mes (las lineas por encima del tope no suman en ningun lado) */
+const cuotaBono = t => t.internet + Math.min(t.celular, CAP_CEL);
 /* devuelve 0, 50 o 100 según esa cuenta */
 const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
 
@@ -1644,7 +1802,8 @@ const medBy = k => MEDALLAS.find(m=>m.k===k) || MEDALLAS[0];
 const PASE_NIVELES = 50;
 const XP_NIVEL = 36;                                   // 50 x 36 = 1800 para el tope
 const XP_TOTAL = PASE_NIVELES * XP_NIVEL;
-const XP_PUNTO = XP_TOTAL / META_PTS;                  // 40 exacto con la meta de 45
+/* sale de dividir: la meta del mes da justo el 50 (40 XP con 45, 36 con 50) */
+const xpPunto = (meta) => XP_TOTAL / (meta || META_PTS);
 const XP = {cierre:5, voice:5, dia:10, logro:60, medalla:20};
 
 /* ---------- TEMPORADAS ----------
@@ -1666,7 +1825,9 @@ const NOVEDADES = {
     {img:'badges/jack.webp',         t:'JACK OF ALL TRADES', d:'Internet + celular + voice en la misma semana'},
     {img:'badges/poketech.webp',     t:'POKETECH', d:'Captura un técnico nuevo en la Pokédex'},
     {ico:'💬', t:'TEXTO AL CLIENTE', d:'Desde el aviso de instalaciones de hoy, un toque y le escribes'},
-    {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'}
+    {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'},
+    {img:'cofre/care.webp', t:'CARE PACKAGES', d:'Cofre por vender 3 en un día y por entrar cada día: marcos de foto'},
+    {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono 18 / 22 · tope 30 TV y 3 celulares'}
   ]
 };
 function temporadaDe(clave){
@@ -1843,7 +2004,7 @@ const LOGROS = [
   {k:'overwatch', l:'OVERWATCH',            sub:'10 TV en una semana',       per:'semana', meta:10, color:'#60a5fa', mide:t=>t.tv},
   {k:'tactical',  l:'TACTICAL INSERTION',   sub:'5 celulares en una semana', per:'semana', meta:5,  color:'#4ade80', mide:t=>t.celular},
   {k:'command',   l:'COMMAND CENTER',       sub:'10 voice en una semana',    per:'semana', meta:10, color:'#fbbf24', mide:t=>t.voice},
-  {k:'mission',   l:'MISSION ACCOMPLISHED', sub:`${META_PTS} puntos en el mes`, per:'mes', meta:META_PTS, color:'#a3e635', mide:t=>t.pts},
+  {k:'mission',   l:'MISSION ACCOMPLISHED', get sub(){ return META_PTS+' puntos en el mes'; }, per:'mes', get meta(){ return META_PTS; }, color:'#a3e635', mide:t=>t.pts},
   /* Estos tres no salen de sumar un periodo, asi que se calculan aparte
      (`especial`) en logrosEspeciales(). Ver alli como se cuenta cada uno. */
   {k:'bloodthirsty', l:'BLOODTHIRSTY',      sub:'1 venta 5 días laborables seguidos', per:'dia', especial:true, color:'#e8402a'},
@@ -1878,11 +2039,11 @@ const periodoDe = (per, iso) => per==='dia' ? iso : per==='semana' ? semanaISO(i
 
 /* el email es el de la cuenta de Firebase; las contrasenas viven alla, no aqui */
 const SQUAD = [
-  {id:'elfe',   nm:'EL_FE',  full:'Tú',      meta:META_PTS, rol:'admin',    av:'avatars/elfe.png',              email:'elfe@call-of-sales.com'},
-  {id:'carlos', nm:'CARLOS', full:'Carlos',  meta:META_PTS, rol:'vendedor', av:'avatars/op-gorra.png',          email:'carlos@call-of-sales.com'},
-  {id:'felix',  nm:'FELIX',  full:'Félix',   meta:META_PTS, rol:'vendedor', av:'avatars/op-lentes-negros.png',  email:'felix@call-of-sales.com'},
-  {id:'angel',  nm:'ANGEL',  full:'Ángel',   meta:META_PTS, rol:'vendedor', av:'avatars/op-canoso.png',         email:'angel@call-of-sales.com'},
-  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   meta:META_PTS, rol:'vendedor', av:'avatars/op-joven.png',          email:'elwin@call-of-sales.com'}
+  {id:'elfe',   nm:'EL_FE',  full:'Tú',      get meta(){ return META_PTS; }, rol:'admin',    av:'avatars/elfe.png',              email:'elfe@call-of-sales.com'},
+  {id:'carlos', nm:'CARLOS', full:'Carlos',  get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-gorra.png',          email:'carlos@call-of-sales.com'},
+  {id:'felix',  nm:'FELIX',  full:'Félix',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-lentes-negros.png',  email:'felix@call-of-sales.com'},
+  {id:'angel',  nm:'ANGEL',  full:'Ángel',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-canoso.png',         email:'angel@call-of-sales.com'},
+  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-joven.png',          email:'elwin@call-of-sales.com'}
 ];
 
 let ME = 'elfe';
@@ -2004,6 +2165,7 @@ function escucharVentas(){
     render();
     publicarRanking();          // deja al dia el marcador que ve el escuadron
     publicarLogros();           // y registra los badges que se hayan ganado
+    repartirCofres();           // 3 ventas en un dia dan cofre
     /* el recap del mes que cerro va primero: es lo primero que quieres ver el dia 1 */
     if(!recapShown){ recapShown = true; setTimeout(quizaRecap, 700); }
     else if(!confirmShown && pendientesDeConfirmar().length) setTimeout(abrirConfirmar, 500);
@@ -2019,6 +2181,7 @@ function escucharVentas(){
   escucharLogros();
   escucharLook();
   escucharInstaladores();
+  escucharCofre();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -2279,6 +2442,92 @@ async function publicarLogros(){
   }catch(err){ console.error('no se pudieron guardar los logros:', err); }
 }
 
+/* ==================== COFRES (CARE PACKAGE) ====================
+   Dos formas de ganarlos: cada 3 ventas en un mismo dia da uno, y entrar a la
+   app da uno por dia en ciclos de 7. Dentro van marcos para la foto del perfil:
+   seis normales a partes iguales y el legendario con un 1% de salir.
+
+   Vive en `cofres/{uid}`. `reclamos` guarda la clave de cada cofre ya dado
+   ("v:2026-10-01:0" por ventas, "l:2026-10-01" por entrar), asi recalcular
+   nunca regala dos veces el mismo. */
+const MARCOS_FOTO = [
+  {k:'m1',   n:'SEGADOR',      img:'cofre/m1.webp',   rar:'HALLOWEEN'},
+  {k:'m2',   n:'TÓXICO',       img:'cofre/m2.webp',   rar:'HALLOWEEN'},
+  {k:'m3',   n:'ESPECTRAL',    img:'cofre/m3.webp',   rar:'HALLOWEEN'},
+  {k:'m4',   n:'GATO NEGRO',   img:'cofre/m4.webp',   rar:'HALLOWEEN'},
+  {k:'m5',   n:'CALABAZAS',    img:'cofre/m5.webp',   rar:'HALLOWEEN'},
+  {k:'m6',   n:'CUERVO',       img:'cofre/m6.webp',   rar:'HALLOWEEN'},
+  {k:'mleg', n:'REY CALABAZA', img:'cofre/mleg.webp', rar:'LEGENDARIO', legendario:true}
+];
+const PROB_LEGENDARIO = 0.01;
+const VENTAS_POR_COFRE = 3;
+const LOGIN_CICLO = 7;
+const marcoFotoBy = k => MARCOS_FOTO.find(m => m.k === k);
+
+let COFRE = null, unsubCofre = null;
+const cofreRef = () => db().collection('cofres').doc(ME);
+
+function escucharCofre(){
+  if(unsubCofre){ unsubCofre(); unsubCofre = null; }
+  unsubCofre = cofreRef().onSnapshot(snap=>{
+    COFRE = snap.exists ? snap.data() : {owner:ME, reclamos:[], porAbrir:0, marcos:{}, ciclo:[]};
+    repartirCofres();
+    renderCofreChip();
+    if($('#cofreOverlay').classList.contains('on')) pintarCofres();
+  }, err => console.error('cofres:', err));
+}
+
+/* los cofres que tocan ahora mismo, con su clave fija */
+function cofresGanados(){
+  const out = [];
+  /* por ventas: el dia del cierre, cada 3 cierres uno (se instalen o no: esto
+     es de los divertidos) */
+  const porDia = {};
+  salesOf(ME).forEach(s=>{ const iso = isoDeVenta(s); if(iso) porDia[iso] = (porDia[iso]||0) + 1; });
+  Object.entries(porDia).forEach(([iso, n])=>{
+    for(let i = 0; i < Math.floor(n / VENTAS_POR_COFRE); i++) out.push({k:`v:${iso}:${i}`, por:'ventas', dia:iso});
+  });
+  /* por entrar: el dia de verdad, no el que se mueva con el chip de la fecha */
+  out.push({k:`l:${HOY_REAL}`, por:'login', dia:HOY_REAL});
+  return out;
+}
+
+let repartiendo = false;
+async function repartirCofres(){
+  if(!COFRE || repartiendo || cargando) return;
+  const ya = new Set(COFRE.reclamos || []);
+  const nuevos = cofresGanados().filter(c => !ya.has(c.k));
+  if(!nuevos.length) return;
+  repartiendo = true;
+  /* el ciclo de 7 dias de entrar: al completar 7 empieza otro */
+  let ciclo = (COFRE.ciclo || []).slice();
+  nuevos.filter(c => c.por === 'login').forEach(c=>{
+    if(ciclo.length >= LOGIN_CICLO) ciclo = [];
+    ciclo.push(c.dia);
+  });
+  const datos = {
+    owner: ME,
+    reclamos: [...(COFRE.reclamos||[]), ...nuevos.map(c=>c.k)].slice(-500),
+    porAbrir: (COFRE.porAbrir || 0) + nuevos.length,
+    ciclo, actualizado: Date.now()
+  };
+  try{
+    await cofreRef().set(datos, {merge:true});
+    const v = nuevos.filter(c=>c.por==='ventas').length, l = nuevos.length - v;
+    toast(`🎁 <b>+${nuevos.length}</b> cofre${nuevos.length===1?'':'s'}`
+      + (l ? ` · día ${ciclo.length} de ${LOGIN_CICLO} entrando` : '')
+      + (v ? ` · ${v} por vender ${VENTAS_POR_COFRE} en un día` : ''));
+  }catch(err){ console.error('no se pudieron dar los cofres:', err); }
+  finally{ repartiendo = false; }
+}
+
+/* 1% legendario; el resto, a partes iguales entre los seis normales */
+function tirarMarco(){
+  if(Math.random() < PROB_LEGENDARIO) return marcoFotoBy('mleg');
+  const normales = MARCOS_FOTO.filter(m => !m.legendario);
+  return normales[Math.floor(Math.random() * normales.length)];
+}
+
 /* ---------- POKEINSTALADORES ----------
    La agenda de los tecnicos que instalan: nombre, telefono y por donde cubren.
    La ve y la edita todo el escuadron: si Felix consigue un instalador bueno en
@@ -2429,6 +2678,9 @@ async function cargarRecap(clave){
     ['internet','tv','voice'].forEach(k=>{ if(s.p && s.p[k]) t[k]++; });
     if(s.d) t.dias[s.d] = (t.dias[s.d]||0) + ptsOf(s);
   });
+  /* ese mes se mide con sus reglas, no con las de hoy */
+  const R = reglasDe(clave);
+  aplicarTopes(t, R.capTv, R.capCel);
   const dias = Object.keys(t.dias);
   t.diasActivos = dias.length;
   const mejor = dias.sort((a,b)=>t.dias[b]-t.dias[a])[0];
@@ -2444,7 +2696,7 @@ async function cargarRecap(clave){
 
   /* el pase arranca de cero cada mes, asi que el nivel al que llego es
      exactamente lo que subio en el mes */
-  const xp = Math.round(t.pts * XP_PUNTO) + mias.length * XP.cierre + t.voice * XP.voice
+  const xp = Math.round(t.pts * xpPunto(R.meta)) + mias.length * XP.cierre + t.voice * XP.voice
            + t.diasActivos * XP.dia + logros.length * XP.logro + medallas.length * XP.medalla;
   const nivel = Math.min(PASE_NIVELES, Math.floor(xp / XP_NIVEL));
   /* lo cosmetico que ese nivel deja desbloqueado */
@@ -2452,7 +2704,7 @@ async function cargarRecap(clave){
   for(let lv=1; lv<=nivel; lv++) premiosDeNivel(lv).forEach(p=>desbloqueado.push(p));
 
   return {
-    clave, nombre: MESES[Number(mes)-1], anio,
+    clave, nombre: MESES[Number(mes)-1], anio, meta: R.meta,
     t, podio, logros, medallas, xp, nivel, desbloqueado,
     puesto: podio.findIndex(p=>p.owner===ME) + 1
   };
@@ -2511,6 +2763,18 @@ const lineasDeBono   = s => esPrepago(s) ? lineasCel(s) : 0;
 const ptsOf = s => lineasQueSuman(s) + (s.p.internet?1:0) + (s.p.tv?1:0);
 const salesOf = uid => SALES.filter(s => s.owner === uid);
 
+/* Los topes son del mes, no de cada venta: se suma todo y al final se corta.
+   La TV numero 31 y la cuarta linea de celular se siguen viendo, pero los
+   puntos se quedan en el tope. Deja aparte cuanto sobro, para enseñarlo. */
+function aplicarTopes(t, capTv, capCel){
+  const tv = Math.min(t.tv, capTv), cel = Math.min(t.celular, capCel);
+  t.ptsBrutos = t.pts;
+  t.pts = t.internet + tv + cel;
+  t.tvSobra  = t.tv - tv;
+  t.celSobra = t.celular - cel;
+  return t;
+}
+
 function stats(uid){
   const SALES = salesOf(uid || ME);   // sombra a propósito: el resto del cuerpo no cambia
   const t = {pts:0,bonus:0,celular:0,celPre:0,internet:0,tv:0,voice:0,
@@ -2552,6 +2816,7 @@ function stats(uid){
     }
     t.byDay[s.d] = (t.byDay[s.d]||0)+pt;
   });
+  aplicarTopes(t, CAP_TV, CAP_CEL);
   /* de las citas agendadas, cuantas quedaron puestas: "7 de 10" */
   t.instaladas = t.agendadas - t.espera - t.caidos;
   t.pendientes.sort((a,b)=> a.inst.d.localeCompare(b.inst.d));
@@ -2601,7 +2866,7 @@ function xpDe(uid){
   const det = {
     /* los puntos si exigen instalacion, que son la produccion de verdad; el
        resto del XP va por actividad, que el pase es cosmetico y no una metrica */
-    puntos:  Math.round(t.pts * XP_PUNTO),
+    puntos:  Math.round(t.pts * xpPunto()),
     cierres: ((uid===ME||isAdmin()) ? salesOf(uid).length : (RANKING[uid]||{}).ventas||0) * XP.cierre,
     voice:   t.voice * XP.voice,
     dias:    t.diasActivos * XP.dia,
@@ -2793,7 +3058,8 @@ function logout(){
   if(unsubLogros){ unsubLogros(); unsubLogros = null; }
   if(unsubLook){ unsubLook(); unsubLook = null; }
   if(unsubInst){ unsubInst(); unsubInst = null; }
-  INSTALADORES = [];
+  if(unsubCofre){ unsubCofre(); unsubCofre = null; }
+  INSTALADORES = []; COFRE = null;
   logrosCargados = false;
   SALES = []; RANKING = {}; MEDALLAS_MES = []; LOGROS_MIOS = []; LOOK = {};
   medEnPantalla = null; logroEnPantalla = null;
@@ -3013,8 +3279,13 @@ function viewLobby(){
       </div>
 
       <div class="tiles">
-        ${[['celular','CELULAR'],['internet','INTERNET'],['tv','TV']].map((x,i)=>`
-          <div class="tile"><div class="t1">${x[1]}</div><div class="t2">${t[x[0]]}</div><div class="t3">${t[x[0]]} PT</div></div>`).join('')}
+        ${[['celular','CELULAR',CAP_CEL],['internet','INTERNET',Infinity],['tv','TV',CAP_TV]].map(([k,l,cap])=>{
+          /* con tope: enseña cuantos llevas de cuantos cuentan, y avisa si te pasaste */
+          const n = t[k], cuentan = Math.min(n, cap), lleno = cap !== Infinity && n >= cap;
+          return `<div class="tile ${lleno?'tope':''}"><div class="t1">${l}</div><div class="t2">${n}${
+            cap!==Infinity?`<small>/${cap}</small>`:''}</div><div class="t3">${
+            lleno ? (n>cap ? `TOPE · ${n-cap} NO SUMAN` : 'TOPE ALCANZADO') : cuentan+' PT'}</div></div>`;
+        }).join('')}
         <div class="tile bonus"><span class="tag">BONO</span><div class="t1">VOICE CASA</div>
           <div class="t2">${t.voice}</div><div class="t3">NO SUMA PUNTOS</div></div>
         ${t.celPre ? `<div class="tile bonus"><span class="tag">BONO</span><div class="t1">PREPAGO</div>
@@ -3134,6 +3405,7 @@ function exportarPDF(scope){
     tot.celPre  += lineasDeBono(s);
     ['internet','tv','voice'].forEach(k=>{ if(s.p[k]) tot[k]++; });
   });
+  aplicarTopes(tot, CAP_TV, CAP_CEL);
   const cuota = tot.internet + tot.celular;
 
   const filas = lista.map((s,i)=>{
@@ -3205,6 +3477,7 @@ function exportarPDF(scope){
     <div>TV<b>${tot.tv}</b></div>
     <div>VOICE (bono)<b>${tot.voice}</b></div>
     ${tot.celPre ? `<div>PREPAGO (bono)<b>${tot.celPre}</b></div>` : ''}
+    ${tot.tvSobra||tot.celSobra ? `<div>FUERA DE TOPE<b>${tot.tvSobra} TV · ${tot.celSobra} cel</b></div>` : ''}
     <div>CUOTA DE BONO<b>${cuota} / ${INT_100} → ${bonoPct(cuota)}%</b></div>
     ${tot.espera ? `<div>SIN INSTALAR<b>${tot.espera} · ${tot.esperaPts} pts en el aire</b></div>` : ''}
     ${tot.caidos ? `<div>NO ENTRARON<b>${tot.caidos}</b></div>` : ''}
@@ -3223,7 +3496,7 @@ function exportarPDF(scope){
     </tr></tfoot>
   </table>
 
-  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular postpago, cada internet y cada TV suman 1 punto; el voice de casa y las líneas prepago son bono y no suman.</div>
+  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular postpago, cada internet y cada TV suman 1 punto, con tope de ${CAP_TV===Infinity?"—":CAP_TV} TV y ${CAP_CEL===Infinity?"—":CAP_CEL} celulares al mes; el voice de casa y las líneas prepago son bono y no suman.</div>
   <script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>
 </body></html>`;
 
@@ -3360,7 +3633,9 @@ function viewSquad(){
   const COLORS=['#d8ff2e','#39d0ff','#ff8a00','#ff7ad9','#4ad07a','#e8402a','#8b9199'];
   $('#view').innerHTML = `
   <div class="gridwrap">
-    <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular <b>postpago</b>, cada internet y cada TV suman 1. El voice de casa y las líneas <b>prepago</b> van aparte y no suman. Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + celular postpago</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
+    <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular <b>postpago</b>, cada internet y cada TV suman 1. El voice de casa y las líneas <b>prepago</b> van aparte y no suman.${
+      CAP_TV!==Infinity ? ` Topes del mes: <b>${CAP_TV} TV</b> y <b>${CAP_CEL} celulares</b> — lo que pase de ahí no suma.` : ''}
+      Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + celular postpago</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
         <span class="right">${sal.quedan
@@ -3525,6 +3800,141 @@ async function verMesDeCierres(clave){
   }finally{
     cargandoHist = false; render();
   }
+}
+
+/* ==================== COFRES: PANTALLAS ==================== */
+function renderCofreChip(){
+  const el = $('#cofreChip');
+  if(!el) return;
+  const n = (COFRE && COFRE.porAbrir) || 0;
+  el.innerHTML = `🎁${n ? `<span class="dot">${n}</span>` : ''}`;
+  el.classList.toggle('hay', n > 0);
+}
+
+function abrirCofres(){ pintarCofres(); $('#cofreOverlay').classList.add('on'); }
+function cerrarCofres(){ $('#cofreOverlay').classList.remove('on'); }
+
+function pintarCofres(){
+  const c = COFRE || {}, n = c.porAbrir || 0, mios = c.marcos || {};
+  const ciclo = c.ciclo || [];
+  const hoyV = salesOf(ME).filter(s => isoDeVenta(s) === HOY_REAL).length;
+  const resto = hoyV % VENTAS_POR_COFRE;
+  const puesto = lookDe(ME).marcoFoto || '';
+  $('#cofreCuerpo').innerHTML = `
+    <div class="cfhead">
+      <img src="cofre/care.webp" alt="" class="cfcare ${n?'late':''}">
+      <div>
+        <div class="cfn"><b>${n}</b> ${n===1?'cofre':'cofres'} por abrir</div>
+        <button class="btn-amber" ${n?'':'disabled'} onclick="lanzarCofre()">${n?'ABRIR CARE PACKAGE':'SIN COFRES'}</button>
+      </div>
+    </div>
+
+    <div class="cfsec">ENTRA CADA DÍA · ${ciclo.length} DE ${LOGIN_CICLO}</div>
+    <div class="cflogin">
+      ${Array.from({length:LOGIN_CICLO},(_,i)=>`<div class="cfd ${i<ciclo.length?'ok':''} ${i===ciclo.length-1?'hoy':''}">
+        <small>DÍA ${i+1}</small><span>${i<ciclo.length?'✓':'🎁'}</span></div>`).join('')}
+    </div>
+
+    <div class="cfsec">VENDE ${VENTAS_POR_COFRE} EN UN DÍA</div>
+    <div class="cfventas">
+      <div class="cfbar"><i style="width:${resto/VENTAS_POR_COFRE*100}%"></i></div>
+      <span>Hoy llevas <b>${hoyV}</b> · ${VENTAS_POR_COFRE - resto} más para el próximo cofre</span>
+    </div>
+
+    <div class="cfsec">MARCOS DE FOTO · ${Object.keys(mios).filter(k=>mios[k]).length} DE ${MARCOS_FOTO.length}</div>
+    <div class="cfmarcos">
+      ${MARCOS_FOTO.map(m=>{
+        const cant = mios[m.k] || 0, on = puesto === m.k;
+        return `<button class="cfm ${cant?'':'bloq'} ${on?'on':''} ${m.legendario?'leg':''}"
+          ${cant ? `onclick="ponerMarcoFoto('${on?'':m.k}')"` : 'disabled'}>
+          <img src="${m.img}" alt="" loading="lazy">
+          ${cant>1?`<span class="cfx">×${cant}</span>`:''}
+          <div class="cfmn">${m.n}</div>
+          <div class="cfmr">${m.legendario ? 'LEGENDARIO · 1%' : 'HALLOWEEN'}</div>
+          <div class="cfme">${!cant ? '🔒' : on ? '✓ PUESTO · quitar' : 'PONÉRMELO'}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="vhint">Los repetidos se acumulan. El marco se ve alrededor de tu foto en el perfil.</div>`;
+}
+
+async function ponerMarcoFoto(k){
+  if(k && !((COFRE && COFRE.marcos) || {})[k]){ toast('Ese marco todavía no lo tienes'); return; }
+  LOOK[ME] = {...lookDe(ME), marcoFoto: k, owner: ME};
+  render(); pintarCofres();
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  catch(err){ toast('No se pudo guardar: ' + (err.code||err.message)); }
+  if(k) toast(`Marco <b>${marcoFotoBy(k).n}</b> puesto`);
+}
+
+/* ---- el care package: cae del cielo, aterriza, y al tocarlo se abre ---- */
+let cofrePremio = null, cofreAbriendo = false;
+
+function lanzarCofre(){
+  if(!COFRE || !COFRE.porAbrir || cofreAbriendo) return;
+  cofrePremio = null;
+  const ov = $('#dropOverlay');
+  ov.className = 'overlay dropov on cayendo';
+  $('#dropRes').innerHTML = '';
+  $('#dropHint').textContent = 'Llegando…';
+  sonidoCaida();
+  setTimeout(()=>{ if(ov.classList.contains('cayendo')){ ov.classList.replace('cayendo','listo');
+    $('#dropHint').textContent = 'TOCA PARA ABRIR'; } }, 2300);
+}
+
+async function abrirCaja(){
+  const ov = $('#dropOverlay');
+  if(!ov.classList.contains('listo') || cofreAbriendo) return;
+  cofreAbriendo = true;
+  const m = tirarMarco();
+  ov.classList.replace('listo', 'abriendo');
+  if(m.legendario) ov.classList.add('legend');
+  sonidoLogro();
+  try{
+    const marcos = {...((COFRE && COFRE.marcos) || {})};
+    marcos[m.k] = (marcos[m.k] || 0) + 1;
+    await cofreRef().set({marcos, porAbrir: Math.max(0, (COFRE.porAbrir||1) - 1),
+                          abiertos: (COFRE.abiertos||0) + 1, actualizado: Date.now()}, {merge:true});
+  }catch(err){
+    console.error(err); toast('No se pudo abrir: ' + (err.code||err.message));
+    cerrarDrop(); cofreAbriendo = false; return;
+  }
+  cofrePremio = m;
+  setTimeout(()=>{
+    ov.classList.replace('abriendo', 'abierto');
+    const rep = ((COFRE && COFRE.marcos) || {})[m.k] || 1;
+    $('#dropHint').textContent = '';
+    $('#dropRes').innerHTML = `
+      <div class="dkick">${m.legendario ? '★ LEGENDARIO ★' : 'MARCO HALLOWEEN'}</div>
+      <img src="${m.img}" alt="" class="dimg">
+      <div class="dnom">${m.n}</div>
+      <div class="dsub">${rep > 1 ? `Repetido · ya tienes ×${rep}` : '¡Nuevo en tu colección!'}</div>
+      <div class="dacc">
+        <button class="btn-amber" onclick="ponerMarcoFoto('${m.k}');cerrarDrop()">PONÉRMELO</button>
+        ${(COFRE && COFRE.porAbrir) ? `<button class="btn-ghost" onclick="lanzarCofre()">OTRO (${COFRE.porAbrir})</button>` : ''}
+        <button class="btn-ghost" onclick="cerrarDrop()">CERRAR</button>
+      </div>`;
+    cofreAbriendo = false;
+  }, 900);
+}
+function cerrarDrop(){ $('#dropOverlay').className = 'overlay dropov'; }
+
+/* un silbido que baja y un golpe al tocar suelo */
+function sonidoCaida(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext; if(!AC) return;
+    const ctx = sonidoMedalla._ctx || (sonidoMedalla._ctx = new AC());
+    if(ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(1400, t); o.frequency.exponentialRampToValueAtTime(320, t+2);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.05, t+.3); g.gain.exponentialRampToValueAtTime(.0001, t+2.1);
+    o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+2.2);
+    const b = ctx.createOscillator(), gb = ctx.createGain();
+    b.type = 'sine'; b.frequency.setValueAtTime(110, t+2.2); b.frequency.exponentialRampToValueAtTime(38, t+2.6);
+    gb.gain.setValueAtTime(.0001, t+2.2); gb.gain.exponentialRampToValueAtTime(.4, t+2.23); gb.gain.exponentialRampToValueAtTime(.001, t+2.7);
+    b.connect(gb).connect(ctx.destination); b.start(t+2.2); b.stop(t+2.75);
+  }catch(e){}
 }
 
 /* ==================== POKEDEX DE INSTALADORES ==================== */
@@ -3743,6 +4153,8 @@ function viewPase(){
         .map(([k,l,c])=>`<div class="pm"><b${c?` style="color:${c}"`:''}>${d[k]}</b><small>${l}</small></div>`).join('')}
     </div>
 
+    ${lookHTML()}
+
     <!-- el recorrido, fila por fila -->
     <div class="ptrackv">
       <div class="ptcab"><span>NIVEL</span><span>RECOMPENSA</span><span>${cogidas}/${filas.length}</span></div>
@@ -3759,6 +4171,44 @@ function viewPase(){
     const el = $('#ptf-' + filas[iProx].lv);
     if(el) setTimeout(()=>el.scrollIntoView({block:'center'}), 80);
   }
+}
+
+function irATuLook(){
+  setTab('pase');
+  setTimeout(()=>{ const el = $('#tuLook'); if(el) el.scrollIntoView({block:'start', behavior:'smooth'}); }, 160);
+}
+
+/* Lo que llevas puesto y con que lo puedes cambiar: solo sale lo que ya
+   tienes, categoria por categoria. Antes solo se cambiaba tocando la tarjeta
+   en el recorrido, y no se veia que se podia. */
+function lookHTML(){
+  const mio = lookDe(ME), lv = nivelDe(ME), cat = catalogo();
+  const fila = (c, label, opciones) => `
+    <div class="lkrow">
+      <div class="lkl">${label}</div>
+      <div class="lkchips">
+        <button class="lkchip ${!mio[c]?'on':''}" onclick="${c==='marcoFoto'?`ponerMarcoFoto('')`:`ponerse('${c}','')`}">Nada</button>
+        ${opciones.map(o=>`<button class="lkchip ${mio[c]===o.k?'on':''}"
+            onclick="${c==='marcoFoto'?`ponerMarcoFoto('${o.k}')`:`ponerse('${c}','${o.k}')`}">
+            ${o.img?`<img src="${o.img}" alt="">`:''}${o.n}</button>`).join('')}
+        ${!opciones.length ? '<span class="lkvacio">aún nada — sube de nivel</span>' : ''}
+      </div>
+    </div>`;
+  const tengo = c => cat[c].filter(o => o.k && o.lv <= lv);
+  const emotes = [...tengo('emote'),
+    ...STICKERS.filter(s => stickersDe(ME).includes(s.k) && !cat.emote.some(o=>o.k===s.k))];
+  const marcosFoto = MARCOS_FOTO.filter(m => ((COFRE && COFRE.marcos) || {})[m.k]);
+  return `
+  <div class="panel cut" id="tuLook" style="margin:14px 0 0">
+    <div class="ph"><span class="tick" style="background:var(--lime)"></span>Tu look
+      <span class="right">SE VE EN TU PERFIL Y EN EL RANKING</span></div>
+    ${fila('titulo','Título', tengo('titulo'))}
+    ${fila('emote','Emote / sticker', emotes)}
+    ${fila('fondo','Fondo', tengo('fondo'))}
+    ${fila('marco','Borde', tengo('marco'))}
+    ${fila('color','Color del nombre', tengo('color'))}
+    ${fila('marcoFoto','Marco de foto 🎁', marcosFoto)}
+  </div>`;
 }
 
 /* todos los stickers de nivel 50 que existen: los tuyos a color y para ponerte,
@@ -3931,7 +4381,7 @@ function viewPerfil(){
       </div>
 
       <!-- CENTRO: emblema -->
-      <div class="emblem ${m.av?'haspic':''} marco-${lk.marco||'none'}">
+      <div class="emblem ${m.av?'haspic':''} marco-${lk.marco||'none'} ${marcoFotoBy(lk.marcoFoto||'')?'conmarco':''}">
         <div class="ring2"></div><div class="ring"></div>
         <div class="hex">
           ${m.av?`<div class="hexphoto"><img src="${m.av}" alt=""
@@ -3941,11 +4391,14 @@ function viewPerfil(){
             <div class="lv">NIVEL ${nivel}</div>
           </div>
         </div>
+        ${(()=>{ const mf = marcoFotoBy(lk.marcoFoto||'');   /* el marco de cofre, encima de la foto */
+          return mf ? `<img class="marcofoto ${mf.legendario?'leg':''}" src="${mf.img}" alt="">` : ''; })()}
         <div class="cs">
           <div class="n"><span class="${lk.color||''}">${m.nm}</span>${emoteHTML(uid,'grande')}${
             yo?`<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button>`:''}</div>
           ${lk.titulo ? `<div class="pasetit">${lk.titulo}</div>` : ''}
           <div class="r">${m.rol==='admin'?'MANDO':'OPERADOR'} · ${monthName} · RANGO #${pos} · PASE ${nivelDe(uid)}</div>
+          ${yo ? `<button class="cambiarlook" onclick="irATuLook()">🎨 CAMBIAR MI LOOK</button>` : ''}
         </div>
       </div>
 
@@ -4458,7 +4911,7 @@ function abrirRecap(d, ensayo){
 }
 
 function construirSlides(d){
-  const t = d.t, meta = me().meta || META_PTS;
+  const t = d.t, meta = d.meta || META_PTS;
   const pct = Math.round(t.pts / meta * 100);
   const s = [];
 
@@ -5027,7 +5480,7 @@ function renderBell(){
     (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda();
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda(); cerrarCofres();
   if($('#lvOverlay').classList.contains('on')) cerrarSubida();
   if($('#promoOverlay').classList.contains('on')) cerrarPromo();
   if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
