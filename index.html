@@ -663,6 +663,49 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .ptcard .nom{font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.06em;line-height:1.2;
   margin-top:5px;min-height:25px;display:flex;align-items:center;justify-content:center}
 .ptcard .tip{font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.promonuevo{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
+.promonuevo b{color:var(--amber2);font-weight:600}
+/* ---- toque de Halloween: solo en octubre, sin mover nada de sitio ---- */
+body.halloween{background-image:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(122,52,170,.10),transparent 70%)}
+body.halloween .topbar{border-bottom-color:transparent;
+  box-shadow:inset 0 -1px 0 rgba(255,138,0,.45), 0 1px 0 rgba(122,52,170,.35)}
+body.halloween .logo:after{content:'🎃';font-size:.7em;margin-left:6px;vertical-align:middle;
+  display:inline-block;animation:calab 3.8s ease-in-out infinite}
+@keyframes calab{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg) translateY(-1px)}}
+/* telaraña en la esquina, casi transparente */
+body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150' fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='.8'%3E%3Cpath d='M0 0L150 150M0 0L150 70M0 0L70 150M0 0L150 15M0 0L15 150'/%3E%3Cpath d='M28 6Q22 22 6 28M58 13Q44 44 13 58M92 20Q70 70 20 92M128 28Q98 98 28 128'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:0 0;background-size:150px}
+@media(prefers-reduced-motion:reduce){ body.halloween .logo:after{animation:none} }
+/* ---- lamina de novedades del recap ---- */
+.rnovs{width:min(440px,92vw);display:flex;flex-direction:column;gap:9px;margin-top:6px;text-align:left}
+.rnov{display:flex;align-items:center;gap:12px;padding:8px 11px;background:rgba(255,255,255,.04);
+  border:1px solid var(--line);animation:lgUp .45s both}
+.rnov:nth-child(2){animation-delay:.08s} .rnov:nth-child(3){animation-delay:.16s}
+.rnov:nth-child(4){animation-delay:.24s} .rnov:nth-child(5){animation-delay:.32s}
+.rnov .ra{width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rnov .ra img{width:100%;height:100%;object-fit:contain}
+.rnov .ra span{font-size:30px}
+.rnov .rt b{display:block;font-family:'Barlow Condensed';font-size:15px;letter-spacing:.1em;color:var(--amber)}
+.rnov .rt small{font-size:12px;color:var(--muted);line-height:1.35}
+/* ---- llamar o escribir al cliente de la instalacion de hoy ---- */
+.acliacc{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.smsbtn{background:none;border:1px solid var(--cyan);color:var(--cyan);padding:9px 18px;text-decoration:none;
+  font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.smsbtn:hover{background:var(--cyan);color:#04141a}
+/* ---- coleccion de stickers ---- */
+.stkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding:14px}
+.stk{background:#0f1216;border:1px solid var(--line);padding:9px 7px 10px;cursor:pointer;color:var(--txt);
+  text-align:center;transition:border-color .14s,transform .12s}
+.stk:not(.bloq):hover{border-color:var(--gold);transform:translateY(-2px)}
+.stk.on{border-color:var(--gold);background:rgba(255,210,74,.08);box-shadow:0 0 22px rgba(255,210,74,.18)}
+.stk.bloq{cursor:not-allowed;opacity:.5}
+.stk img{width:100%;max-width:110px;aspect-ratio:1;object-fit:contain;display:block;margin:0 auto}
+.stk.bloq img{filter:grayscale(1) brightness(.45)}
+.stkn{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.08em;font-weight:700;margin-top:6px}
+.stkt{font-size:9px;letter-spacing:.12em;color:var(--dim);margin-top:1px}
+.stkest{font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.1em;margin-top:6px;color:var(--gold)}
+.stk.bloq .stkest{color:var(--dim)}
 /* ---- pase: recorrido de niveles ---- */
 .paseTop{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:15px}
 @media(max-width:640px){.paseTop{grid-template-columns:1fr}}
@@ -1610,8 +1653,22 @@ const XP = {cierre:5, voice:5, dia:10, logro:60, medalla:20};
 const TEMPORADAS = [
   {desde:'0000-00', n:1, nombre:'NUKETOWN', lema:'La primera operación'},
   {desde:'2026-09', n:2, nombre:'STRIKE LEADER', lema:'Focus. Adapt. Dominate.',
-   poster:'s2/promo.webp'}
+   poster:'s2/promo.webp'},
+  {desde:'2026-10', n:3, nombre:'THE HAUNTING', lema:'En Marvin consigues los BB',
+   poster:'s3/promo.webp'}
 ];
+
+/* Lo nuevo de cada mes: sale en el recap justo antes de arrancar, y en el
+   anuncio de temporada. La clave es el mes en que se estrena. */
+const NOVEDADES = {
+  '2026-10': [
+    {img:'badges/bloodthirsty.webp', t:'BLOODTHIRSTY', d:'1 venta en 5 días laborables seguidos'},
+    {img:'badges/jack.webp',         t:'JACK OF ALL TRADES', d:'Internet + celular + voice en la misma semana'},
+    {img:'badges/poketech.webp',     t:'POKETECH', d:'Captura un técnico nuevo en la Pokédex'},
+    {ico:'💬', t:'TEXTO AL CLIENTE', d:'Desde el aviso de instalaciones de hoy, un toque y le escribes'},
+    {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'}
+  ]
+};
 function temporadaDe(clave){
   const c = clave || (mesActual().anio+'-'+mesActual().mes);
   return TEMPORADAS.filter(t => t.desde <= c).slice(-1)[0] || TEMPORADAS[0];
@@ -1619,6 +1676,50 @@ function temporadaDe(clave){
 const temporada = () => temporadaDe();
 
 /* set de la temporada 2: los fondos, emotes y el sticker del jefe */
+/* temporada 3, THE HAUNTING: los seis emblemas de Halloween y Marvin de premio */
+const COS_S3 = {
+  fondo: [
+    {k:'',          n:'Sin fondo',      lv:0},
+    {k:'s3niebla',  n:'NIEBLA',         lv:10, css:'radial-gradient(ellipse at 30% 110%,#5b2a86,transparent 60%),radial-gradient(ellipse at 80% -10%,#2b1640,transparent 55%),linear-gradient(160deg,#110a1a,#06040a)'},
+    {k:'s3calab',   n:'CALABAZAR',      lv:20, css:'radial-gradient(ellipse at 50% 120%,#ff7a00,transparent 58%),radial-gradient(ellipse at 15% 0%,#3a1a00,transparent 50%),linear-gradient(160deg,#1a0c02,#080402)'},
+    {k:'s3cement',  n:'CEMENTERIO',     lv:30, css:'radial-gradient(ellipse at 70% 0%,#cfe8ff33,transparent 45%),radial-gradient(ellipse at 50% 130%,#2f4a36,transparent 60%),linear-gradient(170deg,#0c1412,#030605)'},
+    {k:'s3sangre',  n:'LUNA DE SANGRE', lv:42, css:'radial-gradient(circle at 75% 18%,#ff3b2f 0 7%,#7a0f0a 8%,transparent 30%),linear-gradient(170deg,#1c0505,#050101)', anim:false}
+  ],
+  titulo: [
+    {k:'',                n:'Sin título',      lv:0},
+    {k:'NOVATO MALDITO',  n:'NOVATO MALDITO',  lv:3},
+    {k:'SEPULTURERO',     n:'SEPULTURERO',     lv:15},
+    {k:'CAZADOR DE ALMAS',n:'CAZADOR DE ALMAS',lv:25},
+    {k:'EXORCISTA',       n:'EXORCISTA',       lv:35},
+    {k:'REAPER',          n:'REAPER',          lv:45},
+    {k:'EN MARVIN',       n:'EN MARVIN',       lv:50}
+  ],
+  emote: [
+    {k:'',            n:'Ninguno',     lv:0},
+    {k:'s3calabaza',  n:'CALABAZA',    lv:5,  img:'s3/em-calabaza.webp'},
+    {k:'s3gato',      n:'GATO NEGRO',  lv:18, img:'s3/em-gato.webp'},
+    {k:'s3granada',   n:'GRANADA',     lv:26, img:'s3/em-granada.webp'},
+    {k:'s3zombi',     n:'ZOMBI',       lv:32, img:'s3/em-zombi.webp'},
+    {k:'s3espectro',  n:'ESPECTRO',    lv:42, img:'s3/em-espectro.webp'},
+    {k:'s3fantasma',  n:'FANTASMA',    lv:45, img:'s3/em-fantasma.webp'},
+    {k:'s3marvin',    n:'EN MARVIN',   lv:50, img:'s3/sticker-marvin.webp', legendario:true}
+  ],
+  marco: [
+    {k:'',       n:'Sin marco',  lv:0},
+    {k:'bronce', n:'BRONCE',     lv:8},
+    {k:'plata',  n:'PLATA',      lv:22},
+    {k:'oro',    n:'ORO',        lv:38},
+    {k:'legend', n:'LEGENDARIO', lv:50}
+  ],
+  color: [
+    {k:'',       n:'Blanco', lv:0},
+    {k:'cian',   n:'CIAN',   lv:12},
+    {k:'lima',   n:'LIMA',   lv:28},
+    {k:'ambar',  n:'ÁMBAR',  lv:40},
+    {k:'dorado', n:'DORADO', lv:50}
+  ]
+};
+
 const COS_S2 = {
   fondo: [
     {k:'',         n:'Sin fondo',   lv:0},
@@ -1707,7 +1808,7 @@ const CAT_LABEL = {fondo:'Fondo del perfil', titulo:'Título', emote:'Emote',
                    marco:'Marco del avatar', color:'Color del nombre'};
 
 /* el catalogo vigente segun la temporada en curso */
-const SETS = {1: COS_S1, 2: COS_S2};
+const SETS = {1: COS_S1, 2: COS_S2, 3: COS_S3};
 function catalogo(){ return SETS[temporada().n] || COS_S1; }
 
 /* busca en el catalogo de ahora y, si no esta, en todos: alguien puede llevar
@@ -1742,13 +1843,26 @@ const LOGROS = [
   {k:'overwatch', l:'OVERWATCH',            sub:'10 TV en una semana',       per:'semana', meta:10, color:'#60a5fa', mide:t=>t.tv},
   {k:'tactical',  l:'TACTICAL INSERTION',   sub:'5 celulares en una semana', per:'semana', meta:5,  color:'#4ade80', mide:t=>t.celular},
   {k:'command',   l:'COMMAND CENTER',       sub:'10 voice en una semana',    per:'semana', meta:10, color:'#fbbf24', mide:t=>t.voice},
-  {k:'mission',   l:'MISSION ACCOMPLISHED', sub:`${META_PTS} puntos en el mes`, per:'mes', meta:META_PTS, color:'#a3e635', mide:t=>t.pts}
+  {k:'mission',   l:'MISSION ACCOMPLISHED', sub:`${META_PTS} puntos en el mes`, per:'mes', meta:META_PTS, color:'#a3e635', mide:t=>t.pts},
+  /* Estos tres no salen de sumar un periodo, asi que se calculan aparte
+     (`especial`) en logrosEspeciales(). Ver alli como se cuenta cada uno. */
+  {k:'bloodthirsty', l:'BLOODTHIRSTY',      sub:'1 venta 5 días laborables seguidos', per:'dia', especial:true, color:'#e8402a'},
+  {k:'jack',         l:'JACK OF ALL TRADES',sub:'Internet + celular + voice en una semana', per:'semana', especial:true, color:'#a78bfa'},
+  {k:'poketech',     l:'POKETECH',          sub:'Captura 1 técnico en la Pokédex', per:'mes', especial:true, color:'#ff8a00'}
 ];
 const logroBy = k => LOGROS.find(l=>l.k===k);
 const imgLogro = k => `badges/${k}.webp`;
 
 /* la fecha completa de un cierre: `d` viene como MM/DD y el año va aparte */
-const isoDeVenta = s => s.d && s.anio ? `${s.anio}-${s.d.replace('/','-')}` : null;
+/* `anio` es el del mes en que CUENTA la venta, que ya no tiene por que ser el
+   del cierre: lo cerrado el 30 de diciembre con cita en enero cuenta en enero.
+   Si el mes del cierre va por delante del mes que cuenta, es del año anterior. */
+const isoDeVenta = s => {
+  if(!s.d || !s.anio) return null;
+  const [mm, dd] = s.d.split('/');
+  const anio = (s.mes && Number(mm) > Number(s.mes)) ? Number(s.anio) - 1 : s.anio;
+  return `${anio}-${mm}-${dd}`;
+};
 
 /* semana ISO (lunes a domingo), que es como cuenta la gente la semana */
 function semanaISO(iso){
@@ -2084,18 +2198,63 @@ function logrosAlcanzados(uid){
   const out = [];
   ['dia','semana','mes'].forEach(per=>{
     const porPer = totalesPorPeriodo(uid, per);
-    LOGROS.filter(L => L.per === per).forEach(L=>{
+    LOGROS.filter(L => L.per === per && !L.especial).forEach(L=>{
       Object.keys(porPer).forEach(p=>{
         if(L.mide(porPer[p]) >= L.meta) out.push({tipo:L.k, periodo:p, owner:uid});
       });
     });
   });
+  return out.concat(logrosEspeciales(uid));
+}
+
+/* el siguiente dia laborable (lunes a viernes) despues de una fecha ISO */
+function sigLaborable(iso){
+  const d = new Date(iso + 'T12:00:00');
+  do { d.setDate(d.getDate() + 1); } while(d.getDay() === 0 || d.getDay() === 6);
+  return isoLocal(d);
+}
+/* las capturas de la Pokedex cuentan desde que existe la medalla: las de antes
+   no se regalan de golpe */
+const POKETECH_DESDE = '2026-10';
+
+function logrosEspeciales(uid){
+  const out = [];
+  const ventas = salesOf(uid);
+
+  /* BLOODTHIRSTY: al menos una venta en 5 dias laborables seguidos. El sabado y
+     el domingo ni suman ni cortan la racha. Cada 5 seguidos es uno: una racha
+     de 10 da dos. Va fechado el quinto dia. */
+  const dias = [...new Set(ventas.map(isoDeVenta).filter(Boolean))]
+    .filter(iso => { const w = new Date(iso+'T12:00:00').getDay(); return w !== 0 && w !== 6; })
+    .sort();
+  let racha = 0, prev = null;
+  dias.forEach(iso=>{
+    racha = (prev && sigLaborable(prev) === iso) ? racha + 1 : 1;
+    if(racha === 5){ out.push({tipo:'bloodthirsty', periodo:iso, owner:uid}); racha = 0; }
+    prev = iso;
+  });
+
+  /* JACK OF ALL TRADES: internet, celular y voice en la misma semana. El tipo
+     de linea da igual, que esto es de los divertidos. */
+  const sem = totalesPorPeriodo(uid, 'semana');
+  Object.keys(sem).forEach(p=>{
+    if(sem[p].internet && sem[p].celular && sem[p].voice) out.push({tipo:'jack', periodo:p, owner:uid});
+  });
+
+  /* POKETECH: meter al menos un tecnico nuevo en la Pokedex en el mes */
+  const meses = new Set(INSTALADORES
+    .filter(i => (i.capturadoPor || i.porQuien) === uid && i.creado)
+    .map(i => { const d = new Date(i.creado); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })
+    .filter(m => m >= POKETECH_DESDE));
+  meses.forEach(m => out.push({tipo:'poketech', periodo:m, owner:uid}));
+
   return out;
 }
 
 /* guarda los que falten. El id fijo hace que repetir esto no duplique nada */
 async function publicarLogros(){
-  if(!SALES.length) return;
+  /* POKETECH se gana sin vender: con capturar un tecnico basta */
+  if(!SALES.length && !INSTALADORES.length) return;
   /* primer candado: si todavia no se que hay guardado, no escribo nada */
   if(!logrosCargados) return;
 
@@ -2133,6 +2292,7 @@ function escucharInstaladores(){
     INSTALADORES = snap.docs.map(d=>({id:d.id, ...d.data()}))
       .sort((a,b)=> (a.zona||'').localeCompare(b.zona||'') || (a.nm||'').localeCompare(b.nm||''));
     if(tab === 'poke') render();
+    publicarLogros();          // capturar un tecnico da POKETECH
   }, err => console.error('instaladores:', err));
 }
 
@@ -2145,11 +2305,13 @@ async function guardarInstalador(){
 
   const btn = $('#piGuardar');
   if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
+  /* `porQuien` es el ultimo que lo toco; la captura (la medalla POKETECH) es de
+     quien lo metio primero, y editarlo despues no se la quita */
   const datos = {nm, tel, zona, nota, actualizado: Date.now(), porQuien: ME};
   try{
     if(piEditando) await db().collection('instaladores').doc(piEditando).update(datos);
-    else await db().collection('instaladores').add({...datos, creado: Date.now()});
-    toast(piEditando ? 'INSTALADOR ACTUALIZADO' : `<b>${esc(nm)}</b> guardado`);
+    else await db().collection('instaladores').add({...datos, creado: Date.now(), capturadoPor: ME});
+    toast(piEditando ? 'INSTALADOR ACTUALIZADO' : `<b>${esc(nm)}</b> capturado en la Pokédex`);
     cerrarInstalador();
   }catch(err){
     console.error(err);
@@ -2213,6 +2375,7 @@ async function limpiarLookFueraDeAlcance(){
   Object.keys(catalogo()).forEach(cat=>{
     if(!mio[cat]) return;
     const o = cosBy(cat, mio[cat]);
+    if(cat === 'emote' && stickersDe(ME).includes(mio[cat])) return;   // los stickers ganados no caducan
     if(o.deOtraTemporada || o.lv > lv) quitar[cat] = '';
   });
   if(!Object.keys(quitar).length) return;
@@ -2468,7 +2631,26 @@ function progresoNivel(uid){
   const dentro = xp - lv*XP_NIVEL;
   return {lv, dentro, falta:XP_NIVEL-dentro, pct:dentro/XP_NIVEL*100, tope:false};
 }
-const tieneDesbloqueado = (uid,cat,k) => cosBy(cat,k).lv <= nivelDe(uid);
+/* ---------- STICKERS ----------
+   El premio del nivel 50 de cada temporada. A diferencia del resto del pase, el
+   sticker que ganas es tuyo para siempre: se guarda en `look.stickers` y se
+   puede volver a poner en cualquier temporada. */
+const STICKERS = Object.entries(SETS).flatMap(([n, s]) =>
+  (s.emote || []).filter(o => o.legendario).map(o => ({...o, temporada: Number(n),
+    tnombre: (TEMPORADAS.find(t => t.n === Number(n)) || {}).nombre || ''})));
+const stickersDe = uid => (lookDe(uid).stickers || []);
+
+const tieneDesbloqueado = (uid,cat,k) =>
+  (cat === 'emote' && stickersDe(uid).includes(k)) || cosBy(cat,k).lv <= nivelDe(uid);
+
+/* al llegar al 50, el sticker de la temporada entra en tu coleccion */
+async function guardarStickerGanado(){
+  const st = (catalogo().emote || []).find(o => o.legendario);
+  if(!st || stickersDe(ME).includes(st.k)) return;
+  LOOK[ME] = {...lookDe(ME), stickers: [...stickersDe(ME), st.k], owner: ME};
+  try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}); }
+  catch(err){ console.error('no se pudo guardar el sticker:', err); }
+}
 function ranked(){
   return SQUAD.map(s=>{
     /* de mis propias ventas salgo yo (y todos, si soy admin, que las tengo);
@@ -2711,6 +2893,7 @@ function renderTabs(){
 
 /* ==================== VIEWS ==================== */
 function render(){
+  document.body.classList.toggle('halloween', today.getMonth() === 9);   // octubre
   renderTabs();
   const r = ranked();
   const m = me();
@@ -3493,6 +3676,7 @@ function renderPaseChip(){
     el.animate([{transform:'scale(1)'},{transform:'scale(1.09)'},{transform:'scale(1)'}], {duration:520, easing:'ease-out'});
   }
   nivelVisto = p.lv;
+  if(p.tope) guardarStickerGanado();
   el.className = 'pasechip' + (p.tope ? ' tope' : '');
   el.innerHTML = `
     <div class="lvn">${p.lv}</div>
@@ -3565,6 +3749,8 @@ function viewPase(){
       ${filas.map(f => filaPase(f, mio)).join('')}
     </div>
 
+    ${stickersHTML()}
+
     ${vitrinaHTML(ME, true)}
   </div>`;
 
@@ -3573,6 +3759,34 @@ function viewPase(){
     const el = $('#ptf-' + filas[iProx].lv);
     if(el) setTimeout(()=>el.scrollIntoView({block:'center'}), 80);
   }
+}
+
+/* todos los stickers de nivel 50 que existen: los tuyos a color y para ponerte,
+   los que no tienes en gris con la temporada en que se sacaban */
+function stickersHTML(){
+  const mios = stickersDe(ME), puesto = lookDe(ME).emote || '';
+  const T = temporada();
+  return `
+  <div class="panel cut" style="margin-top:16px">
+    <div class="ph"><span class="tick" style="background:var(--gold)"></span>Tus stickers
+      <span class="right">${mios.length} DE ${STICKERS.length}</span></div>
+    <div class="stkgrid">
+      ${STICKERS.map(s=>{
+        const tengo = mios.includes(s.k), on = puesto === s.k;
+        const estaTemp = s.temporada === T.n;
+        return `<button class="stk ${tengo?'':'bloq'} ${on?'on':''}"
+          ${tengo ? `onclick="ponerse('emote','${on?'':s.k}')"` : 'disabled'}>
+          <img src="${s.img}" alt="${s.n}" loading="lazy">
+          <div class="stkn">${s.n}</div>
+          <div class="stkt">T${s.temporada} · ${s.tnombre}</div>
+          <div class="stkest">${on ? '✓ PUESTO · quitar' : tengo ? 'PONÉRMELO'
+             : estaTemp ? `🔒 nivel ${PASE_NIVELES} este mes` : '🔒 no lo sacaste'}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="vhint">El sticker del nivel ${PASE_NIVELES} es el único premio que no caduca:
+      lo que sacaste en otras temporadas te lo puedes seguir poniendo.</div>
+  </div>`;
 }
 
 /* una fila del recorrido: el nivel a la izquierda y sus recompensas al lado */
@@ -4211,14 +4425,15 @@ async function marcarRecapVisto(clave){
 const DIAS_DE_RECAP = 5;
 
 async function quizaRecap(){
-  if(dayNow > DIAS_DE_RECAP) return;
   const ant = mesAnterior();
-  if(recapYaVisto(ant.clave)) return;
+  /* si no toca recap, el anuncio de temporada sale igual: si no, quien ya lo
+     hubiera cerrado (o no tuviera ventas el mes pasado) nunca veria la promo */
+  if(dayNow > DIAS_DE_RECAP || recapYaVisto(ant.clave)){ quizaPromo(); return; }
   try{
     const d = await cargarRecap(ant.clave);
-    if(!d.t.cierres && !d.logros.length) { marcarRecapVisto(ant.clave); return; }  // mes vacio, nada que contar
+    if(!d.t.cierres && !d.logros.length){ marcarRecapVisto(ant.clave); quizaPromo(); return; }
     abrirRecap(d);
-  }catch(err){ console.error('recap:', err); }
+  }catch(err){ console.error('recap:', err); quizaPromo(); }
 }
 
 /* Abrirlo a mano es siempre un ensayo: se mira y no se gasta. Solo el que salta
@@ -4336,6 +4551,17 @@ function construirSlides(d){
     </div>
     ${d.puesto?`<div class="rline">Terminaste en el puesto <b style="color:var(--amber)">#${d.puesto}</b></div>`:''}`});
 
+  /* lo que se estrena este mes */
+  const nuevo = NOVEDADES[mesActual().anio + '-' + mesActual().mes];
+  if(nuevo && nuevo.length) s.push({clase:'novedades', html:`
+    <div class="rkick">LO NUEVO DE ${MESES[today.getMonth()]}</div>
+    <div class="rnovs">
+      ${nuevo.map(n=>`<div class="rnov">
+        <div class="ra">${n.img ? `<img src="${n.img}" alt="">` : `<span>${n.ico||'★'}</span>`}</div>
+        <div class="rt"><b>${n.t}</b><small>${n.d}</small></div>
+      </div>`).join('')}
+    </div>`});
+
   s.push({clase:'cierre', html:`
     <div class="rkick">Y AHORA</div>
     <h1 class="rmes" style="font-size:clamp(38px,11vw,74px)">${MESES[today.getMonth()]}</h1>
@@ -4405,10 +4631,12 @@ function abrirPromo(t, ensayo){
   $('#promoPoster').style.display = t.poster ? '' : 'none';
   /* la unica letra que ponemos nosotros: la condicion del nivel 50, que el
      poster no la trae y es la regla del mes */
-  $('#promoNota').innerHTML = sticker
+  const nuevo = NOVEDADES[t.desde] || [];
+  $('#promoNota').innerHTML = (sticker
     ? `<b>${sticker.n}</b> es el premio del nivel <b>${PASE_NIVELES}</b>, y al ${PASE_NIVELES}
        solo se llega cumpliendo los <b>${META_PTS} puntos</b> del mes.`
-    : 'Set nuevo de fondos, emotes y títulos.';
+    : 'Set nuevo de fondos, emotes y títulos.')
+    + (nuevo.length ? `<div class="promonuevo">Además: ${nuevo.map(n=>`<b>${n.t}</b>`).join(' · ')}</div>` : '');
   $('#promoOverlay').classList.add('on');
   arrancarConfetti('#promoConfetti');
 }
@@ -4567,13 +4795,25 @@ function openAlert(){
         <div class="tel">${s.tel}</div>
         <div class="pl">${planLabel(s.plan)}${isAdmin()?` · <span style="color:var(--amber)">${opBy(s.owner).nm}</span>`:''}</div>
       </div>
-      <a class="callbtn" href="tel:${s.tel.replace(/[^0-9+]/g,'')}">📞 Llamar</a>
+      <div class="acliacc">
+        <a class="callbtn" href="tel:${s.tel.replace(/[^0-9+]/g,'')}">📞 Llamar</a>
+        <a class="smsbtn" href="${smsInstalacion(s)}">💬 Texto</a>
+      </div>
     </div>`).join('');
   $('#alertOverlay').classList.add('on');
   alertShown = true;
   renderBell();
 }
 function closeAlert(){ $('#alertOverlay').classList.remove('on'); }
+
+/* Abre la app de mensajes del telefono con el texto ya escrito; el vendedor
+   solo le da a enviar. El "?&body=" es el que entienden a la vez iPhone y
+   Android: cada uno ignora la parte del otro. */
+function smsInstalacion(s){
+  const nombre = (s.nm || '').trim().split(/\s+/)[0] || '';
+  const msg = `Hola${nombre ? ' ' + nombre : ''}, te escribimos de Liberty PR: tu instalación está programada para hoy. ¡Gracias por elegirnos!`;
+  return `sms:${(s.tel||'').replace(/[^0-9+]/g,'')}?&body=${encodeURIComponent(msg)}`;
+}
 
 /* ==================== MEDALLAS: PANTALLA Y SONIDO ====================
    Al entrar, antes de ponerse a trabajar, el operador ve a pantalla completa
