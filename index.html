@@ -256,6 +256,8 @@ main::-webkit-scrollbar-thumb{background:#22262b}
 .sq .nm{flex:1;font-family:'Barlow Condensed';font-size:14px;letter-spacing:.1em;font-weight:600}
 .sq .pt{font-family:'Barlow Condensed';font-size:17px;font-weight:700}
 .sq .pt small{color:var(--dim);font-size:11px;letter-spacing:.1em;margin-left:4px}
+.sq .nm .desg{display:block;font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.08em;
+  color:var(--dim);font-weight:500;margin-top:1px}
 .medal{font-size:13px}
 
 /* lead sources */
@@ -675,6 +677,17 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .ptcard .tip{font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
 .promonuevo{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
 .promonuevo b{color:var(--amber2);font-weight:600}
+/* ---- visor del reporte ---- */
+.pdfov{z-index:96;padding:0}
+.pdfbox{width:100%;height:100%;display:flex;flex-direction:column;background:#0d0f12}
+.pdfbar{display:flex;align-items:center;gap:10px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));
+  border-bottom:1px solid var(--line);background:#0d0f12}
+.pdfbar .close{background:none;border:1px solid var(--line2);color:var(--txt);font-size:18px;cursor:pointer;
+  min-width:42px;min-height:42px}
+.pdfbar .pdft{flex:1;min-width:0;font-family:'Barlow Condensed';font-size:14px;letter-spacing:.1em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdfbar .btn-amber{padding:10px 14px;font-size:12.5px;white-space:nowrap}
+#pdfFrame{flex:1;width:100%;border:0;background:#fff}
 /* ---- cofres: chip y panel ---- */
 .cofrechip{position:relative;background:none;border:1px solid var(--line);color:var(--txt);cursor:pointer;
   padding:4px 9px;font-size:16px;line-height:1}
@@ -1481,6 +1494,18 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
   </div>
 </div>
 
+<!-- ============ VISOR DEL REPORTE ============ -->
+<div class="overlay pdfov" id="pdfOverlay">
+  <div class="pdfbox">
+    <div class="pdfbar">
+      <button class="close" onclick="cerrarPDF()" title="Cerrar">✕</button>
+      <div class="pdft" id="pdfTitulo"></div>
+      <button class="btn-amber" onclick="imprimirPDF()">⤓ GUARDAR PDF</button>
+    </div>
+    <iframe id="pdfFrame" title="Reporte"></iframe>
+  </div>
+</div>
+
 <!-- ============ COFRES ============ -->
 <div class="overlay" id="cofreOverlay" onclick="cerrarCofres()">
   <div class="modal cfmodal" onclick="event.stopPropagation()">
@@ -1735,16 +1760,19 @@ let dayNow, daysInMonth, monthName, TODAY_ISO;
    La compañia cambia las reglas de vez en cuando, asi que van por mes: cada mes
    se mide con las que tenia, y los meses viejos no se mueven al cambiar.
    - meta: puntos de la cuota.
-   - int50 / int100: internet + celular postpago para el 50% y el 100% del bono.
+   - int50 / int100: lo que hace falta para el 50% y el 100% del bono.
+   - celEnBono: si las lineas de celular postpago cuentan para ese bono o solo internet.
    - capTv / capCel: tope del mes de TV y de lineas de celular que cuentan.
      Lo que pase del tope se registra y se ve, pero no suma. */
 const REGLAS = [
-  {desde:'0000-00', meta:45, int50:13, int100:18, capTv:Infinity, capCel:Infinity},
-  {desde:'2026-10', meta:50, int50:18, int100:22, capTv:30,       capCel:3}
+  {desde:'0000-00', meta:45, int50:13, int100:18, capTv:Infinity, capCel:Infinity, celEnBono:true},
+  /* octubre: tope de 40 TV; los celulares suman puntos sin tope pero ya no
+     cuentan para la comision, que va con internet solo */
+  {desde:'2026-10', meta:50, int50:18, int100:22, capTv:40,       capCel:Infinity, celEnBono:false}
 ];
 const reglasDe = clave => REGLAS.filter(r => r.desde <= clave).slice(-1)[0] || REGLAS[0];
 /* las del mes que se esta mirando; las pone recalcFecha */
-let META_PTS, INT_50, INT_100, CAP_TV, CAP_CEL;
+let META_PTS, INT_50, INT_100, CAP_TV, CAP_CEL, CEL_EN_BONO;
 
 function recalcFecha(){
   dayNow      = today.getDate();
@@ -1752,7 +1780,7 @@ function recalcFecha(){
   monthName   = MESES[today.getMonth()];
   TODAY_ISO   = isoLocal(today);
   const r = reglasDe(TODAY_ISO.slice(0,7));
-  META_PTS = r.meta; INT_50 = r.int50; INT_100 = r.int100; CAP_TV = r.capTv; CAP_CEL = r.capCel;
+  META_PTS = r.meta; INT_50 = r.int50; INT_100 = r.int100; CAP_TV = r.capTv; CAP_CEL = r.capCel; CEL_EN_BONO = r.celEnBono;
 }
 recalcFecha();
 
@@ -1781,9 +1809,10 @@ const porConfirmar = s => estadoInst(s) === 'espera' && s.inst && s.inst.d && s.
 /* OJO: la foto de EL_FE está confirmada. Las otras 4 las asigné al azar —
    cambia el 'av' de cada uno si le toca otra. Archivos en avatars/ */
 /* pts/bonus/ventas se calculan de SALES, no se guardan aquí */
-/* cuantas cuentan para el bono: internet + celular postpago, con el tope de
+/* cuantas cuentan para el bono: internet, y celular postpago solo en los meses
+   en que la compañia lo contaba. Antes:
    celulares del mes (las lineas por encima del tope no suman en ningun lado) */
-const cuotaBono = t => t.internet + Math.min(t.celular, CAP_CEL);
+const cuotaBono = t => t.internet + (CEL_EN_BONO ? Math.min(t.celular, CAP_CEL) : 0);
 /* devuelve 0, 50 o 100 según esa cuenta */
 const bonoPct = n => n >= INT_100 ? 100 : n >= INT_50 ? 50 : 0;
 
@@ -1834,7 +1863,7 @@ const NOVEDADES = {
     {ico:'💬', t:'TEXTO AL CLIENTE', d:'Desde el aviso de instalaciones de hoy, un toque y le escribes'},
     {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'},
     {img:'cofre/care.webp', t:'CARE PACKAGES', d:'Cofre por vender 3 en un día y por entrar cada día: marcos de foto'},
-    {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono 18 / 22 · tope 30 TV y 3 celulares'}
+    {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono con solo internet: 18 / 22 · tope 40 TV · celulares suman sin tope'}
   ]
 };
 function temporadaDe(clave){
@@ -2955,6 +2984,13 @@ async function guardarStickerGanado(){
   try{ await db().collection('look').doc(ME).set({...LOOK[ME], actualizado: Date.now()}, {merge:true}); }
   catch(err){ console.error('no se pudo guardar el sticker:', err); }
 }
+/* de donde salen los puntos: "7 TV · 5 INT · 2 CEL". Solo lo que suma, ya con
+   el tope del mes aplicado, asi la cuenta cuadra con el total */
+function desglosePts(s){
+  const partes = [[s.tv,'TV'],[s.internet,'INT'],[s.celular,'CEL']].filter(([n])=>n>0);
+  return partes.length ? partes.map(([n,l])=>`${n} ${l}`).join(' · ') : 'sin puntos aún';
+}
+
 function ranked(){
   return SQUAD.map(s=>{
     /* de mis propias ventas salgo yo (y todos, si soy admin, que las tengo);
@@ -2964,13 +3000,17 @@ function ranked(){
       const t = stats(s.id);
       const cuota = cuotaBono(t);
       return {...s, pts:t.pts, bonus:t.bonus, internet:t.internet, celular:t.celular,
+              tv:Math.min(t.tv, CAP_TV),
               cuota, bono:bonoPct(cuota), ventas:t.cierres,
               espera:t.espera, esperaPts:t.esperaPts,
               instaladas:t.instaladas, agendadas:t.agendadas};
     }
     const r = RANKING[s.id] || {};
-    const cuota = r.cuota != null ? r.cuota : (r.internet||0)+(r.celular||0);
+    /* la cuota se recalcula aqui con las reglas de hoy: la publicada la hizo el
+       telefono del otro, que puede ir con una version vieja de la app */
+    const cuota = cuotaBono({internet:r.internet||0, celular:r.celular||0});
     return {...s, pts:r.pts||0, bonus:r.voice||0, internet:r.internet||0, celular:r.celular||0,
+            tv:Math.min(r.tv||0, CAP_TV),
             cuota, bono:bonoPct(cuota), ventas:r.ventas||0,
             espera:r.espera||0, esperaPts:r.esperaPts||0,
             instaladas:r.instaladas||0, agendadas:r.agendadas||0, ajeno:true};
@@ -3350,7 +3390,9 @@ function viewLobby(){
               </div>
             </div>
             <div style="color:var(--dim);font-size:11.5px;margin-bottom:12px">
-              ${t.internet} internet + ${t.celular} ${t.celular===1?'línea':'líneas'} de celular
+              ${CEL_EN_BONO
+                ? `${t.internet} internet + ${t.celular} ${t.celular===1?'línea':'líneas'} de celular`
+                : `${t.internet} internet · los celulares ya no cuentan para el bono`}
             </div>
             <!-- barra con las dos marcas: 13 = 50%, 18 = 100% -->
             <div style="position:relative;height:8px;background:#12161a;overflow:hidden">
@@ -3384,7 +3426,8 @@ function viewLobby(){
             <div class="sq ${s.id===ME?'me':''}" onclick="verPerfil('${s.id}')" title="Ver el expediente de ${s.nm}">
               <div class="pos">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</div>
               <div class="av">${s.av?`<img class="avimg" src="${s.av}" alt="" onerror="this.parentNode.textContent='${s.nm.slice(0,2)}'">`:s.nm.slice(0,2)}</div>
-              <div class="nm">${s.id===ME?'TÚ':s.nm}</div>
+              <div class="nm">${s.id===ME?'TÚ':s.nm}
+                <small class="desg">${desglosePts(s)}</small></div>
               <div class="pt">${s.pts}<small>PTS</small></div>
             </div>`).join('')}
         </div>
@@ -3536,15 +3579,24 @@ function exportarPDF(scope){
     </tr></tfoot>
   </table>
 
-  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular postpago, cada internet y cada TV suman 1 punto, con tope de ${CAP_TV===Infinity?"—":CAP_TV} TV y ${CAP_CEL===Infinity?"—":CAP_CEL} celulares al mes; el voice de casa y las líneas prepago son bono y no suman.</div>
-  <script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>
+  <div class="pie">Call of Sales · registro interno del escuadrón. Cada línea de celular postpago, cada internet y cada TV suman 1 punto, ${CAP_TV===Infinity?"":"con tope de "+CAP_TV+" TV al mes"}${CAP_CEL===Infinity?"":" y "+CAP_CEL+" celulares"}; el voice de casa y las líneas prepago son bono y no suman.</div>
 </body></html>`;
 
-  const w = window.open('', '_blank');
-  if(!w){ toast('El navegador bloqueó la ventana. Permite las ventanas emergentes.'); return; }
-  w.document.write(html);
-  w.document.close();
+  /* Se abre dentro de la app y no en otra ventana: en la app instalada en el
+     telefono la ventana nueva salia sin boton para volver y habia que cerrar
+     la app entera. Aqui hay X, y el boton imprime solo el reporte. */
+  $('#pdfFrame').srcdoc = html;
+  $('#pdfTitulo').textContent = 'Cierres ' + monthName + ' — ' + titular;
+  $('#pdfOverlay').classList.add('on');
 }
+
+/* el dialogo de imprimir del telefono trae "Guardar como PDF" y "Compartir" */
+function imprimirPDF(){
+  const f = $('#pdfFrame');
+  try{ f.contentWindow.focus(); f.contentWindow.print(); }
+  catch(e){ toast('No se pudo abrir el diálogo de imprimir'); }
+}
+function cerrarPDF(){ $('#pdfOverlay').classList.remove('on'); $('#pdfFrame').srcdoc = ''; }
 
 function prodPills(s){
   const n = lineasCel(s);
@@ -3674,8 +3726,8 @@ function viewSquad(){
   $('#view').innerHTML = `
   <div class="gridwrap">
     <div class="notice">Ranking por <b>cantidad de puntos</b>. Cada línea de celular <b>postpago</b>, cada internet y cada TV suman 1. El voice de casa y las líneas <b>prepago</b> van aparte y no suman.${
-      CAP_TV!==Infinity ? ` Topes del mes: <b>${CAP_TV} TV</b> y <b>${CAP_CEL} celulares</b> — lo que pase de ahí no suma.` : ''}
-      Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>internet + celular postpago</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
+      CAP_TV!==Infinity ? ` Tope del mes: <b>${CAP_TV} TV</b>${CAP_CEL!==Infinity?` y <b>${CAP_CEL} celulares</b>`:''} — lo que pase de ahí no suma.` : ''}
+      Meta del mes: <b>${META_PTS} pts</b>. Para el bono cuentan <b>${CEL_EN_BONO ? "internet + celular postpago" : "solo internet"}</b>: <b>${INT_50} para el 50%</b> y <b>${INT_100} para el 100%</b>.</div>
     <div class="panel cut">
       <div class="ph"><span class="tick" style="background:var(--lime)"></span>Leaderboard · ${monthName}
         <span class="right">${sal.quedan
@@ -5527,7 +5579,7 @@ function renderBell(){
     (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda(); cerrarCofres();
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda(); cerrarCofres(); cerrarPDF();
   if($('#lvOverlay').classList.contains('on')) cerrarSubida();
   if($('#promoOverlay').classList.contains('on')) cerrarPromo();
   if($('#recapOverlay').classList.contains('on')) cerrarRecap(); }
