@@ -1766,9 +1766,10 @@ let dayNow, daysInMonth, monthName, TODAY_ISO;
      Lo que pase del tope se registra y se ve, pero no suma. */
 const REGLAS = [
   {desde:'0000-00', meta:45, int50:13, int100:18, capTv:Infinity, capCel:Infinity, celEnBono:true},
-  /* octubre: tope de 40 TV; los celulares suman puntos sin tope pero ya no
-     cuentan para la comision, que va con internet solo */
-  {desde:'2026-10', meta:50, int50:18, int100:22, capTv:40,       capCel:Infinity, celEnBono:false}
+  /* octubre: tope de 40 TV; los celulares suman puntos sin tope y, el postpago,
+     tambien cuenta para la comision junto al internet (la compañia lo quito a
+     principios de mes y lo devolvio; vale para octubre entero) */
+  {desde:'2026-10', meta:50, int50:18, int100:22, capTv:40,       capCel:Infinity, celEnBono:true}
 ];
 const reglasDe = clave => REGLAS.filter(r => r.desde <= clave).slice(-1)[0] || REGLAS[0];
 /* las del mes que se esta mirando; las pone recalcFecha */
@@ -1863,7 +1864,7 @@ const NOVEDADES = {
     {ico:'💬', t:'TEXTO AL CLIENTE', d:'Desde el aviso de instalaciones de hoy, un toque y le escribes'},
     {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'},
     {img:'cofre/care.webp', t:'CARE PACKAGES', d:'Cofre por vender 3 en un día y por entrar cada día: marcos de foto'},
-    {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono con solo internet: 18 / 22 · tope 40 TV · celulares suman sin tope'}
+    {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono con internet + celular postpago: 18 / 22 · tope 40 TV'}
   ]
 };
 function temporadaDe(clave){
