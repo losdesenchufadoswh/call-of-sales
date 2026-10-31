@@ -483,29 +483,48 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .namebtn{background:none;border:0;cursor:pointer;color:inherit;font:inherit;padding:0}
 .namebtn:hover b{color:var(--amber)}
 
-/* ---------- RADIO / CHAT ---------- */
-.chatwrap{max-width:900px;margin:0 auto}
-.chatlog{height:calc(100vh - 250px);min-height:280px;overflow-y:auto;padding:14px}
-.chatlog::-webkit-scrollbar{width:8px}
-.chatlog::-webkit-scrollbar-thumb{background:#22262b}
-.msg{display:flex;gap:11px;margin-bottom:14px;align-items:flex-start}
-.msg .mav{width:36px;height:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--line2);background:#191d22;
-  display:grid;place-items:center;font-family:'Barlow Condensed';font-size:12px;font-weight:700;color:var(--muted)}
-.msg .body{flex:1;min-width:0}
-.msg .meta{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
-.msg .meta b{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.12em;font-weight:700}
-.msg .meta span{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
-.msg .txt{background:#12161a;border:1px solid var(--line);padding:9px 12px;font-size:14px;line-height:1.45;
-  display:inline-block;max-width:100%;word-wrap:break-word}
-.msg.mine .txt{background:rgba(216,255,46,.09);border-color:rgba(216,255,46,.28)}
-.msg.mine .meta b{color:var(--lime)}
-.chatbar{display:flex;gap:9px;padding:12px 14px;border-top:1px solid var(--line);background:rgba(8,9,11,.6)}
-.chatbar input{flex:1;background:#08090b;border:1px solid var(--line2);color:var(--txt);padding:12px;
-  font-family:'Barlow';font-size:14px;outline:none}
-.chatbar input:focus{border-color:var(--lime)}
-.chatbar button{background:var(--lime);border:0;color:#0b0d06;padding:0 22px;cursor:pointer;
-  font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.16em;text-transform:uppercase}
-.chatbar button:hover{background:#e6ff5c}
+/* ---------- ROTACION: a quien le toca la proxima venta ---------- */
+.rota{min-height:calc(100dvh - 150px);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:22px;padding:24px 16px 32px;text-align:center;
+  background:radial-gradient(ellipse 60% 45% at 50% 32%,rgba(255,210,74,.10),transparent 70%)}
+.rkick{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.34em;color:var(--muted)}
+.rturno{display:flex;flex-direction:column;align-items:center;gap:10px}
+.rav{width:min(190px,46vw);aspect-ratio:1;border-radius:50%;overflow:hidden;border:4px solid var(--gold);
+  background:#191d22;display:grid;place-items:center;font-family:'Barlow Condensed';font-size:54px;font-weight:700;color:var(--gold);
+  box-shadow:0 0 0 6px rgba(255,210,74,.12),0 0 46px rgba(255,210,74,.45);animation:rLatir 2.4s ease-in-out infinite}
+.rav img{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes rLatir{0%,100%{box-shadow:0 0 0 6px rgba(255,210,74,.12),0 0 40px rgba(255,210,74,.35)}50%{box-shadow:0 0 0 10px rgba(255,210,74,.18),0 0 70px rgba(255,210,74,.65)}}
+.rnom{font-family:'Barlow Condensed';font-weight:800;font-size:clamp(48px,13vw,92px);line-height:.95;letter-spacing:.06em;
+  color:var(--gold);text-shadow:0 0 28px rgba(255,210,74,.55)}
+.rtu{font-family:'Barlow Condensed';font-size:15px;letter-spacing:.3em;color:#0b0d06;background:var(--gold);padding:4px 14px}
+.rcola{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 4px;max-width:640px}
+.rflecha{color:var(--dim);font-size:20px}
+.rop{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;min-width:70px;
+  filter:grayscale(1);opacity:.45}
+.rop.on{filter:none;opacity:1}
+.rmini{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--line2);background:#191d22;
+  display:grid;place-items:center;font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:var(--muted)}
+.rmini img{width:100%;height:100%;object-fit:cover}
+.rop.on .rmini{border-color:var(--gold)}
+.rop b{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.1em;color:var(--muted)}
+.rop.on b{color:var(--gold)}
+.rop small{font-size:9px;letter-spacing:.18em;color:var(--dim)}
+.racc{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(340px,100%)}
+.rvendio{width:100%;padding:18px;border:0;cursor:pointer;background:var(--gold);color:#120e02;
+  font-family:'Barlow Condensed';font-weight:800;font-size:24px;letter-spacing:.2em}
+.rvendio:hover:not(:disabled){filter:brightness(1.08)}
+.rvendio:disabled{background:#2a2d31;color:#6b7078;cursor:not-allowed}
+.rskip{width:100%;padding:11px;cursor:pointer;background:none;border:1px solid var(--line2);color:var(--muted);
+  font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.24em}
+.rskip:hover{border-color:var(--red);color:var(--red)}
+.rnota{font-size:12px;color:var(--dim)}
+.rlog{width:min(340px,100%);text-align:left;border-top:1px solid var(--line);padding-top:12px}
+.rlt{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.28em;color:var(--dim);margin-bottom:6px}
+.rlr{font-size:13px;color:var(--muted);padding:3px 0}
+.rlr span{display:inline-block;min-width:92px;color:var(--dim);font-variant-numeric:tabular-nums;font-size:12px}
+.rlr.vendio b{color:var(--green)} .rlr.skip b{color:var(--red)}
+nav.tabs button .rbadge{background:var(--gold);color:#120e02}
+@media(prefers-reduced-motion:reduce){ .rav{animation:none} }
 nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;padding:1px 6px;font-size:10px;
   margin-left:6px;vertical-align:middle;font-weight:700}
 
@@ -1463,7 +1482,7 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
                onkeydown="if(event.key==='Enter')saveRename()">
       </div>
       <div class="hint" style="text-transform:none;letter-spacing:.02em">
-        Máximo 14 caracteres. Así te ven en el ranking, en la radio y en tu perfil.
+        Máximo 14 caracteres. Así te ven en el ranking, en la rotación y en tu perfil.
       </div>
     </div>
     <div class="mf"><div class="grow"></div>
@@ -2225,19 +2244,6 @@ const SEED_JULIO = [];
   });
 })();
 
-/* chat del escuadrón (solo en memoria por ahora) */
-let CHAT = [
-  {u:'carlos', txt:'Buenos días escuadrón. Cierre de mes en 2 días, vamos con todo.',        t:'07:42'},
-  {u:'felix',  txt:'Ya cerré 2 esta mañana. El barrio de Bayamón está caliente 🔥',          t:'08:15'},
-  {u:'angel',  txt:'Alguien sabe si hay promo nueva en el 1GB?',                              t:'09:03'},
-  {u:'carlos', txt:'Sí, bajó $10 esta semana. Úsenlo de gancho en los 3play.',                t:'09:07'},
-  {u:'elwin',  txt:'Buenísimo. Yo tengo 3 citas de instalación hoy.',                         t:'09:20'},
-  {u:'elfe',   txt:'Ojo con los que ya tienen internet, solo cuenten lo que contó la venta.', t:'09:31'},
-  {u:'felix',  txt:'Facto. A mí me pasó ayer con un 3play, solo me contó TV.',                t:'09:34'},
-  {u:'angel',  txt:'Carlos va arriba otra vez 😤 esta semana te alcanzo',                     t:'10:02'},
-  {u:'carlos', txt:'Te espero 😎',                                                            t:'10:04'}
-];
-let chatSeen = 0;
 
 /* la fecha del sistema se declara arriba, junto a los helpers de instalación */
 
@@ -2293,6 +2299,7 @@ function escucharVentas(){
   escucharLook();
   escucharInstaladores();
   escucharCofre();
+  escucharRotacion();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -3322,18 +3329,18 @@ const TABS = [
   {k:'squad',  l:'Escuadrón'},
   {k:'pase',   l:'Pase'},
   {k:'poke',   l:'Pokédex'},
-  {k:'radio',  l:'Radio'},
+  {k:'rota',   l:'Rotación'},
   {k:'mando',  l:'Mando'}
 ];
 let tab='lobby';
 function setTab(k){
   if(k==='mando' && !isAdmin()) k='lobby';
-  tab=k; if(k==='radio') chatSeen = CHAT.length; render();
+  tab=k; render();
 }
 function renderTabs(){
-  const unread = CHAT.length - chatSeen;
   $('#tabs').innerHTML = TABS.filter(t => t.k!=='mando' || isAdmin()).map(t=>{
-    const b = (t.k==='radio' && unread>0) ? `<span class="badge">${unread}</span>` : '';
+    /* si te toca, la pestaña te lo dice desde donde estes */
+    const b = (t.k==='rota' && ROTA && turnoActual()===ME) ? `<span class="badge rbadge">TÚ</span>` : '';
     return `<button class="${t.k===tab?'on':''}" onclick="setTab('${t.k}')">${t.l}${b}</button>`;
   }).join('');
 }
@@ -3360,7 +3367,7 @@ function render(){
   else if(tab==='pase') viewPase();
   else if(tab==='poke') viewPoke();
   else if(tab==='perfil') viewPerfil();
-  else if(tab==='radio') viewRadio();
+  else if(tab==='rota') viewRotacion();
   else if(tab==='mando' && isAdmin()) viewMando();
   else { tab='lobby'; renderTabs(); viewLobby(); }
 }
@@ -4675,47 +4682,96 @@ function viewPerfil(){
   <div class="gridwrap" style="padding-top:0">${vitrinaHTML(uid, yo)}</div>`;
 }
 
-function viewRadio(){
-  chatSeen = CHAT.length;
-  $('#view').innerHTML = `
-  <div class="chatwrap">
-    <div class="panel cut">
-      <div class="ph"><span class="tick" style="background:var(--lime)"></span>Radio del escuadrón
-        <span class="right">${SQUAD.length} EN LÍNEA · CANAL ABIERTO</span></div>
-      <div class="chatlog" id="chatlog">
-        ${CHAT.map(m=>{
-          const u = SQUAD.find(s=>s.id===m.u) || {nm:m.u, av:null};
-          const mine = m.u===ME;
-          return `<div class="msg ${mine?'mine':''}">
-            <div class="mav">${u.av?`<img class="avimg" src="${u.av}" alt="">`:u.nm.slice(0,2)}</div>
-            <div class="body">
-              <div class="meta"><b>${mine?'TÚ':u.nm}</b><span>${m.t}</span></div>
-              <div class="txt">${esc(m.txt)}</div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="chatbar">
-        <input id="chatInput" placeholder="Escribe al escuadrón..." autocomplete="off"
-               onkeydown="if(event.key==='Enter')sendMsg()">
-        <button onclick="sendMsg()">Enviar</button>
-      </div>
-    </div>
-    <div class="notice" style="margin-top:12px">Este chat vive solo en tu navegador por ahora — al refrescar vuelve al estado inicial. Con Firebase será en vivo entre todos.</div>
-  </div>`;
-  const log = $('#chatlog'); log.scrollTop = log.scrollHeight;
-  $('#chatInput').focus();
+/* ==================== ROTACION ====================
+   A quien le toca la proxima venta. Vive en `rotacion/escuadron`: `turno` es el
+   id del que le toca y `log` las ultimas jugadas. No se reinicia por dia: si
+   ayer se quedo en Carlos, hoy sigue Carlos. VENDIO lo da el del turno o el
+   mando; SKIP solo el mando. */
+let ROTA = null, unsubRota = null, rotaCargada = false;
+const rotaRef = () => db().collection('rotacion').doc('escuadron');
+const ordenRota = () => SQUAD.map(s => s.id);
+const turnoActual = () => (ROTA && ordenRota().includes(ROTA.turno)) ? ROTA.turno : ordenRota()[0];
+const siguienteDe = uid => { const o = ordenRota(); return o[(o.indexOf(uid) + 1) % o.length]; };
+
+function escucharRotacion(){
+  if(unsubRota){ unsubRota(); unsubRota = null; }
+  unsubRota = rotaRef().onSnapshot(snap=>{
+    const antes = rotaCargada ? turnoActual() : null;
+    ROTA = snap.exists ? snap.data() : {log:[]};
+    rotaCargada = true;
+    const ahora = turnoActual();
+    if(antes && antes !== ahora && ahora === ME) toast('🎯 <b>TE TOCA</b> la próxima venta');
+    if(tab === 'rota') render(); else renderTabs();
+  }, err => console.error('rotacion:', err));
 }
+
+async function moverRotacion(accion){
+  const quien = turnoActual();
+  if(accion === 'skip' && !isAdmin()) return;
+  if(accion === 'vendio' && quien !== ME && !isAdmin()) return;
+  if(accion === 'skip' && !confirm(`¿Saltar a ${opBy(quien).nm}? Le toca a ${opBy(siguienteDe(quien)).nm}.`)) return;
+  try{
+    /* transaccion: si dos tocan a la vez, solo uno mueve la rotacion */
+    await db().runTransaction(async tx=>{
+      const snap = await tx.get(rotaRef());
+      const d = snap.exists ? snap.data() : {};
+      const ahora = ordenRota().includes(d.turno) ? d.turno : ordenRota()[0];
+      if(ahora !== quien) throw new Error('movida');
+      const log = [...(d.log || []), {u: quien, a: accion, por: ME, ts: Date.now()}].slice(-40);
+      tx.set(rotaRef(), {turno: siguienteDe(quien), log, actualizado: Date.now()});
+    });
+    toast(accion === 'vendio'
+      ? `✓ <b>${opBy(quien).nm}</b> vendió · le toca a <b>${opBy(siguienteDe(quien)).nm}</b>`
+      : `⏭ Skip a <b>${opBy(quien).nm}</b> · le toca a <b>${opBy(siguienteDe(quien)).nm}</b>`);
+  }catch(err){
+    if(err.message === 'movida') toast('La rotación ya se movió, mira quién le toca ahora');
+    else { console.error(err); toast('No se pudo mover: ' + (err.code || err.message)); }
+  }
+}
+
+function viewRotacion(){
+  const turno = turnoActual(), t = opBy(turno), o = ordenRota();
+  /* la cola empieza en el que le toca y da la vuelta */
+  const i0 = o.indexOf(turno);
+  const cola = o.map((_, i) => o[(i0 + i) % o.length]);
+  const puedeVender = turno === ME || isAdmin();
+  const hora = ts => { const d = new Date(ts);
+    const dia = isoLocal(d) === HOY_REAL ? '' : `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} `;
+    return dia + d.toLocaleTimeString('es-PR', {hour:'numeric', minute:'2-digit'}); };
+  const log = ((ROTA && ROTA.log) || []).slice(-8).reverse();
+  $('#view').innerHTML = `
+  <div class="rota">
+    <div class="rkick">ROTACIÓN DE VENTAS · LE TOCA A</div>
+    <div class="rturno">
+      <div class="rav">${t.av ? `<img src="${t.av}" alt="">` : esc(t.nm.slice(0,2))}</div>
+      <div class="rnom">${esc(t.nm)}</div>
+      ${turno === ME ? `<div class="rtu">¡ES TU TURNO!</div>` : ''}
+    </div>
+
+    <div class="rcola">
+      ${cola.map((uid, i) => { const u = opBy(uid);
+        return `${i ? '<span class="rflecha">›</span>' : ''}<div class="rop ${i===0?'on':''}">
+          <div class="rmini">${u.av ? `<img src="${u.av}" alt="">` : esc(u.nm.slice(0,2))}</div>
+          <b>${esc(u.nm)}</b><small>${i===0 ? 'AHORA' : i===1 ? 'SIGUE' : (i+1)+'°'}</small></div>`; }).join('')}
+    </div>
+
+    <div class="racc">
+      <button class="rvendio" ${puedeVender ? `onclick="moverRotacion('vendio')"` : 'disabled'}>✓ VENDIÓ</button>
+      ${isAdmin() ? `<button class="rskip" onclick="moverRotacion('skip')">⏭ SKIP</button>` : ''}
+      ${!puedeVender ? `<div class="rnota">Solo ${esc(t.nm)} o el mando marcan la venta</div>` : ''}
+    </div>
+
+    ${log.length ? `<div class="rlog">
+      <div class="rlt">ÚLTIMAS JUGADAS</div>
+      ${log.map(l => `<div class="rlr ${l.a}"><span>${hora(l.ts)}</span>
+        <b>${esc(opBy(l.u).nm)}</b> ${l.a === 'vendio' ? 'vendió' : 'skip' + (l.por !== l.u ? ' del mando' : '')}</div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
 /* tolera null y numeros: ahora tambien pasa por aqui el nombre del cliente y
    la nota del cierre, que pueden venir vacios */
 function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function sendMsg(){
-  const i = $('#chatInput'), txt = i.value.trim();
-  if(!txt) return;
-  const now = new Date();
-  CHAT.push({u:ME, txt, t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')});
-  viewRadio();
-}
 
 function viewMando(){
   const r = ranked();

@@ -92,6 +92,14 @@ service cloud.firestore {
       allow read, write: if soyAdmin() || (autenticado() && uid == miId());
     }
 
+    // Rotacion: a quien le toca la proxima venta. Todos la ven; la mueve el que
+    // tiene el turno (VENDIO) o el admin (VENDIO y SKIP). Solo nombres, sin clientes.
+    match /rotacion/{docId} {
+      allow read:   if autenticado();
+      allow create: if soyAdmin();
+      allow update: if soyAdmin() || (autenticado() && resource.data.turno == miId());
+    }
+
     match /instaladores/{docId} {
       allow read, write: if autenticado();
     }
