@@ -786,9 +786,33 @@ nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;paddin
 .marcofoto{position:absolute;width:330px;left:50%;top:calc(58px + 106px);transform:translate(-50%,-50%) translateY(14px);
   pointer-events:none;z-index:4}
 .marcofoto.leg{animation:legBrilla 2.2s ease-in-out infinite}
+/* el elite (season 4): mas dificil que el legendario, brilla en morado */
+@keyframes eliBrilla{0%,100%{filter:drop-shadow(0 0 10px rgba(178,108,255,.6))}50%{filter:drop-shadow(0 0 32px rgba(214,150,255,1)) brightness(1.18)}}
+.marcofoto.eli{animation:eliBrilla 2.2s ease-in-out infinite}
+.cfm.eli:not(.bloq){border-color:rgba(190,120,255,.7)}
+.cfm.eli .cfmr{color:#c99bff}
+.dropov.elite .droprays{opacity:.5;animation:lgSpin 6s linear infinite;
+  background:repeating-conic-gradient(from 0deg,rgba(190,120,255,1) 0deg 5deg,rgba(255,210,74,.8) 5deg 7deg,transparent 7deg 16deg)}
+.dropov.elite .dkick{color:#c99bff;font-size:16px}
+.dropov.elite .dimg{animation:lgPop .65s cubic-bezier(.18,1.5,.35,1) both, eliBrilla 1.8s ease-in-out .65s infinite}
+.dropov.elite .dnom{color:#e2c6ff;text-shadow:0 0 22px rgba(190,120,255,.8)}
+/* el grito al sacar legendario o elite */
+.domg{font-family:'Barlow Condensed';font-weight:800;font-style:italic;font-size:clamp(46px,14vw,84px);line-height:.9;
+  letter-spacing:.02em;color:var(--gold);text-shadow:0 0 26px rgba(255,210,74,.8),0 4px 0 #000;
+  animation:omgPop .7s cubic-bezier(.18,1.6,.35,1) both, omgTiembla .5s ease-in-out .7s 3}
+.dropov.elite .domg{color:#e9d2ff;text-shadow:0 0 30px rgba(190,120,255,.95),0 4px 0 #000}
+.domg small{display:block;font-size:.34em;font-style:normal;letter-spacing:.3em;opacity:.85;margin-top:4px}
+@keyframes omgPop{0%{transform:scale(3) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes omgTiembla{0%,100%{transform:none}25%{transform:translateX(-4px) rotate(-2deg)}75%{transform:translateX(4px) rotate(2deg)}}
 @media(prefers-reduced-motion:reduce){
-  .dropov .dropcaja,.dropov .droprays,.marcofoto.leg,.cofrechip.hay{animation:none!important}
+  .dropov .dropcaja,.dropov .droprays,.marcofoto.leg,.marcofoto.eli,.cofrechip.hay,.domg{animation:none!important}
 }
+/* ---- toque Pokémon de la season 4: solo en noviembre ---- */
+body.poke .topbar{border-bottom-color:transparent;
+  box-shadow:inset 0 -1px 0 rgba(255,210,74,.5), 0 1px 0 rgba(232,64,42,.35)}
+body.poke .logo:after{content:'⚡';font-size:.7em;margin-left:6px;vertical-align:middle;
+  display:inline-block;animation:calab 3.8s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){ body.poke .logo:after{animation:none} }
 /* ---- toque de Halloween: solo en octubre, sin mover nada de sitio ---- */
 body.halloween{background-image:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(122,52,170,.10),transparent 70%)}
 body.halloween .topbar{border-bottom-color:transparent;
@@ -1851,7 +1875,9 @@ const TEMPORADAS = [
   {desde:'2026-09', n:2, nombre:'STRIKE LEADER', lema:'Focus. Adapt. Dominate.',
    poster:'s2/promo.webp'},
   {desde:'2026-10', n:3, nombre:'THE HAUNTING', lema:'En Marvin consigues los BB',
-   poster:'s3/promo.webp'}
+   poster:'s3/promo.webp'},
+  {desde:'2026-11', n:4, nombre:'POKÉMON', lema:'¡Atrápalo ya!',
+   poster:'s4/promo.webp'}
 ];
 
 /* Lo nuevo de cada mes: sale en el recap justo antes de arrancar, y en el
@@ -1865,6 +1891,11 @@ const NOVEDADES = {
     {ico:'🃏', t:'TUS STICKERS', d:'Ponte cualquier sticker de nivel 50 que ya hayas ganado'},
     {img:'cofre/care.webp', t:'CARE PACKAGES', d:'Cofre por vender 3 en un día y por entrar cada día: marcos de foto'},
     {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono con internet + celular postpago: 18 / 22 · tope 40 TV'}
+  ],
+  '2026-11': [
+    {img:'s4/sticker-master.webp', t:'SEASON 4 · POKÉMON', d:'Pase nuevo: orbes de fuego, agua, hoja y rayo, y la Master Ball en el 50'},
+    {img:'cofre/melite.webp', t:'MARCO ÉLITE', d:'Nuevo en el care package · más difícil que el legendario (0.5%)'},
+    {ico:'😱', t:'OMG', d:'Si te sale el legendario o el élite, se entera todo el mundo'}
   ]
 };
 function temporadaDe(clave){
@@ -1872,6 +1903,48 @@ function temporadaDe(clave){
   return TEMPORADAS.filter(t => t.desde <= c).slice(-1)[0] || TEMPORADAS[0];
 }
 const temporada = () => temporadaDe();
+
+/* temporada 4, POKÉMON: los cuatro orbes del emblema y la Master Ball de premio */
+const COS_S4 = {
+  fondo: [
+    {k:'',          n:'Sin fondo',     lv:0},
+    {k:'s4hierba',  n:'HIERBA ALTA',   lv:10, css:'radial-gradient(ellipse at 50% 125%,#3fae4a,transparent 58%),radial-gradient(ellipse at 85% -10%,#1c4a22,transparent 55%),linear-gradient(160deg,#07160a,#020703)'},
+    {k:'s4trueno',  n:'TORMENTA',      lv:20, css:'radial-gradient(ellipse at 70% -15%,#ffd24a,transparent 50%),radial-gradient(ellipse at 20% 120%,#3a2f00,transparent 55%),linear-gradient(160deg,#141004,#050401)'},
+    {k:'s4volcan',  n:'VOLCÁN',        lv:30, css:'radial-gradient(ellipse at 50% 130%,#ff5a1f,transparent 58%),radial-gradient(ellipse at 15% 0%,#3a0c00,transparent 50%),linear-gradient(160deg,#1a0602,#070201)'},
+    {k:'s4cosmos',  n:'MASTER BALL',   lv:42, css:'radial-gradient(circle at 70% 20%,#b46cff,transparent 38%),radial-gradient(circle at 25% 85%,#3b6bff,transparent 40%),linear-gradient(150deg,#140a26,#05030c)', anim:true}
+  ],
+  titulo: [
+    {k:'',                  n:'Sin título',         lv:0},
+    {k:'ENTRENADOR',        n:'ENTRENADOR',         lv:3},
+    {k:'LÍDER DE GIMNASIO', n:'LÍDER DE GIMNASIO',  lv:15},
+    {k:'ALTO MANDO',        n:'ALTO MANDO',         lv:25},
+    {k:'CAMPEÓN',           n:'CAMPEÓN',            lv:35},
+    {k:'MAESTRO POKÉMON',   n:'MAESTRO POKÉMON',    lv:45},
+    {k:'ATRÁPALO YA',       n:'ATRÁPALO YA',        lv:50}
+  ],
+  emote: [
+    {k:'',          n:'Ninguno',     lv:0},
+    {k:'s4fuego',   n:'FUEGO',       lv:5,  img:'s4/em-fuego.webp'},
+    {k:'s4agua',    n:'AGUA',        lv:18, img:'s4/em-agua.webp'},
+    {k:'s4hoja',    n:'HOJA',        lv:30, img:'s4/em-hoja.webp'},
+    {k:'s4rayo',    n:'RAYO',        lv:42, img:'s4/em-rayo.webp'},
+    {k:'s4master',  n:'MASTER BALL', lv:50, img:'s4/sticker-master.webp', legendario:true}
+  ],
+  marco: [
+    {k:'',       n:'Sin marco',  lv:0},
+    {k:'bronce', n:'BRONCE',     lv:8},
+    {k:'plata',  n:'PLATA',      lv:22},
+    {k:'oro',    n:'ORO',        lv:38},
+    {k:'legend', n:'LEGENDARIO', lv:50}
+  ],
+  color: [
+    {k:'',       n:'Blanco', lv:0},
+    {k:'cian',   n:'CIAN',   lv:12},
+    {k:'lima',   n:'LIMA',   lv:28},
+    {k:'ambar',  n:'ÁMBAR',  lv:40},
+    {k:'dorado', n:'DORADO', lv:50}
+  ]
+};
 
 /* set de la temporada 2: los fondos, emotes y el sticker del jefe */
 /* temporada 3, THE HAUNTING: los seis emblemas de Halloween y Marvin de premio */
@@ -2006,7 +2079,7 @@ const CAT_LABEL = {fondo:'Fondo del perfil', titulo:'Título', emote:'Emote',
                    marco:'Marco del avatar', color:'Color del nombre'};
 
 /* el catalogo vigente segun la temporada en curso */
-const SETS = {1: COS_S1, 2: COS_S2, 3: COS_S3};
+const SETS = {1: COS_S1, 2: COS_S2, 3: COS_S3, 4: COS_S4};
 function catalogo(){ return SETS[temporada().n] || COS_S1; }
 
 /* busca en el catalogo de ahora y, si no esta, en todos: alguien puede llevar
@@ -2482,7 +2555,8 @@ async function publicarLogros(){
 /* ==================== COFRES (CARE PACKAGE) ====================
    Dos formas de ganarlos: cada 3 ventas en un mismo dia da uno, y entrar a la
    app da uno por dia en ciclos de 7. Dentro van marcos para la foto del perfil:
-   seis normales a partes iguales y el legendario con un 1% de salir.
+   seis normales a partes iguales, el legendario con un 1% de salir y el elite
+   (season 4) con un 0.5%, un poco mas dificil que el legendario.
 
    Vive en `cofres/{uid}`. `reclamos` guarda la clave de cada cofre ya dado
    ("v:2026-10-01:0" por ventas, "l:2026-10-01" por entrar), asi recalcular
@@ -2494,9 +2568,13 @@ const MARCOS_FOTO = [
   {k:'m4',   n:'GATO NEGRO',   img:'cofre/m4.webp',   rar:'HALLOWEEN'},
   {k:'m5',   n:'CALABAZAS',    img:'cofre/m5.webp',   rar:'HALLOWEEN'},
   {k:'m6',   n:'CUERVO',       img:'cofre/m6.webp',   rar:'HALLOWEEN'},
-  {k:'mleg', n:'REY CALABAZA', img:'cofre/mleg.webp', rar:'LEGENDARIO', legendario:true}
+  {k:'mleg', n:'REY CALABAZA', img:'cofre/mleg.webp', rar:'LEGENDARIO', legendario:true},
+  {k:'melite', n:'MAESTRO ELEMENTAL', img:'cofre/melite.webp', rar:'ÉLITE', elite:true}
 ];
 const PROB_LEGENDARIO = 0.01;
+const PROB_ELITE = 0.005;
+const rarezaMarco = m => m.elite ? `ÉLITE · ${PROB_ELITE*100}%` : m.legendario ? `LEGENDARIO · ${PROB_LEGENDARIO*100}%` : m.rar;
+const claseMarco = m => m.elite ? 'eli' : m.legendario ? 'leg' : '';
 const VENTAS_POR_COFRE = 3;
 const LOGIN_CICLO = 7;
 const marcoFotoBy = k => MARCOS_FOTO.find(m => m.k === k);
@@ -2558,10 +2636,12 @@ async function repartirCofres(){
   finally{ repartiendo = false; }
 }
 
-/* 1% legendario; el resto, a partes iguales entre los seis normales */
+/* 1% legendario, 0.5% elite; el resto, a partes iguales entre los seis normales */
 function tirarMarco(){
-  if(Math.random() < PROB_LEGENDARIO) return marcoFotoBy('mleg');
-  const normales = MARCOS_FOTO.filter(m => !m.legendario);
+  const r = Math.random();
+  if(r < PROB_LEGENDARIO) return marcoFotoBy('mleg');
+  if(r < PROB_LEGENDARIO + PROB_ELITE) return marcoFotoBy('melite');
+  const normales = MARCOS_FOTO.filter(m => !m.legendario && !m.elite);
   return normales[Math.floor(Math.random() * normales.length)];
 }
 
@@ -3241,6 +3321,7 @@ function renderTabs(){
 /* ==================== VIEWS ==================== */
 function render(){
   document.body.classList.toggle('halloween', today.getMonth() === 9);   // octubre
+  document.body.classList.toggle('poke', today.getMonth() === 10);       // noviembre, season 4
   renderTabs();
   const r = ranked();
   const m = me();
@@ -3938,12 +4019,12 @@ function pintarCofres(){
     <div class="cfmarcos">
       ${MARCOS_FOTO.map(m=>{
         const cant = mios[m.k] || 0, on = puesto === m.k;
-        return `<button class="cfm ${cant?'':'bloq'} ${on?'on':''} ${m.legendario?'leg':''}"
+        return `<button class="cfm ${cant?'':'bloq'} ${on?'on':''} ${claseMarco(m)}"
           ${cant ? `onclick="ponerMarcoFoto('${on?'':m.k}')"` : 'disabled'}>
           <img src="${m.img}" alt="" loading="lazy">
           ${cant>1?`<span class="cfx">×${cant}</span>`:''}
           <div class="cfmn">${m.n}</div>
-          <div class="cfmr">${m.legendario ? 'LEGENDARIO · 1%' : 'HALLOWEEN'}</div>
+          <div class="cfmr">${rarezaMarco(m)}</div>
           <div class="cfme">${!cant ? '🔒' : on ? '✓ PUESTO · quitar' : 'PONÉRMELO'}</div>
         </button>`;
       }).join('')}
@@ -3982,6 +4063,7 @@ async function abrirCaja(){
   const m = tirarMarco();
   ov.classList.replace('listo', 'abriendo');
   if(m.legendario) ov.classList.add('legend');
+  if(m.elite) ov.classList.add('elite');
   sonidoLogro();
   try{
     const marcos = {...((COFRE && COFRE.marcos) || {})};
@@ -3998,7 +4080,9 @@ async function abrirCaja(){
     const rep = ((COFRE && COFRE.marcos) || {})[m.k] || 1;
     $('#dropHint').textContent = '';
     $('#dropRes').innerHTML = `
-      <div class="dkick">${m.legendario ? '★ LEGENDARIO ★' : 'MARCO HALLOWEEN'}</div>
+      ${m.elite ? `<div class="domg">OH… OMG!!!<small>¿DE VERDAD?</small></div>`
+        : m.legendario ? `<div class="domg">OMG!!<small>NO PUEDE SER</small></div>` : ''}
+      <div class="dkick">${m.elite ? '✦ ÉLITE ✦' : m.legendario ? '★ LEGENDARIO ★' : 'MARCO ' + m.rar}</div>
       <img src="${m.img}" alt="" class="dimg">
       <div class="dnom">${m.n}</div>
       <div class="dsub">${rep > 1 ? `Repetido · ya tienes ×${rep}` : '¡Nuevo en tu colección!'}</div>
@@ -4492,7 +4576,7 @@ function viewPerfil(){
           </div>
         </div>
         ${(()=>{ const mf = marcoFotoBy(lk.marcoFoto||'');   /* el marco de cofre, encima de la foto */
-          return mf ? `<img class="marcofoto ${mf.legendario?'leg':''}" src="${mf.img}" alt="">` : ''; })()}
+          return mf ? `<img class="marcofoto ${claseMarco(mf)}" src="${mf.img}" alt="">` : ''; })()}
         <div class="cs">
           <div class="n"><span class="${lk.color||''}">${m.nm}</span>${emoteHTML(uid,'grande')}${
             yo?`<button class="editcs" onclick="openRename()" title="Cambiar callsign">✎</button>`:''}</div>
