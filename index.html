@@ -1893,7 +1893,8 @@ const NOVEDADES = {
     {ico:'📈', t:'MÉTRICA NUEVA', d:'Meta 50 pts · bono con internet + celular postpago: 18 / 22 · tope 40 TV'}
   ],
   '2026-11': [
-    {img:'s4/sticker-master.webp', t:'SEASON 4 · POKÉMON', d:'Pase nuevo: orbes de fuego, agua, hoja y rayo, y la Master Ball en el 50'},
+    {img:'s4/sticker-master.webp', t:'SEASON 4 · POKÉMON', d:'Pase nuevo: emblemas de fuego, agua, hoja y rayo, y la Master Ball en el 50'},
+    {img:'cofre/care-s4.webp', t:'CARE PACKAGE POKÉMON', d:'Marcos nuevos: Bosque, Volcán, Marea y el legendario Tormenta (1%)'},
     {img:'cofre/melite.webp', t:'MARCO ÉLITE', d:'Nuevo en el care package · más difícil que el legendario (0.5%)'},
     {ico:'😱', t:'OMG', d:'Si te sale el legendario o el élite, se entera todo el mundo'}
   ]
@@ -2555,22 +2556,39 @@ async function publicarLogros(){
 /* ==================== COFRES (CARE PACKAGE) ====================
    Dos formas de ganarlos: cada 3 ventas en un mismo dia da uno, y entrar a la
    app da uno por dia en ciclos de 7. Dentro van marcos para la foto del perfil:
-   seis normales a partes iguales, el legendario con un 1% de salir y el elite
-   (season 4) con un 0.5%, un poco mas dificil que el legendario.
+   los normales a partes iguales, el legendario con un 1% de salir y, desde la
+   season 4, el elite con un 0.5%, un poco mas dificil que el legendario.
+
+   Cada temporada trae su tanda (`t`): el cofre solo da los de la temporada del
+   dia de hoy de verdad, pero los de antes que ya tengas se quedan y te los
+   puedes seguir poniendo.
 
    Vive en `cofres/{uid}`. `reclamos` guarda la clave de cada cofre ya dado
    ("v:2026-10-01:0" por ventas, "l:2026-10-01" por entrar), asi recalcular
    nunca regala dos veces el mismo. */
 const MARCOS_FOTO = [
-  {k:'m1',   n:'SEGADOR',      img:'cofre/m1.webp',   rar:'HALLOWEEN'},
-  {k:'m2',   n:'TÓXICO',       img:'cofre/m2.webp',   rar:'HALLOWEEN'},
-  {k:'m3',   n:'ESPECTRAL',    img:'cofre/m3.webp',   rar:'HALLOWEEN'},
-  {k:'m4',   n:'GATO NEGRO',   img:'cofre/m4.webp',   rar:'HALLOWEEN'},
-  {k:'m5',   n:'CALABAZAS',    img:'cofre/m5.webp',   rar:'HALLOWEEN'},
-  {k:'m6',   n:'CUERVO',       img:'cofre/m6.webp',   rar:'HALLOWEEN'},
-  {k:'mleg', n:'REY CALABAZA', img:'cofre/mleg.webp', rar:'LEGENDARIO', legendario:true},
-  {k:'melite', n:'MAESTRO ELEMENTAL', img:'cofre/melite.webp', rar:'ÉLITE', elite:true}
+  {k:'m1',   t:3, n:'SEGADOR',      img:'cofre/m1.webp',   rar:'HALLOWEEN'},
+  {k:'m2',   t:3, n:'TÓXICO',       img:'cofre/m2.webp',   rar:'HALLOWEEN'},
+  {k:'m3',   t:3, n:'ESPECTRAL',    img:'cofre/m3.webp',   rar:'HALLOWEEN'},
+  {k:'m4',   t:3, n:'GATO NEGRO',   img:'cofre/m4.webp',   rar:'HALLOWEEN'},
+  {k:'m5',   t:3, n:'CALABAZAS',    img:'cofre/m5.webp',   rar:'HALLOWEEN'},
+  {k:'m6',   t:3, n:'CUERVO',       img:'cofre/m6.webp',   rar:'HALLOWEEN'},
+  {k:'mleg', t:3, n:'REY CALABAZA', img:'cofre/mleg.webp', rar:'LEGENDARIO', legendario:true},
+  {k:'p1',     t:4, n:'BOSQUE',            img:'cofre/p1.webp',     rar:'POKÉMON'},
+  {k:'p2',     t:4, n:'VOLCÁN',            img:'cofre/p2.webp',     rar:'POKÉMON'},
+  {k:'p3',     t:4, n:'MAREA',             img:'cofre/p3.webp',     rar:'POKÉMON'},
+  {k:'pleg',   t:4, n:'TORMENTA',          img:'cofre/pleg.webp',   rar:'LEGENDARIO', legendario:true},
+  {k:'melite', t:4, n:'MAESTRO ELEMENTAL', img:'cofre/melite.webp', rar:'ÉLITE', elite:true}
 ];
+/* el dibujo del care package de cada temporada */
+const CARE_IMG = {3:'cofre/care.webp', 4:'cofre/care-s4.webp'};
+/* la temporada del cofre va por el dia real, no por el mes que estes mirando */
+const temporadaCofre = () => {
+  const n = temporadaDe(HOY_REAL.slice(0,7)).n;
+  return Math.max(...MARCOS_FOTO.map(m => m.t).filter(t => t <= n));
+};
+const poolCofre = () => MARCOS_FOTO.filter(m => m.t === temporadaCofre());
+const careImg = () => CARE_IMG[temporadaCofre()] || CARE_IMG[3];
 const PROB_LEGENDARIO = 0.01;
 const PROB_ELITE = 0.005;
 const rarezaMarco = m => m.elite ? `ÉLITE · ${PROB_ELITE*100}%` : m.legendario ? `LEGENDARIO · ${PROB_LEGENDARIO*100}%` : m.rar;
@@ -2636,12 +2654,14 @@ async function repartirCofres(){
   finally{ repartiendo = false; }
 }
 
-/* 1% legendario, 0.5% elite; el resto, a partes iguales entre los seis normales */
+/* 1% legendario, 0.5% elite (si la temporada lo trae); el resto, a partes
+   iguales entre los normales de la temporada */
 function tirarMarco(){
-  const r = Math.random();
-  if(r < PROB_LEGENDARIO) return marcoFotoBy('mleg');
-  if(r < PROB_LEGENDARIO + PROB_ELITE) return marcoFotoBy('melite');
-  const normales = MARCOS_FOTO.filter(m => !m.legendario && !m.elite);
+  const pool = poolCofre(), r = Math.random();
+  const leg = pool.find(m => m.legendario), eli = pool.find(m => m.elite);
+  if(leg && r < PROB_LEGENDARIO) return leg;
+  if(eli && r < PROB_LEGENDARIO + PROB_ELITE) return eli;
+  const normales = pool.filter(m => !m.legendario && !m.elite);
   return normales[Math.floor(Math.random() * normales.length)];
 }
 
@@ -3994,9 +4014,14 @@ function pintarCofres(){
   const hoyV = salesOf(ME).filter(s => isoDeVenta(s) === HOY_REAL).length;
   const resto = hoyV % VENTAS_POR_COFRE;
   const puesto = lookDe(ME).marcoFoto || '';
+  /* lo de esta temporada, todo (lo que falta con candado); de las viejas solo
+     lo que ya tienes, porque eso ya no sale */
+  const pool = poolCofre();
+  const viejos = MARCOS_FOTO.filter(m => m.t < temporadaCofre() && mios[m.k]);
+  const tarjeta = m => tarjetaMarco(m, mios, puesto);
   $('#cofreCuerpo').innerHTML = `
     <div class="cfhead">
-      <img src="cofre/care.webp" alt="" class="cfcare ${n?'late':''}">
+      <img src="${careImg()}" alt="" class="cfcare ${n?'late':''}">
       <div>
         <div class="cfn"><b>${n}</b> ${n===1?'cofre':'cofres'} por abrir</div>
         <button class="btn-amber" ${n?'':'disabled'} onclick="lanzarCofre()">${n?'ABRIR CARE PACKAGE':'SIN COFRES'}</button>
@@ -4015,21 +4040,24 @@ function pintarCofres(){
       <span>Hoy llevas <b>${hoyV}</b> · ${VENTAS_POR_COFRE - resto} más para el próximo cofre</span>
     </div>
 
-    <div class="cfsec">MARCOS DE FOTO · ${Object.keys(mios).filter(k=>mios[k]).length} DE ${MARCOS_FOTO.length}</div>
-    <div class="cfmarcos">
-      ${MARCOS_FOTO.map(m=>{
-        const cant = mios[m.k] || 0, on = puesto === m.k;
-        return `<button class="cfm ${cant?'':'bloq'} ${on?'on':''} ${claseMarco(m)}"
-          ${cant ? `onclick="ponerMarcoFoto('${on?'':m.k}')"` : 'disabled'}>
-          <img src="${m.img}" alt="" loading="lazy">
-          ${cant>1?`<span class="cfx">×${cant}</span>`:''}
-          <div class="cfmn">${m.n}</div>
-          <div class="cfmr">${rarezaMarco(m)}</div>
-          <div class="cfme">${!cant ? '🔒' : on ? '✓ PUESTO · quitar' : 'PONÉRMELO'}</div>
-        </button>`;
-      }).join('')}
-    </div>
+    <div class="cfsec">MARCOS DE ESTA TEMPORADA · ${pool.filter(m=>mios[m.k]).length} DE ${pool.length}</div>
+    <div class="cfmarcos">${pool.map(tarjeta).join('')}</div>
+    ${viejos.length ? `<div class="cfsec">DE TEMPORADAS ANTERIORES</div>
+    <div class="cfmarcos">${viejos.map(tarjeta).join('')}</div>` : ''}
     <div class="vhint">Los repetidos se acumulan. El marco se ve alrededor de tu foto en el perfil.</div>`;
+}
+
+/* la tarjeta de un marco en la coleccion del cofre */
+function tarjetaMarco(m, mios, puesto){
+  const cant = mios[m.k] || 0, on = puesto === m.k;
+  return `<button class="cfm ${cant?'':'bloq'} ${on?'on':''} ${claseMarco(m)}"
+    ${cant ? `onclick="ponerMarcoFoto('${on?'':m.k}')"` : 'disabled'}>
+    <img src="${m.img}" alt="" loading="lazy">
+    ${cant>1?`<span class="cfx">×${cant}</span>`:''}
+    <div class="cfmn">${m.n}</div>
+    <div class="cfmr">${rarezaMarco(m)}</div>
+    <div class="cfme">${!cant ? '🔒' : on ? '✓ PUESTO · quitar' : 'PONÉRMELO'}</div>
+  </button>`;
 }
 
 async function ponerMarcoFoto(k){
@@ -4051,6 +4079,7 @@ function lanzarCofre(){
   ov.className = 'overlay dropov on cayendo';
   $('#dropRes').innerHTML = '';
   $('#dropHint').textContent = 'Llegando…';
+  $('#dropOverlay .dropcaja img').src = careImg();
   sonidoCaida();
   setTimeout(()=>{ if(ov.classList.contains('cayendo')){ ov.classList.replace('cayendo','listo');
     $('#dropHint').textContent = 'TOCA PARA ABRIR'; } }, 2300);
