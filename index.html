@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#ff8800">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -483,6 +483,12 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .namebtn{background:none;border:0;cursor:pointer;color:inherit;font:inherit;padding:0}
 .namebtn:hover b{color:var(--amber)}
 
+/* ---------- SIN ZOOM EN EL CEL ----------
+   sin doble toque para agrandar, y los campos a 16px: con menos, el iPhone
+   agranda la pantalla solo al tocar un campo */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media (pointer:coarse){ input,select,textarea{font-size:16px!important} }
+
 /* ---------- ROTACION: a quien le toca la proxima venta ---------- */
 .rota{min-height:calc(100dvh - 150px);display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:22px;padding:24px 16px 32px;text-align:center;
@@ -521,8 +527,10 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .rlog{width:min(340px,100%);text-align:left;border-top:1px solid var(--line);padding-top:12px}
 .rlt{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.28em;color:var(--dim);margin-bottom:6px}
 .rlr{font-size:13px;color:var(--muted);padding:3px 0}
-.rlr span{display:inline-block;min-width:92px;color:var(--dim);font-variant-numeric:tabular-nums;font-size:12px}
-.rlr.vendio b{color:var(--green)} .rlr.skip b{color:var(--red)}
+.rlr span{display:inline-block;min-width:150px;color:var(--dim);font-variant-numeric:tabular-nums;font-size:12px}
+.rlr.vendio b{color:var(--green)} .rlr.skip b{color:var(--red)} .rlr.reset b{color:var(--amber)}
+.rreset{padding:8px;font-size:13px}
+.rreset:hover{border-color:var(--amber);color:var(--amber)}
 nav.tabs button .rbadge{background:var(--gold);color:#120e02}
 @media(prefers-reduced-motion:reduce){ .rav{animation:none} }
 nav.tabs button .badge{background:var(--red);color:#fff;border-radius:9px;padding:1px 6px;font-size:10px;
@@ -1291,6 +1299,13 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
   .topright .namebtn b{font-size:13px;letter-spacing:.05em}
   .topright .rankbadge{width:24px;height:24px;font-size:11px}
   .topright .iconbtn{padding:4px 8px;font-size:11px;margin-left:0}
+  /* sin zoom ya no se puede alejar: en los telefonos estrechos el pase se queda
+     en el numero del nivel para que SALIR no se salga de la pantalla */
+  @media(max-width:420px){
+    .topright{gap:5px}
+    .pasechip{padding:4px 7px}
+    .pasechip .col{display:none}
+  }
   nav.tabs{
     order:3;flex:1 0 100%;width:100%;height:44px;
     border-top:1px solid var(--line);
@@ -2173,7 +2188,9 @@ const SQUAD = [
   {id:'carlos', nm:'CARLOS', full:'Carlos',  get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-gorra.png',          email:'carlos@call-of-sales.com'},
   {id:'felix',  nm:'FELIX',  full:'Félix',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-lentes-negros.png',  email:'felix@call-of-sales.com'},
   {id:'angel',  nm:'ANGEL',  full:'Ángel',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-canoso.png',         email:'angel@call-of-sales.com'},
-  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-joven.png',          email:'elwin@call-of-sales.com'}
+  {id:'elwin',  nm:'ELWIN',  full:'Elwin',   get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/op-joven.png',          email:'elwin@call-of-sales.com', sinRotacion:true},
+  /* Victor todavia no tiene foto: lleva el logo de la app */
+  {id:'victor', nm:'VICTOR', full:'Víctor',  get meta(){ return META_PTS; }, rol:'vendedor', av:'avatars/logo.png',              email:'victor@call-of-sales.com'}
 ];
 
 let ME = 'elfe';
@@ -3154,7 +3171,7 @@ function restaurarSesion(){
   firebase.auth().onAuthStateChanged(user => {
     if(!user) return;                                   // sin sesion: se queda el login
     if(getComputedStyle($('#app')).display !== 'none') return;  // ya esta adentro
-    const op = SQUAD.find(s => s.email && s.email.toLowerCase() === (user.email||'').toLowerCase());
+    const op = opDeCorreo(user.email);
     if(!op){ firebase.auth().signOut().catch(()=>{}); return; }  // cuenta ajena al escuadron
     ME = op.id;
     entrar();
@@ -3178,12 +3195,25 @@ function lgError(msg){
   if(box){ box.textContent = msg || ''; box.style.display = msg ? 'block' : 'none'; }
 }
 
+/* el iPhone ignora user-scalable=no en el meta: el pellizco se frena aqui */
+['gesturestart','gesturechange','gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
+document.addEventListener('touchmove', e => { if(e.touches.length > 1) e.preventDefault(); }, {passive:false});
+
+/* se reconoce por lo de antes de la @, igual que las reglas de Firestore: el
+   dominio exacto lo valida Firebase, que es quien tiene la cuenta */
+function opDeCorreo(correo){
+  const e = String(correo || '').trim().toLowerCase();
+  return SQUAD.find(s => s.email && s.email.toLowerCase() === e)
+      || SQUAD.find(s => s.id === e.split('@')[0]);
+}
+
 async function doLogin(){
   const email = ($('#lgEmail').value||'').trim().toLowerCase();
   const pass  = $('#lgPass').value||'';
   if(!email || !pass){ lgError('Escribe tu correo y tu contraseña'); return; }
 
-  const op = SQUAD.find(s => s.email && s.email.toLowerCase() === email);
+  const op = opDeCorreo(email);
   if(!op){ lgError('Ese correo no es de nadie del escuadrón'); return; }
 
   if(typeof firebase === 'undefined' || !firebase.auth){
@@ -4689,7 +4719,7 @@ function viewPerfil(){
    mando; SKIP solo el mando. */
 let ROTA = null, unsubRota = null, rotaCargada = false;
 const rotaRef = () => db().collection('rotacion').doc('escuadron');
-const ordenRota = () => SQUAD.map(s => s.id);
+const ordenRota = () => SQUAD.filter(s => !s.sinRotacion).map(s => s.id);
 const turnoActual = () => (ROTA && ordenRota().includes(ROTA.turno)) ? ROTA.turno : ordenRota()[0];
 const siguienteDe = uid => { const o = ordenRota(); return o[(o.indexOf(uid) + 1) % o.length]; };
 
@@ -4729,15 +4759,29 @@ async function moverRotacion(accion){
   }
 }
 
+/* el mando la vuelve a empezar desde el primero; queda apuntado en las jugadas */
+async function resetRotacion(){
+  if(!isAdmin()) return;
+  const primero = ordenRota()[0];
+  if(!confirm(`¿Reiniciar la rotación? Vuelve a empezar en ${opBy(primero).nm}.`)) return;
+  try{
+    const log = [...((ROTA && ROTA.log) || []), {u: primero, a: 'reset', por: ME, ts: Date.now()}].slice(-40);
+    await rotaRef().set({turno: primero, log, actualizado: Date.now()});
+    toast(`↺ Rotación reiniciada · le toca a <b>${opBy(primero).nm}</b>`);
+  }catch(err){ console.error(err); toast('No se pudo reiniciar: ' + (err.code || err.message)); }
+}
+
 function viewRotacion(){
   const turno = turnoActual(), t = opBy(turno), o = ordenRota();
   /* la cola empieza en el que le toca y da la vuelta */
   const i0 = o.indexOf(turno);
   const cola = o.map((_, i) => o[(i0 + i) % o.length]);
   const puedeVender = turno === ME || isAdmin();
+  /* siempre el dia y la hora: "SÁB 11/01 · 2:18 p. m." */
+  const DIAS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
   const hora = ts => { const d = new Date(ts);
-    const dia = isoLocal(d) === HOY_REAL ? '' : `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} `;
-    return dia + d.toLocaleTimeString('es-PR', {hour:'numeric', minute:'2-digit'}); };
+    return `${DIAS[d.getDay()]} ${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} · `
+      + d.toLocaleTimeString('es-PR', {hour:'numeric', minute:'2-digit'}); };
   const log = ((ROTA && ROTA.log) || []).slice(-8).reverse();
   $('#view').innerHTML = `
   <div class="rota">
@@ -4757,14 +4801,16 @@ function viewRotacion(){
 
     <div class="racc">
       <button class="rvendio" ${puedeVender ? `onclick="moverRotacion('vendio')"` : 'disabled'}>✓ VENDIÓ</button>
-      ${isAdmin() ? `<button class="rskip" onclick="moverRotacion('skip')">⏭ SKIP</button>` : ''}
+      ${isAdmin() ? `<button class="rskip" onclick="moverRotacion('skip')">⏭ SKIP</button>
+        <button class="rskip rreset" onclick="resetRotacion()">↺ RESET</button>` : ''}
       ${!puedeVender ? `<div class="rnota">Solo ${esc(t.nm)} o el mando marcan la venta</div>` : ''}
     </div>
 
     ${log.length ? `<div class="rlog">
       <div class="rlt">ÚLTIMAS JUGADAS</div>
       ${log.map(l => `<div class="rlr ${l.a}"><span>${hora(l.ts)}</span>
-        <b>${esc(opBy(l.u).nm)}</b> ${l.a === 'vendio' ? 'vendió' : 'skip' + (l.por !== l.u ? ' del mando' : '')}</div>`).join('')}
+        ${l.a === 'reset' ? `<b>RESET</b> del mando · empieza ${esc(opBy(l.u).nm)}`
+          : `<b>${esc(opBy(l.u).nm)}</b> ${l.a === 'vendio' ? 'vendió' : 'skip' + (l.por !== l.u ? ' del mando' : '')}`}</div>`).join('')}
     </div>` : ''}
   </div>`;
 }
