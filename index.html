@@ -483,6 +483,34 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .namebtn{background:none;border:0;cursor:pointer;color:inherit;font:inherit;padding:0}
 .namebtn:hover b{color:var(--amber)}
 
+/* ---------- PROMO DEL MES GRATIS ---------- */
+.promochk{display:flex;gap:11px;align-items:flex-start;margin-top:14px;padding:11px 12px;cursor:pointer;
+  border:1px solid var(--line2);background:#0c0e11}
+.promochk:has(input:checked){border-color:var(--amber);background:rgba(255,138,0,.07)}
+.promochk input{width:20px;height:20px;accent-color:var(--amber);margin:1px 0 0;flex-shrink:0}
+.promochk > span > b{display:block;font-family:'Barlow Condensed';font-size:14px;letter-spacing:.12em}
+.promochk small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.promotag{display:inline-block;margin-left:8px;padding:1px 7px;font-family:'Barlow Condensed';font-size:11px;
+  letter-spacing:.1em;border:1px solid var(--line2);color:var(--muted);vertical-align:middle;white-space:nowrap}
+.promotag.llenar{color:#120e02;background:var(--amber);border-color:var(--amber);cursor:pointer;animation:lgFade 1.1s ease-in-out infinite alternate}
+.promotag.ok{color:var(--green);border-color:rgba(74,208,122,.45)}
+.opsvista{display:flex;gap:6px;margin-bottom:12px}
+.opsvista button{flex:0 0 auto;background:none;border:1px solid var(--line2);color:var(--muted);cursor:pointer;
+  padding:9px 16px;font-family:'Barlow Condensed';font-weight:700;font-size:14px;letter-spacing:.16em}
+.opsvista button.on{border-color:var(--amber);color:var(--amber);background:rgba(255,138,0,.07)}
+.opsvista .badge{background:var(--amber);color:#120e02;border-radius:9px;padding:1px 7px;font-size:11px;margin-left:4px}
+nav.tabs button .pbadge{background:var(--amber);color:#120e02}
+.prow{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.pinfo{flex:1;min-width:0}
+.pinfo b{font-size:15px}
+.psub{font-size:12px;color:var(--muted);margin-top:3px}
+.pbtn{padding:9px 14px;font-size:13px;white-space:nowrap}
+.pespera{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.14em;color:var(--dim)}
+.pok{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.1em;color:var(--green)}
+.pvacio{padding:22px 16px;color:var(--muted);font-size:14px;text-align:center}
+@media(prefers-reduced-motion:reduce){ .promotag.llenar{animation:none} }
+
 /* ---------- SIN ZOOM EN EL CEL ----------
    sin doble toque para agrandar, y los campos a 16px: con menos, el iPhone
    agranda la pantalla solo al tocar un campo */
@@ -1468,6 +1496,10 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
           <option value="evento">Evento</option>
         </select>
       </div>
+      <label class="promochk">
+        <input type="checkbox" id="fPromo">
+        <span><b>🎁 PROMO · UN MES GRATIS</b><small>Cuando se instale te sale en <b>Mis promos</b> para llenarla</small></span>
+      </label>
       <div class="fld" style="margin-top:14px;margin-bottom:0">
         <label>Notas <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:.02em">— opcional</span></label>
         <textarea id="fNota" rows="2" maxlength="300" oninput="contarNota()"
@@ -2317,6 +2349,7 @@ function escucharVentas(){
   escucharInstaladores();
   escucharCofre();
   escucharRotacion();
+  escucharPromos();
 }
 
 /* ---------- MARCADOR DEL ESCUADRON ----------
@@ -3260,7 +3293,8 @@ function entrar(){
   $('#app').style.display='flex';
   pintaFecha();
   $('#topName').textContent = me().nm;
-  tab = 'lobby'; opsScope = 'me'; opsMes = null; SALES_HIST = [];
+  tab = 'lobby'; opsScope = 'me'; opsMes = null; SALES_HIST = []; opsVista = 'cierres'; PROMOS = [];
+  if(unsubPromos){ unsubPromos(); unsubPromos = null; }
   alertShown = false; confirmShown = false; recapShown = false;
   perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
   SALES = [];
@@ -3370,7 +3404,9 @@ function setTab(k){
 function renderTabs(){
   $('#tabs').innerHTML = TABS.filter(t => t.k!=='mando' || isAdmin()).map(t=>{
     /* si te toca, la pestaña te lo dice desde donde estes */
-    const b = (t.k==='rota' && ROTA && turnoActual()===ME) ? `<span class="badge rbadge">TÚ</span>` : '';
+    const nP = t.k==='ops' ? promosPendientes().length : 0;
+    const b = (t.k==='rota' && ROTA && turnoActual()===ME) ? `<span class="badge rbadge">TÚ</span>`
+            : nP ? `<span class="badge pbadge" title="Promos por llenar">🎁${nP}</span>` : '';
     return `<button class="${t.k===tab?'on':''}" onclick="setTab('${t.k}')">${t.l}${b}</button>`;
   }).join('');
 }
@@ -3755,9 +3791,90 @@ function prodPills(s){
 let opsScope = 'me';
 function setScope(v){ opsScope = v; render(); }
 
+/* ==================== PROMOS: EL MES GRATIS ====================
+   El cierre lleva `promo: true` si el cliente tiene el mes gratis. Cuando se
+   instala hay que llenarsela; al hacerlo se marca `promoHecha`. Se escuchan
+   aparte de SALES porque una promo puede quedar pendiente de un mes anterior. */
+let PROMOS = [], unsubPromos = null, opsVista = 'cierres';
+
+function escucharPromos(){
+  if(unsubPromos){ unsubPromos(); unsubPromos = null; }
+  let q = db().collection('ventas').where('promo', '==', true);
+  if(!isAdmin()) q = q.where('owner', '==', ME);
+  unsubPromos = q.onSnapshot(snap=>{
+    PROMOS = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    if(tab === 'ops') render(); else renderTabs();
+  }, err => console.error('promos:', err));
+}
+/* instaladas y sin llenar: lo que no se puede perder */
+const promosPendientes = () => PROMOS.filter(s => !s.promoHecha && estadoInst(s) === 'ok');
+const setVistaOps = v => { opsVista = v; render(); };
+
+function promoTag(s){
+  if(!s.promo) return '';
+  if(s.promoHecha) return `<span class="promotag ok" title="Promo ya llenada">🎁 PROMO ✓</span>`;
+  if(estadoInst(s) === 'ok') return `<span class="promotag llenar" onclick="setVistaOps('promos')" title="Ya se instaló: falta llenarle la promo">🎁 LLENAR PROMO</span>`;
+  return `<span class="promotag" title="Se llena cuando se instale">🎁 PROMO</span>`;
+}
+
+async function marcarPromo(id, hecha){
+  try{
+    await db().collection('ventas').doc(id).update(hecha
+      ? {promoHecha: true, promoHechaEn: Date.now(), promoPor: ME}
+      : {promoHecha: false});
+    const s = PROMOS.find(x => x.id === id);
+    toast(hecha ? `✓ Promo de <b>${esc(s ? s.nm : '')}</b> llenada` : 'Promo devuelta a pendientes');
+  }catch(err){ console.error(err); toast('No se pudo guardar: ' + (err.code || err.message)); }
+}
+
+function viewPromos(){
+  const admin = isAdmin();
+  const porFecha = (a,b) => ((b.inst&&b.inst.d)||'').localeCompare((a.inst&&a.inst.d)||'') || (b.creado||0)-(a.creado||0);
+  const pend = promosPendientes().sort(porFecha);
+  const espera = PROMOS.filter(s => !s.promoHecha && estadoInst(s) === 'espera').sort(porFecha);
+  const hechas = PROMOS.filter(s => s.promoHecha).sort((a,b) => (b.promoHechaEn||0)-(a.promoHechaEn||0)).slice(0, 20);
+  const instTxt = s => s.inst && s.inst.mode === 'fecha' ? instLabel(s.inst) : 'SELF';
+  const fila = (s, acc) => `
+    <div class="prow">
+      <div class="pinfo">
+        <b>${esc(s.nm)}</b>${admin ? ` <span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span>` : ''}
+        <div class="psub"><span class="mono">${esc(s.tel||'—')}</span> · ${planLabel(s.plan)} · instalación ${instTxt(s)}</div>
+      </div>
+      ${acc}
+    </div>`;
+  return `
+    <div class="panel cut">
+      <div class="ph"><span class="tick" style="background:var(--amber)"></span>Por llenar · ${pend.length}
+        <span class="right">YA INSTALADOS CON EL MES GRATIS</span></div>
+      ${pend.length ? pend.map(s => fila(s, `<button class="btn-amber pbtn" onclick="marcarPromo('${s.id}',true)">✓ YA LA LLENÉ</button>`)).join('')
+        : `<div class="pvacio">Nada pendiente. Todas las promos de los instalados están llenas. 👌</div>`}
+    </div>
+    ${espera.length ? `<div class="panel cut" style="margin-top:14px">
+      <div class="ph"><span class="tick" style="background:var(--dim)"></span>Esperando instalación · ${espera.length}
+        <span class="right">SALEN ARRIBA CUANDO SE INSTALEN</span></div>
+      ${espera.map(s => fila(s, `<span class="pespera">SIN INSTALAR</span>`)).join('')}
+    </div>` : ''}
+    ${hechas.length ? `<div class="panel cut" style="margin-top:14px">
+      <div class="ph"><span class="tick" style="background:var(--green)"></span>Ya llenadas
+        <span class="right">LAS ÚLTIMAS ${hechas.length}</span></div>
+      ${hechas.map(s => fila(s, `<span class="pok">✓ ${s.promoHechaEn ? (d => `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`)(new Date(s.promoHechaEn)) : ''}</span>
+        <button class="iconbtn" onclick="marcarPromo('${s.id}',false)" title="Devolverla a pendientes">DESHACER</button>`)).join('')}
+    </div>` : ''}`;
+}
+
 function viewOps(){
   const admin = isAdmin();
   if(!admin) opsScope = 'me';
+  const nPromo = promosPendientes().length;
+  const subtabs = `
+    <div class="opsvista">
+      <button class="${opsVista==='cierres'?'on':''}" onclick="setVistaOps('cierres')">MIS CIERRES</button>
+      <button class="${opsVista==='promos'?'on':''}" onclick="setVistaOps('promos')">🎁 MIS PROMOS${nPromo ? ` <span class="badge">${nPromo}</span>` : ''}</button>
+    </div>`;
+  if(opsVista === 'promos'){
+    $('#view').innerHTML = `<div class="gridwrap">${subtabs}${viewPromos()}</div>`;
+    return;
+  }
   /* si estas mirando un mes cerrado, la lista sale del historico */
   const fuente = opsMes ? SALES_HIST : SALES;
   const deQuien = uid => fuente.filter(s => s.owner === uid);
@@ -3777,6 +3894,7 @@ function viewOps(){
 
   $('#view').innerHTML = `
   <div class="gridwrap">
+    ${subtabs}
     <div class="mesesbar">
       <span class="ml">MES</span>
       <button class="mesbtn ${!opsMes?'on':''}" onclick="verMesDeCierres(null)">${monthName} · AHORA</button>
@@ -3825,7 +3943,7 @@ function viewOps(){
               <td class="src-tag c-fecha">${s.d}</td>
               ${verOp?`<td class="c-op"><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
               <td class="c-nm"><b>${esc(s.nm)}</b>${s.nota?`<span class="notaic" title="${escAttr(s.nota)}"
-                onclick="verNota('${s.id}')">✎</span>`:''}</td>
+                onclick="verNota('${s.id}')">✎</span>`:''}${promoTag(s)}</td>
               <td class="mono c-tel" style="color:var(--muted)" data-lbl="TEL">${s.tel || "—"}</td>
               <td class="c-plan"><span class="src-tag" style="color:${PLAYCOLOR[s.plan?.type]||'var(--muted)'}">${planLabel(s.plan)}</span></td>
               <td class="c-prods">${prodPills(s)}</td>
@@ -4964,6 +5082,7 @@ function openModal(id){
   $('#fTel').value  = s?s.tel:'';
   $('#fSrc').value  = s?s.src:'redes';
   $('#fNota').value = s && s.nota ? s.nota : '';
+  $('#fPromo').checked = !!(s && s.promo);
   /* el admin ve los cierres de todos, asi que la nota no es tan privada: hay
      que decirlo antes de que alguien escriba algo pensando que solo lo ve el */
   $('#notaAdmin').textContent = isAdmin() ? '' : ' y el mando';
@@ -5109,6 +5228,7 @@ async function saveSale(){
   const payload = {
     nm, tel, p:{...draft}, plan:{...dplan}, inst:{...dinst}, src:$('#fSrc').value,
     nota: $('#fNota').value.trim().slice(0,300),
+    promo: $('#fPromo').checked,
     owner: isAdmin() ? $('#fOwner').value : ME,
     d: String(today.getMonth()+1).padStart(2,'0')+'/'+String(dayNow).padStart(2,'0'),
     anio, mes,
