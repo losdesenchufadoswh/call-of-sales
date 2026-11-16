@@ -483,6 +483,13 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .namebtn{background:none;border:0;cursor:pointer;color:inherit;font:inherit;padding:0}
 .namebtn:hover b{color:var(--amber)}
 
+/* ---------- BUSCADOR DE MIS CIERRES ---------- */
+.opsbusca{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.opsbusca input{flex:1;min-width:0;background:#08090b;border:1px solid var(--line2);color:var(--txt);
+  padding:10px 12px;font-family:'Barlow';font-size:14px;outline:none}
+.opsbusca input:focus{border-color:var(--amber)}
+.opsbusca small{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;color:var(--muted);white-space:nowrap}
+
 /* ---------- PROMO DEL MES GRATIS ---------- */
 .promochk{display:flex;gap:11px;align-items:flex-start;margin-top:14px;padding:11px 12px;cursor:pointer;
   border:1px solid var(--line2);background:#0c0e11}
@@ -3293,7 +3300,7 @@ function entrar(){
   $('#app').style.display='flex';
   pintaFecha();
   $('#topName').textContent = me().nm;
-  tab = 'lobby'; opsScope = 'me'; opsMes = null; SALES_HIST = []; opsVista = 'cierres'; PROMOS = [];
+  tab = 'lobby'; opsScope = 'me'; opsMes = null; SALES_HIST = []; opsVista = 'cierres'; PROMOS = []; opsBusca = '';
   if(unsubPromos){ unsubPromos(); unsubPromos = null; }
   alertShown = false; confirmShown = false; recapShown = false;
   perfilUid = null; perfilVolverA = 'lobby'; nivelVisto = null;
@@ -3892,6 +3899,8 @@ function viewOps(){
                : opsScope==='all' ? 'Cierres de todo el escuadrón'
                : 'Cierres de '+opBy(opsScope).nm;
 
+  /* si estabas escribiendo y entra un cierre nuevo, el repintado no te saca del buscador */
+  const buscaba = document.activeElement && document.activeElement.id === 'opsBusca';
   $('#view').innerHTML = `
   <div class="gridwrap">
     ${subtabs}
@@ -3928,6 +3937,12 @@ function viewOps(){
                 onclick="exportarPDF('${opsScope==='me'?ME:opsScope}')" title="Bajar los cierres del mes en PDF">⤓ PDF</button>
         <button class="btn-amber" style="margin-left:8px;padding:7px 16px;font-size:13px" onclick="openModal()">+ Nuevo</button>
       </div>
+      <div class="opsbusca">
+        <span>🔍</span>
+        <input id="opsBusca" type="search" placeholder="Buscar cliente, teléfono, plan o nota…" autocomplete="off"
+               value="${escAttr(opsBusca)}" oninput="filtrarCierres(this.value)">
+        <small id="opsBuscaN"></small>
+      </div>
       <div style="overflow:auto">
       <table class="tcierres">
         <thead><tr>
@@ -3939,7 +3954,7 @@ function viewOps(){
         </tr></thead>
         <tbody>
           ${lista.map(s=>{ const est = estadoInst(s); return `
-            <tr class="${est==='no'?'caido':est==='espera'?'espera':''}">
+            <tr class="${est==='no'?'caido':est==='espera'?'espera':''}" data-q="${escAttr(textoBusca(s))}">
               <td class="src-tag c-fecha">${s.d}</td>
               ${verOp?`<td class="c-op"><span class="src-tag" style="color:var(--amber)">${opBy(s.owner).nm}</span></td>`:''}
               <td class="c-nm"><b>${esc(s.nm)}</b>${s.nota?`<span class="notaic" title="${escAttr(s.nota)}"
@@ -3973,6 +3988,29 @@ function viewOps(){
       </div>
     </div>
   </div>`;
+  if(opsBusca) filtrarCierres(opsBusca);    // lo escrito sigue aplicado aunque llegue un cierre nuevo
+  if(buscaba){ const i = $('#opsBusca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+
+/* ---- buscador de Mis cierres: filtra las filas ya pintadas, sin repintar,
+   para que el teclado no se cierre a cada letra ---- */
+let opsBusca = '';
+const sinAcentos = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const textoBusca = s => sinAcentos([s.nm, s.tel, String(s.tel||'').replace(/\D/g,''), planLabel(s.plan),
+  s.nota, SRC[s.src], opBy(s.owner).nm, s.d, s.promo ? 'promo' : ''].join(' '));
+function filtrarCierres(v){
+  opsBusca = v;
+  const q = sinAcentos(v).trim(), qNum = q.replace(/\D/g, '');
+  const filas = [...document.querySelectorAll('.tcierres tbody tr')];
+  let n = 0;
+  filas.forEach(tr => {
+    /* el telefono se encuentra escrito con o sin guiones */
+    const ok = !q || tr.dataset.q.includes(q) || (qNum.length >= 3 && q === qNum && tr.dataset.q.includes(qNum));
+    tr.style.display = ok ? '' : 'none';
+    if(ok) n++;
+  });
+  const out = $('#opsBuscaN');
+  if(out) out.textContent = q ? `${n} de ${filas.length}` : '';
 }
 
 function viewSquad(){
