@@ -522,6 +522,9 @@ nav.tabs button .pbadge{background:var(--amber);color:#120e02}
    sin doble toque para agrandar, y los campos a 16px: con menos, el iPhone
    agranda la pantalla solo al tocar un campo */
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* sin zoom no hay como volver a encuadrar: si algo se pasa de ancho, se corta
+   en vez de dejar mover la pantalla de lado (clip no rompe el sticky) */
+html,body{overflow-x:clip}
 @media (pointer:coarse){ input,select,textarea{font-size:16px!important} }
 
 /* ---------- ROTACION: a quien le toca la proxima venta ---------- */
@@ -1344,7 +1347,13 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
     .topright{gap:5px}
     .pasechip{padding:4px 7px}
     .pasechip .col{display:none}
+    /* los avisos de arriba salen al registrar ventas: en el cel van solo con
+       el icono y el numero, que si no empujaban la pantalla de lado */
+    .bell .blbl{display:none}
   }
+  /* las cabeceras de panel bajan a otra fila lo que no cabe (el selector del
+     mando, PDF y + Nuevo se iban fuera de la pantalla) */
+  .ph{flex-wrap:wrap;row-gap:8px}
   nav.tabs{
     order:3;flex:1 0 100%;width:100%;height:44px;
     border-top:1px solid var(--line);
@@ -5229,7 +5238,12 @@ function pickInst(mode){
   renderInst();
 }
 function setInstDate(v){ dinst.d = v; renderInst(); }
-function closeModal(){ $('#overlay').classList.remove('on'); }
+/* soltar el campo cierra el teclado del cel antes de quitar el modal: si no,
+   el iPhone se queda con la pantalla corrida hacia donde estaba el teclado */
+function closeModal(){
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  $('#overlay').classList.remove('on');
+}
 
 function renderChecks(){
   const cel = Number(draft.celular) || 0;
@@ -5991,8 +6005,8 @@ function renderBell(){
   const n = instalacionesHoy().length;
   const c = pendientesDeConfirmar().length;
   $('#bellWrap').innerHTML =
-    (c ? `<button class="bell conf" onclick="abrirConfirmar()" title="Instalaciones por confirmar">❓ ¿ENTRÓ?<span class="dot">${c}</span></button>` : '') +
-    (n ? `<button class="bell" onclick="openAlert()">🔔 HOY<span class="dot">${n}</span></button>` : '');
+    (c ? `<button class="bell conf" onclick="abrirConfirmar()" title="Instalaciones por confirmar">❓<span class="blbl"> ¿ENTRÓ?</span><span class="dot">${c}</span></button>` : '') +
+    (n ? `<button class="bell" onclick="openAlert()" title="Instalaciones de hoy">🔔<span class="blbl"> HOY</span><span class="dot">${n}</span></button>` : '');
 }
 
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeAlert(); closeRename(); cerrarDarMedalla(); cerrarEmote(); cerrarNota(); cerrarConfirmar(); cerrarInstalador(); cerrarReagenda(); cerrarCofres(); cerrarPDF();
