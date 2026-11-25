@@ -1230,6 +1230,10 @@ body.halloween #view{background-image:url("data:image/svg+xml,%3Csvg xmlns='http
   font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.1em}
 .mesbtn:hover{border-color:var(--cyan);color:var(--cyan)}
 .mesbtn.on{background:var(--cyan);border-color:var(--cyan);color:#04141a;font-weight:700}
+/* el mes que viene, con lo ya agendado para entonces */
+.mesbtn.prox{border-color:rgba(255,210,74,.5);color:var(--gold)}
+.mesbtn.prox:hover{border-color:var(--gold)}
+.mesbtn.prox.on{background:var(--gold);border-color:var(--gold);color:#120e02}
 .prewarn{width:100%;font-size:11.5px;color:var(--cyan);letter-spacing:.02em;margin-top:2px}
 .mesaviso{margin-top:8px;padding:9px 11px;font-size:12.5px;line-height:1.45;
   color:var(--amber2);background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.45)}
@@ -2331,6 +2335,7 @@ function escucharVentas(){
 
   let q = db().collection('ventas').where('anio','==',anio).where('mes','==',mes);
   if(!isAdmin()) q = q.where('owner','==',ME);   // el vendedor solo baja lo suyo
+  escucharProximo();
 
   unsubVentas = q.onSnapshot(snap => {
     SALES = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -3882,8 +3887,11 @@ function viewOps(){
     $('#view').innerHTML = `<div class="gridwrap">${subtabs}${viewPromos()}</div>`;
     return;
   }
-  /* si estas mirando un mes cerrado, la lista sale del historico */
-  const fuente = opsMes ? SALES_HIST : SALES;
+  /* si estas mirando un mes cerrado, la lista sale del historico; si es el que
+     viene, de lo que ya esta agendado para entonces */
+  const fuente = fuenteOps();
+  const prox = viendoProx();
+  const nombreProx = MESES[Number(claveProx().split('-')[1]) - 1];
   const deQuien = uid => fuente.filter(s => s.owner === uid);
   /* Firestore devuelve en orden arbitrario, asi que hay que ordenar a mano:
      lo mas reciente primero, por fecha del cierre y luego por hora de registro */
@@ -3906,6 +3914,8 @@ function viewOps(){
     ${subtabs}
     <div class="mesesbar">
       <span class="ml">MES</span>
+      ${SALES_PROX.length ? `<button class="mesbtn prox ${prox?'on':''}" onclick="verMesDeCierres('${claveProx()}')"
+        title="Cierres que se instalan el mes que viene">${nombreProx} · PRÓXIMO (${SALES_PROX.length})</button>` : ''}
       <button class="mesbtn ${!opsMes?'on':''}" onclick="verMesDeCierres(null)">${monthName} · AHORA</button>
       ${(()=>{ const out=[];
         for(let i=1;i<=5;i++){
@@ -3916,7 +3926,11 @@ function viewOps(){
         return out.join(''); })()}
     </div>
 
-    ${opsMes
+    ${prox
+      ? `<div class="notice" style="border-color:var(--gold);color:var(--gold)">
+          Estos cierres tienen la instalación en <b>${nombreProx}</b>, así que cuentan para <b>${nombreProx}</b>, no para ${monthName}.
+          Se pueden editar y reagendar como siempre.</div>`
+      : opsMes
       ? `<div class="notice" style="border-color:var(--cyan);color:var(--cyan)">
           Estás viendo <b>${MESES[Number(opsMes.split('-')[1])-1]} ${opsMes.split('-')[0]}</b>, un mes ya cerrado.
           Es solo para revisar: aquí no se edita ni se borra.${cargandoHist?' Cargando…':''}</div>`
@@ -3978,7 +3992,7 @@ function viewOps(){
               <td class="c-acc" style="text-align:right">
                 ${est==='no' || (est==='espera' && porConfirmar(s))
                   ? `<button class="iconbtn reag" onclick="abrirReagenda('${s.id}')">↻ REAGENDAR</button>` : ''}
-                ${opsMes ? (est==='ok'||est==='espera'&&!porConfirmar(s) ? '<span class="hint">solo lectura</span>' : '') : `
+                ${opsMes && !prox ? (est==='ok'||est==='espera'&&!porConfirmar(s) ? '<span class="hint">solo lectura</span>' : '') : `
                   <button class="iconbtn" onclick="openModal('${s.id}')">EDITAR</button>
                   <button class="iconbtn del" onclick="quickDelete('${s.id}')">✕</button>`}
               </td>
@@ -4082,7 +4096,7 @@ function emoteHTML(uid, tam){
 }
 /* la nota completa, que en la tabla solo cabe el iconito */
 function verNota(id){
-  const s = SALES.find(x=>x.id===id);
+  const s = buscarVenta(id);
   if(!s || !s.nota) return;
   $('#notaCliente').textContent = s.nm;
   $('#notaMeta').textContent = `${s.d} · ${planLabel(s.plan)}` + (isAdmin() ? ` · ${opBy(s.owner).nm}` : '');
@@ -4109,7 +4123,7 @@ function cerrarEmote(){ $('#emoOverlay').classList.remove('on'); }
 let reagId = null;
 
 function abrirReagenda(id){
-  const s = (opsMes ? SALES_HIST : SALES).find(x => x.id === id);
+  const s = buscarVenta(id);
   if(!s) return;
   reagId = id;
   const est = estadoInst(s);
@@ -4127,7 +4141,7 @@ function cerrarReagenda(){ $('#rgOverlay').classList.remove('on'); reagId = null
 /* dice a que mes se va a mudar, antes de tocar nada */
 function pintarRgAviso(){
   const f = $('#rgFecha').value;
-  const s = reagId ? (opsMes ? SALES_HIST : SALES).find(x=>x.id===reagId) : null;
+  const s = reagId ? buscarVenta(reagId) : null;
   if(!s || !f) return;
   const destino = mesDeLaVenta({mode:'fecha', d:f}, mesActual());
   const mueve = destino.mes !== s.mes || destino.anio !== s.anio;
@@ -4140,7 +4154,7 @@ function pintarRgAviso(){
 async function guardarReagenda(){
   const f = $('#rgFecha').value;
   if(!f){ toast('PON LA FECHA NUEVA'); return; }
-  const s = (opsMes ? SALES_HIST : SALES).find(x => x.id === reagId);
+  const s = buscarVenta(reagId);
   if(!s) return;
 
   const destino = mesDeLaVenta({mode:'fecha', d:f}, mesActual());
@@ -4171,8 +4185,33 @@ async function guardarReagenda(){
    Es de consulta: se ven pero no se tocan. */
 let opsMes = null, SALES_HIST = [], cargandoHist = false;
 
+/* ---------- EL MES QUE VIENE ----------
+   Lo que se cierra hoy con cita para el mes siguiente cuenta en ese mes, asi
+   que no sale en el de ahora. Se escucha en vivo aparte y, si hay algo, sale
+   su boton en la barra de meses. Esos si se editan: todavia no han pasado. */
+let SALES_PROX = [], unsubProx = null;
+const claveProx = () => { const d = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
+const viendoProx = () => !!opsMes && opsMes === claveProx();
+/* la lista que se esta mirando en Mis cierres */
+const fuenteOps = () => viendoProx() ? SALES_PROX : opsMes ? SALES_HIST : SALES;
+const buscarVenta = id => [SALES, SALES_PROX, SALES_HIST].map(l => l.find(x => x.id === id)).find(Boolean);
+
+function escucharProximo(){
+  if(unsubProx){ unsubProx(); unsubProx = null; }
+  const [anio, mes] = claveProx().split('-');
+  let q = db().collection('ventas').where('anio','==',anio).where('mes','==',mes);
+  if(!isAdmin()) q = q.where('owner','==',ME);
+  unsubProx = q.onSnapshot(snap=>{
+    SALES_PROX = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    if(viendoProx() && !SALES_PROX.length) opsMes = null;   // se movieron todos: de vuelta a ahora
+    if(tab === 'ops') render();
+  }, err => console.error('mes que viene:', err));
+}
+
 async function verMesDeCierres(clave){
   if(!clave){ opsMes = null; SALES_HIST = []; render(); return; }
+  if(clave === claveProx()){ opsMes = clave; SALES_HIST = []; render(); return; }
   opsMes = clave; cargandoHist = true; SALES_HIST = []; render();
   const [anio, mes] = clave.split('-');
   try{
@@ -5111,7 +5150,7 @@ let dinst = {mode:null, d:null};
 
 function openModal(id){
   editing = id||null;
-  const s = id ? SALES.find(x=>x.id===id) : null;
+  const s = id ? buscarVenta(id) : null;
   draft = s ? {...s.p} : {};
   dplan = s && s.plan ? {...s.plan} : {type:null, speed:null};
   dinst = s && s.inst ? {...s.inst} : {mode:null, d:null};
@@ -5272,6 +5311,9 @@ async function saveSale(){
     anio, mes,
     creado: Date.now()   // para ordenar los del mismo dia
   };
+  /* editar no mueve el dia del cierre: los logros y los cofres van por ese dia */
+  const original = editing ? buscarVenta(editing) : null;
+  if(original && original.d){ payload.d = original.d; payload.creado = original.creado || payload.creado; }
 
   const btn = $('#saveBtn');
   if(btn){ btn.disabled = true; btn.textContent = 'GUARDANDO…'; }
